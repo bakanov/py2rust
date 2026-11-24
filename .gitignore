@@ -22,3 +22,6 @@ coverage.xml
 .DS_Store
 .idea/
 .vscode/
+
+# Exported Docker example runs
+/docker-output/

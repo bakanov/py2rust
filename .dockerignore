@@ -1,0 +1,26 @@
+# Only send the compiler and this example, never local data or build artifacts.
+**
+!Dockerfile
+!.dockerignore
+!pyproject.toml
+!README.md
+!LICENSE
+!NOTICE
+!py2rust/
+!py2rust/**
+!tools/
+!tools/build_frontend_wheel.py
+!tools/compare_access_log.py
+!examples/
+!examples/projects/
+!examples/projects/access_log/
+!examples/projects/access_log/**
+!benchmarks/
+!benchmarks/access_log/
+!benchmarks/access_log/native.rs
+!docker/
+!docker/run_example.py
+**/__pycache__/
+**/*.pyc
+**/target/
+**/.py2rust/

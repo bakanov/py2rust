@@ -1,0 +1,75 @@
+{
+  "platform": "Linux-6.8.0-90-generic-x86_64-with-glibc2.39",
+  "python": "3.13.5",
+  "rustc": "rustc 1.83.0 (90b35a623 2024-11-26)",
+  "method": "release; same Cargo dependency graph; alternating separate processes; warm file cache; includes startup, read, parse, aggregation and JSON stdout; excludes build and fixture generation",
+  "source_sha256": {
+    "examples/projects/access_log/main.py": "031cadfa449c1d6aff8bf8a3cb181ae7c1e4502cd063fccdb062a24b57578ea8",
+    "examples/projects/access_log/analysis.py": "d1ee7bc310486ac217fce4294ba6812488bdc5c391a07be073d0f7d678c48402",
+    "benchmarks/access_log/native.rs": "788951e16b3b34f1defd74b9f6887b206c0a2ec941a90b10cd4575794a2014b5",
+    "tools/compare_access_log.py": "a0823638878472cb1767f57b09723c53a58ad289546ccb1ec7c3db13a87af993"
+  },
+  "generated_sha256": "8ac70475802ba57a21aad6f51737f0478053e5ae858e6af6430d8dc814ac1209",
+  "rows": [
+    {
+      "records": 10000,
+      "input_bytes": 809587,
+      "input_sha256": "c8aa6a180add8610456f0aa3d4fc6b20cbbcdf83cddd3dc84a4f3ed5de3dba8b",
+      "samples_ms": {
+        "generated": [
+          11.138211,
+          11.222355,
+          11.504033,
+          11.299097,
+          11.236637,
+          11.378099,
+          11.349327
+        ],
+        "native": [
+          2.972892,
+          2.833973,
+          2.907498,
+          2.775755,
+          2.806469,
+          2.98085,
+          2.841847
+        ]
+      },
+      "median_ms": {
+        "generated": 11.299097,
+        "native": 2.841847
+      },
+      "generated_over_native": 3.9759695015248884
+    },
+    {
+      "records": 100000,
+      "input_bytes": 8096253,
+      "input_sha256": "eb5144ac361846f5a1ab5226cd7d6bc29974d9b9ad1e8db9c6c93ac777878f5a",
+      "samples_ms": {
+        "generated": [
+          106.974953,
+          111.058614,
+          108.20504,
+          107.437282,
+          107.037504,
+          105.980904,
+          106.605829
+        ],
+        "native": [
+          22.602102,
+          22.486133,
+          24.38558,
+          22.789269,
+          22.626791,
+          22.58171,
+          22.788712
+        ]
+      },
+      "median_ms": {
+        "generated": 107.037504,
+        "native": 22.626791
+      },
+      "generated_over_native": 4.73056493074957
+    }
+  ]
+}
