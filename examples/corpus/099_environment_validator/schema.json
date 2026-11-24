@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "fields": [
+    {
+      "name": "host",
+      "env": "APP_HOST",
+      "type": "string",
+      "default": "127.0.0.1",
+      "min_length": 1
+    },
+    {
+      "name": "port",
+      "env": "APP_PORT",
+      "type": "integer",
+      "default": 8080,
+      "minimum": 1,
+      "maximum": 65535
+    },
+    {
+      "name": "tls",
+      "env": "APP_TLS",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "name": "token",
+      "env": "APP_TOKEN",
+      "type": "string",
+      "secret": true,
+      "min_length": 8,
+      "requires": [
+        {
+          "field": "tls",
+          "equals": true
+        }
+      ]
+    },
+    {
+      "name": "timeout",
+      "env": "APP_TIMEOUT",
+      "type": "number",
+      "default": 2.5,
+      "minimum": 0.01,
+      "maximum": 60
+    },
+    {
+      "name": "level",
+      "env": "APP_LOG_LEVEL",
+      "type": "string",
+      "default": "info",
+      "choices": [
+        "debug",
+        "info",
+        "warning",
+        "error"
+      ]
+    }
+  ]
+}

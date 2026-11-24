@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "stations": [
+    {
+      "id": "A",
+      "transfer_seconds": 100
+    },
+    {
+      "id": "B",
+      "transfer_seconds": 300
+    },
+    {
+      "id": "C",
+      "transfer_seconds": 600
+    },
+    {
+      "id": "D",
+      "transfer_seconds": 0
+    },
+    {
+      "id": "Island",
+      "transfer_seconds": 0
+    }
+  ],
+  "connections": [
+    {
+      "id": "ab",
+      "from": "A",
+      "to": "B",
+      "departure": "2026-10-12T23:50:00Z",
+      "arrival": "2026-10-13T00:10:00Z"
+    },
+    {
+      "id": "bc-missed",
+      "from": "B",
+      "to": "C",
+      "departure": "2026-10-13T00:14:59Z",
+      "arrival": "2026-10-13T00:30:00Z"
+    },
+    {
+      "id": "bc",
+      "from": "B",
+      "to": "C",
+      "departure": "2026-10-13T00:15:00Z",
+      "arrival": "2026-10-13T00:40:00Z"
+    },
+    {
+      "id": "direct",
+      "from": "A",
+      "to": "C",
+      "departure": "2026-10-12T23:55:00Z",
+      "arrival": "2026-10-13T01:30:00Z"
+    },
+    {
+      "id": "ab-late",
+      "from": "A",
+      "to": "B",
+      "departure": "2026-10-13T00:05:00Z",
+      "arrival": "2026-10-13T00:20:00Z"
+    },
+    {
+      "id": "cd-missed",
+      "from": "C",
+      "to": "D",
+      "departure": "2026-10-13T00:45:00Z",
+      "arrival": "2026-10-13T01:00:00Z"
+    },
+    {
+      "id": "cd",
+      "from": "C",
+      "to": "D",
+      "departure": "2026-10-13T00:50:00Z",
+      "arrival": "2026-10-13T01:05:00Z"
+    }
+  ]
+}

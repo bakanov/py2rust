@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "name": "package",
+      "command": [
+        "tar",
+        "-cf",
+        "app.tar",
+        "app"
+      ]
+    },
+    {
+      "name": "app",
+      "command": [
+        "cc",
+        "-o",
+        "app",
+        "main.o",
+        "json.o"
+      ]
+    },
+    {
+      "name": "main.o",
+      "command": [
+        "cc",
+        "-c",
+        "main.c"
+      ]
+    },
+    {
+      "name": "json.o",
+      "command": [
+        "cc",
+        "-c",
+        "json.c"
+      ]
+    },
+    {
+      "name": "generate",
+      "command": [
+        "schema-codegen",
+        "schema.json"
+      ]
+    },
+    {
+      "name": "docs",
+      "command": []
+    },
+    {
+      "name": "loop-a",
+      "command": []
+    },
+    {
+      "name": "loop-b",
+      "command": []
+    }
+  ],
+  "edges": [
+    {
+      "target": "package",
+      "requires": "app"
+    },
+    {
+      "target": "app",
+      "requires": "main.o"
+    },
+    {
+      "target": "app",
+      "requires": "json.o"
+    },
+    {
+      "target": "main.o",
+      "requires": "generate"
+    },
+    {
+      "target": "json.o",
+      "requires": "generate"
+    },
+    {
+      "target": "loop-a",
+      "requires": "loop-b"
+    },
+    {
+      "target": "loop-b",
+      "requires": "loop-a"
+    }
+  ]
+}

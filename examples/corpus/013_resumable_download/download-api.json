@@ -1,0 +1,18 @@
+{
+  "states": ["ready"],
+  "initial": "ready",
+  "routes": [
+    {
+      "id": "artifact",
+      "method": "GET",
+      "path": "/artifact.txt",
+      "status": 206,
+      "encoding": "text",
+      "body": "abc",
+      "headers": [
+        {"name": "ETag", "value": "\"example-v1\""},
+        {"name": "Content-Range", "value": "bytes 0-2/3"}
+      ]
+    }
+  ]
+}

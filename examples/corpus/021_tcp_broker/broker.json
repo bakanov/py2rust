@@ -1,0 +1,7 @@
+{
+  "max_jobs": 1000,
+  "max_payload": 4096,
+  "max_frame": 65536,
+  "frame_timeout_ms": 1000,
+  "connection_frames": 32
+}

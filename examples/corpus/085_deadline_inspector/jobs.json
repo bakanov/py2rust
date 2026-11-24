@@ -1,0 +1,6 @@
+[
+  {"id": "backup", "label": "Message database backup", "deadline": "2026-10-14T06:55:00Z", "grace_seconds": 60},
+  {"id": "search", "label": "Search index update", "deadline": "2026-10-14T06:58:00Z", "grace_seconds": 30},
+  {"id": "attachments", "label": "Attachment storage check", "deadline": "2026-10-14T07:00:00Z", "grace_seconds": 0},
+  {"id": "digest", "label": "Daily activity digest", "deadline": "2026-10-14T07:30:00Z", "grace_seconds": 60}
+]

@@ -1,0 +1,57 @@
+[
+  {
+    "op": "SET",
+    "key": "welcome",
+    "value": {
+      "title": "Saved notes",
+      "enabled": true
+    }
+  },
+  {
+    "op": "SET",
+    "key": "世界",
+    "value": [
+      "bold",
+      "italic",
+      null,
+      1.25
+    ]
+  },
+  {
+    "op": "GET",
+    "key": "welcome"
+  },
+  {
+    "op": "SET",
+    "key": "welcome",
+    "value": "updated"
+  },
+  {
+    "op": "DELETE",
+    "key": "missing"
+  },
+  {
+    "op": "INFO"
+  },
+  {
+    "op": "COMPACT"
+  },
+  {
+    "op": "SET",
+    "key": "attachment",
+    "value": {
+      "name": "notes.txt",
+      "bytes": 512
+    }
+  },
+  {
+    "op": "DELETE",
+    "key": "世界"
+  },
+  {
+    "op": "DUMP"
+  },
+  {
+    "op": "INFO"
+  }
+]

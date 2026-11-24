@@ -1,0 +1,39 @@
+[
+  {
+    "op": "INGEST",
+    "time_ms": 1000,
+    "value": 1000000000.0
+  },
+  {
+    "op": "INGEST",
+    "time_ms": 1000,
+    "value": 1e-09
+  },
+  {
+    "op": "INGEST",
+    "time_ms": 1001,
+    "value": -1000000000.0
+  },
+  {
+    "op": "SUMMARY",
+    "start_ms": 0,
+    "end_ms": 1010
+  },
+  {
+    "op": "INGEST",
+    "time_ms": 1002,
+    "value": 2.5
+  },
+  {
+    "op": "EXPORT",
+    "start_ms": 1000,
+    "end_ms": 1002
+  },
+  {
+    "op": "ADVANCE",
+    "time_ms": 1011
+  },
+  {
+    "op": "INSPECT"
+  }
+]

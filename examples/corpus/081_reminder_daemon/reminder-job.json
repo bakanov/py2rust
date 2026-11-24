@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "store": "../../../build/reminder-demo-state.json",
+  "reminders": [
+    {
+      "id": "all",
+      "message": "Take a break — all",
+      "start": 1767225600,
+      "every": 60,
+      "policy": "all"
+    },
+    {
+      "id": "latest",
+      "message": "Take a break — latest",
+      "start": 1767225600,
+      "every": 60,
+      "policy": "latest"
+    },
+    {
+      "id": "skip",
+      "message": "Take a break — skip",
+      "start": 1767225600,
+      "every": 60,
+      "policy": "skip"
+    }
+  ]
+}

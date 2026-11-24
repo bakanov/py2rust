@@ -1,0 +1,8 @@
+{
+  "action": "diff",
+  "base": "before.json",
+  "target": "after.json",
+  "output": "difference",
+  "max_nodes": 20000,
+  "max_changes": 2000
+}

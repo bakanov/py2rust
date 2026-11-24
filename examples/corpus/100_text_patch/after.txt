@@ -1,0 +1,5 @@
+Chat server
+Host: 127.0.0.1
+Port: 8080
+Keep uploaded images and files
+Saved notes: unlimited — заметки

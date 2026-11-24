@@ -1,0 +1,7 @@
+{
+  "records": "records.json",
+  "trace": "trace.json",
+  "state": "",
+  "capacity": 8,
+  "output": "interval-run"
+}

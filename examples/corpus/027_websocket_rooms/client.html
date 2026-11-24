@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WebSocket rooms</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#edf3f5;color:#1c3543;font:16px system-ui,sans-serif}
+main{max-width:900px;margin:6vh auto;background:white;border-radius:18px;box-shadow:0 12px 40px #24465815;overflow:hidden}
+header{padding:24px 28px;border-bottom:1px solid #e7edf0}h1{font-size:24px;margin:0 0 6px}p{margin:0;color:#667d89}
+form{display:flex;gap:10px;padding:18px 28px;flex-wrap:wrap}label{display:grid;gap:4px;font-size:13px;color:#536e7b}
+input,textarea,button{font:inherit;border:1px solid #cad9e0;border-radius:8px;padding:10px}button{background:#168dc0;color:white;border:0;cursor:pointer;align-self:end}button:disabled{background:#96aeb8;cursor:default}
+#messages{height:48vh;min-height:240px;overflow:auto;background:#f0f7f3;padding:20px 28px}.message{background:white;border-radius:10px;padding:10px 14px;margin:0 0 12px;max-width:85%;white-space:pre-wrap;overflow-wrap:anywhere}.message small{display:block;color:#168dc0;margin-bottom:4px}.notice{color:#6b828d;font-size:14px;margin-bottom:12px}textarea{flex:1;min-width:180px;resize:vertical}
+@media(max-width:650px){main{margin:0;border-radius:0}header,form,#messages{padding:16px}.message{max-width:100%}}
+</style>
+<main><header><h1>WebSocket rooms</h1><p id="status">Connect in two windows to try a conversation.</p></header>
+<form id="connect"><label>Room<input id="room" value="lobby" maxlength="32" required pattern="[A-Za-z0-9_-]+"></label><label>Your name<input id="nick" value="guest" maxlength="24" required pattern="[A-Za-z0-9_-]+"></label><button>Connect</button></form>
+<section id="messages" aria-live="polite" aria-label="Conversation"></section>
+<form id="compose"><textarea id="text" rows="2" placeholder="Write a message…" aria-label="Message"></textarea><button id="send" disabled>Send</button></form></main>
+<script>
+const byId=id=>document.getElementById(id);let socket=null,limit=8192;
+function notice(text){const row=document.createElement('div');row.className='notice';row.textContent=text;byId('messages').append(row);row.scrollIntoView({block:'nearest'});}
+byId('connect').addEventListener('submit',event=>{event.preventDefault();if(socket)socket.close();byId('send').disabled=true;
+ const current=new WebSocket('ws://'+location.host+'/room/'+encodeURIComponent(byId('room').value)+'/'+encodeURIComponent(byId('nick').value));socket=current;
+ current.onmessage=event=>{if(socket!==current)return;const item=JSON.parse(event.data);if(item.type==='welcome'){limit=item.max_bytes;byId('send').disabled=false;byId('status').textContent='Connected to '+item.room+' as '+item.name;notice('Joined '+item.room);return;}
+ const row=document.createElement('div');row.className='message';const name=document.createElement('small');name.textContent=item.name+' · #'+item.sequence;row.append(name,document.createTextNode(item.text));byId('messages').append(row);row.scrollIntoView({block:'nearest'});};
+ current.onclose=event=>{if(socket!==current)return;byId('send').disabled=true;byId('status').textContent='Disconnected ('+event.code+'). Connect to rejoin.';};current.onerror=()=>{if(socket===current)notice('Connection failed. Check the room/name or try a different name.');};});
+byId('compose').addEventListener('submit',event=>{event.preventDefault();const text=byId('text').value;if(new TextEncoder().encode(text).length>limit){notice('Message exceeds '+limit+' UTF-8 bytes.');return;}if(socket&&socket.readyState===WebSocket.OPEN){socket.send(text);byId('text').value='';byId('text').focus();}});
+</script></html>

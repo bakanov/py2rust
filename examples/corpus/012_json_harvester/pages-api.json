@@ -1,0 +1,15 @@
+{
+  "states": ["ready"],
+  "initial": "ready",
+  "routes": [
+    {
+      "id": "page-one", "method": "GET", "path": "/pages/1", "status": 200,
+      "body": {"items": [{"id": "one", "text": "Hello, 世界"}, {"id": "two", "tags": ["notes"]}],
+               "next": "http://127.0.0.1:8780/pages/2"}
+    },
+    {
+      "id": "page-two", "method": "GET", "path": "/pages/2", "status": 200,
+      "body": {"items": [{"id": "two", "tags": ["notes"]}, {"id": "three", "active": true}], "next": null}
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "a",
+    "start_ms": 0,
+    "end_ms": 10,
+    "text": "Straße request",
+    "data": {
+      "source": "sample"
+    }
+  },
+  {
+    "id": "b",
+    "start_ms": 10,
+    "end_ms": 20,
+    "text": "世界 response",
+    "data": {
+      "source": "sample"
+    }
+  },
+  {
+    "id": "empty",
+    "start_ms": 10,
+    "end_ms": 10,
+    "text": "",
+    "data": {
+      "source": "sample"
+    }
+  },
+  {
+    "id": "outer",
+    "start_ms": -5,
+    "end_ms": 30,
+    "text": "whole session",
+    "data": {
+      "source": "sample"
+    }
+  },
+  {
+    "id": "nested",
+    "start_ms": 2,
+    "end_ms": 3,
+    "text": "nested operation",
+    "data": {
+      "source": "sample"
+    }
+  },
+  {
+    "id": "negative",
+    "start_ms": -20,
+    "end_ms": -10,
+    "text": "old event",
+    "data": {
+      "source": "sample"
+    }
+  }
+]

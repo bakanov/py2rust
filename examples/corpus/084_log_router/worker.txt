@@ -1,0 +1,3 @@
+INFO index update started
+WARNING retrying delayed operation
+ERROR file storage temporarily unavailable

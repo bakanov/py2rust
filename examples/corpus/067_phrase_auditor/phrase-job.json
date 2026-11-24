@@ -1,0 +1,5 @@
+{
+  "documents": "sources.json",
+  "ngram": 3,
+  "output": "phrase-audit"
+}

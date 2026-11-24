@@ -1,0 +1,2 @@
+Edit this file while the watcher runs. Rapid rewrites become one event after a quiet window.
+Rename or remove it to see lifecycle events in the retained journal.

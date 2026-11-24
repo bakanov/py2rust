@@ -1,0 +1,8 @@
+{
+  "people": ["Alice", "Bob", "世界"],
+  "operations": [
+    {"op": "expense", "id": "dinner", "payer": "Alice", "cents": 101,
+     "shares": [{"person": "Alice", "weight": 1}, {"person": "Bob", "weight": 1}, {"person": "世界", "weight": 1}]},
+    {"op": "settle", "id": "bob-payment", "from": "Bob", "to": "Alice", "cents": 34}
+  ]
+}

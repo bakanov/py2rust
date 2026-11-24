@@ -1,0 +1,5 @@
+{"priority":2,"id":"first","text":"hello"}
+{"priority":-1,"id":"second","text":"世界"}
+{"priority":2,"id":"third","text":"stable ties"}
+{"priority":0,"id":"fourth","payload":[null,true,1.25]}
+{"priority":-1,"id":"fifth","text":"another tie"}

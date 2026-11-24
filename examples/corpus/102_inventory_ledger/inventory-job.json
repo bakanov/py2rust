@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "mode": "apply",
+  "store": "inventory.json",
+  "output": "report",
+  "items": [
+    "bolt",
+    "nut",
+    "washer"
+  ],
+  "expected_revision": null,
+  "operations": [
+    {
+      "id": "delivery1",
+      "op": "receive",
+      "items": {
+        "bolt": 100,
+        "nut": 50,
+        "washer": 70
+      }
+    },
+    {
+      "id": "reserve1",
+      "op": "reserve",
+      "order": "order1",
+      "items": {
+        "bolt": 12,
+        "nut": 6
+      }
+    },
+    {
+      "id": "reserve2",
+      "op": "reserve",
+      "order": "order2",
+      "items": {
+        "bolt": 10,
+        "washer": 20
+      }
+    },
+    {
+      "id": "release1",
+      "op": "release",
+      "order": "order1",
+      "items": {
+        "bolt": 2
+      }
+    },
+    {
+      "id": "count1",
+      "op": "reconcile",
+      "items": {
+        "nut": 48
+      }
+    },
+    {
+      "id": "cancel2",
+      "op": "cancel",
+      "order": "order2"
+    }
+  ]
+}

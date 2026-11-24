@@ -1,0 +1,8 @@
+[
+  {
+    "op": "announce", "request": "announce-chat-1", "id": "team-chat",
+    "seq": 1, "service": "chat", "name": "Team chat", "port": 8765,
+    "ttl_ms": 10000, "tags": ["desktop", "web"]
+  },
+  {"op": "discover", "request": "find-chats", "service": "chat", "limit": 20}
+]

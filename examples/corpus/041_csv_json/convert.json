@@ -1,0 +1,16 @@
+{
+  "input": "people.csv",
+  "output": "converted",
+  "direction": "csv-to-json",
+  "delimiter": ",",
+  "columns": [
+    {"name": "name", "type": "string", "nullable": false},
+    {"name": "visits", "type": "integer", "nullable": false},
+    {"name": "active", "type": "boolean", "nullable": false},
+    {"name": "note", "type": "string", "nullable": true}
+  ],
+  "select": ["name", "visits", "active", "note"],
+  "max_rows": 10000,
+  "max_field_bytes": 65536,
+  "max_input_bytes": 4194304
+}

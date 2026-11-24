@@ -1,0 +1,47 @@
+[
+  {
+    "op": "PUT",
+    "term": "Python",
+    "uses": 3
+  },
+  {
+    "op": "PUT",
+    "term": "Pytest",
+    "uses": 4
+  },
+  {
+    "op": "PUT",
+    "term": "Straße",
+    "uses": 1
+  },
+  {
+    "op": "SUGGEST",
+    "prefix": "py",
+    "offset": 0,
+    "limit": 20
+  },
+  {
+    "op": "HIT",
+    "term": "PYTHON",
+    "amount": 4
+  },
+  {
+    "op": "SUGGEST",
+    "prefix": "PY",
+    "offset": 0,
+    "limit": 20
+  },
+  {
+    "op": "DELETE",
+    "term": "pytest"
+  },
+  {
+    "op": "SUGGEST",
+    "prefix": "STRASS",
+    "offset": 0,
+    "limit": 20
+  },
+  {
+    "op": "EXPORT"
+  }
+]

@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "rest_minutes": 60,
+  "balance_weight": 2,
+  "budget": 100000,
+  "workers": [
+    {
+      "id": "Ada",
+      "skills": [
+        "support"
+      ],
+      "availability": [
+        {
+          "start": 480,
+          "end": 780
+        },
+        {
+          "start": 780,
+          "end": 1080
+        }
+      ],
+      "max_minutes": 480,
+      "max_shifts": 2,
+      "preferences": {
+        "morning": 0,
+        "afternoon": 3
+      }
+    },
+    {
+      "id": "Ben",
+      "skills": [
+        "support"
+      ],
+      "availability": [
+        {
+          "start": 480,
+          "end": 780
+        },
+        {
+          "start": 780,
+          "end": 1080
+        }
+      ],
+      "max_minutes": 480,
+      "max_shifts": 2,
+      "preferences": {
+        "morning": 2,
+        "afternoon": 0
+      }
+    },
+    {
+      "id": "Chen",
+      "skills": [
+        "support"
+      ],
+      "availability": [
+        {
+          "start": 480,
+          "end": 780
+        },
+        {
+          "start": 780,
+          "end": 1080
+        }
+      ],
+      "max_minutes": 240,
+      "max_shifts": 1,
+      "preferences": {
+        "morning": 1,
+        "afternoon": 1
+      }
+    }
+  ],
+  "shifts": [
+    {
+      "id": "morning",
+      "start": 480,
+      "end": 720,
+      "required": 2,
+      "skill": "support"
+    },
+    {
+      "id": "afternoon",
+      "start": 780,
+      "end": 1020,
+      "required": 1,
+      "skill": "support"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "mode": "check",
+  "policy": {"year": 2026, "owners": ["Example Team"], "licenses": ["MIT", "Apache-2.0"]},
+  "files": [
+    {"name": "demo/client.py", "path": "sample/client.txt", "style": "hash"},
+    {"name": "demo/transport.rs", "path": "sample/transport.txt", "style": "slash"}
+  ],
+  "output": "inspection"
+}

@@ -1,0 +1,8 @@
+{
+  "max_bytes": 1048576,
+  "max_messages": 100,
+  "max_recipients": 100,
+  "command_ms": 5000,
+  "data_ms": 15000,
+  "max_commands": 100
+}

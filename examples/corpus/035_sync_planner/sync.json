@@ -1,0 +1,7 @@
+{
+  "source": "./source",
+  "destination": "./destination",
+  "exclude": [],
+  "max_entries": 10000,
+  "max_bytes": 1073741824
+}

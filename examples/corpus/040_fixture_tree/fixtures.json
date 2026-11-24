@@ -1,0 +1,11 @@
+{
+  "root": "/tmp/fixture-tree-demo",
+  "entries": [
+    {"path": "notes/readme.txt", "kind": "text", "data": "Hello, 世界!\r\nA fixture with exact line endings.\n"},
+    {"path": "data/sample.bin", "kind": "base64", "data": "AAECA/7/"},
+    {"path": "empty", "kind": "directory"},
+    {"path": "data/zero.bin", "kind": "base64", "data": ""}
+  ],
+  "max_entries": 1000,
+  "max_bytes": 4194304
+}

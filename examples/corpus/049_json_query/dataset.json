@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Alice",
+    "team": "Network",
+    "active": true,
+    "score": 14
+  },
+  {
+    "name": "José",
+    "team": "Tools",
+    "active": true,
+    "score": 9.5
+  },
+  {
+    "name": "李",
+    "team": "Network",
+    "active": true,
+    "score": 7.25
+  },
+  {
+    "name": "Mira",
+    "team": "Tools",
+    "active": false,
+    "score": 30
+  }
+]

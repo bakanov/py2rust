@@ -1,0 +1,1 @@
+{"input":"sample.ppm","mode":"process","output":"report","pipeline":[{"height":80,"op":"crop","width":128,"x":16,"y":8},{"op":"invert"},{"mode":"channel","op":"threshold","value":450}],"version":1}

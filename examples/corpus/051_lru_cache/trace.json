@@ -1,0 +1,30 @@
+[
+  {
+    "op": "PUT",
+    "key": "alpha",
+    "value": {
+      "message": "Hello"
+    }
+  },
+  {
+    "op": "PUT",
+    "key": "beta",
+    "value": null
+  },
+  {
+    "op": "GET",
+    "key": "alpha"
+  },
+  {
+    "op": "PUT",
+    "key": "gamma",
+    "value": "世界"
+  },
+  {
+    "op": "GET",
+    "key": "beta"
+  },
+  {
+    "op": "INSPECT"
+  }
+]

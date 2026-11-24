@@ -1,0 +1,9 @@
+{
+  "max_bytes": 134217728,
+  "max_files": 128,
+  "chunk_bytes": 65536,
+  "io_ms": 3000,
+  "session_ms": 30000,
+  "attempts": 3,
+  "pause_ms": 100
+}

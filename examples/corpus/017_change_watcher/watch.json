@@ -1,0 +1,9 @@
+{
+  "url": "http://127.0.0.1:8782/snapshot",
+  "ignore": ["/observed_at"],
+  "retain": 20,
+  "max_changes": 100,
+  "interval_ms": 1000,
+  "timeout_ms": 2000,
+  "max_body": 65536
+}

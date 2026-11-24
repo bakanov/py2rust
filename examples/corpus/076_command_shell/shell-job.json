@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "cwd": ".",
+  "output": "captured",
+  "environment": {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"},
+  "timeout_ms": 3000,
+  "max_output": 1048576,
+  "pipefail": true,
+  "jobs": [
+    {"name": "greeting", "command": "printf '%s\\n' 'Hello from Python → Rust' | tr a-z A-Z", "input": "", "environment": {}},
+    {"name": "arguments", "command": "printf '<%s>\\n' '' 'space here' \"quoted | pipe\" '$HOME'", "input": "", "environment": {}}
+  ]
+}

@@ -1,0 +1,11 @@
+[
+  {"op":"ENQUEUE","id":"thumbnail","priority":5,"payload":{"file":"photo.png"}},
+  {"op":"ENQUEUE","id":"deliver","priority":1,"payload":{"url":"https://example.test/inbox"}},
+  {"op":"ENQUEUE","id":"index","priority":5,"payload":null},
+  {"op":"POP"},
+  {"op":"RETRY","id":"deliver","priority":5},
+  {"op":"CANCEL","id":"index"},
+  {"op":"POP"},
+  {"op":"ACK","id":"thumbnail"},
+  {"op":"INSPECT"}
+]

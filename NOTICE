@@ -1,0 +1,5 @@
+py2rust is derived from py2many (https://github.com/py2many/py2many),
+revision a3c39224e71430bf99057f473c4b4542971daa9d, licensed under MIT.
+Original copyright notices are retained in LICENSE. The project/service subset,
+network runtime, complete application catalog and subsequent changes are developed
+in this checkout. No unrelated language backend is required by py2rust.

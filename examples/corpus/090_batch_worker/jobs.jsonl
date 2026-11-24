@@ -1,0 +1,3 @@
+{"id":"welcome","text":"Hello HELLO world","values":[4,8,-3]}
+{"id":"unicode","text":"Straße STRASSE café café","values":[1000000000,-1000000000]}
+{"id":"empty","text":"","values":[]}

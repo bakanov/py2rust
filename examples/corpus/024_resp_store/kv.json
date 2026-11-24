@@ -1,0 +1,9 @@
+{
+  "max_keys": 1000,
+  "max_key": 256,
+  "max_value": 65536,
+  "max_total": 1048576,
+  "max_peers": 16,
+  "frame_ms": 3000,
+  "idle_ms": 30000
+}

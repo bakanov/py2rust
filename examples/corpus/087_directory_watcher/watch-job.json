@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "root": "observed",
+  "output": "watch-state",
+  "debounce_ms": 250,
+  "retain": 128
+}

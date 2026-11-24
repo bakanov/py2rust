@@ -1,0 +1,2012 @@
+{
+  "format": 1,
+  "programs": [
+    {
+      "id": "001",
+      "title": "File-drop service:",
+      "scope": "**File-drop service:** upload files, list metadata, download by ID, enforce sizes, persist an index, and expire temporary entries.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Binary HTTP, paths, JSON, dates, persistence",
+      "forecast": "B",
+      "acceptance": "Download arbitrary bytes unchanged; expired and unknown IDs return the documented statuses.",
+      "path": "001_file_drop",
+      "check": "file_drop"
+    },
+    {
+      "id": "002",
+      "title": "Webhook inbox:",
+      "scope": "**Webhook inbox:** validate event envelopes, deduplicate event IDs, retain receipts, filter history, and export selected events.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "HTTP validation, sets, JSON arrays, logging",
+      "forecast": "B",
+      "acceptance": "Repeated delivery creates one stored event; malformed envelopes leave state unchanged.",
+      "path": "002_webhook_inbox",
+      "check": "webhook_inbox"
+    },
+    {
+      "id": "003",
+      "title": "Bookmark redirector:",
+      "scope": "**Bookmark redirector:** create named links, validate destinations, issue redirects, count visits, and import/export bookmarks.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "220–320",
+      "coverage": "Response headers, status codes, strings, atomic files",
+      "forecast": "B",
+      "acceptance": "Redirect Location is correct; restart preserves links and visit counts.",
+      "path": "003_bookmark_redirector",
+      "check": "bookmark_redirector"
+    },
+    {
+      "id": "004",
+      "title": "Expiring paste service:",
+      "scope": "**Expiring paste service:** create text pastes with deadlines, distinguish public/private IDs, enforce size limits, and sweep expired entries.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "UTF-8, timestamps, tokens, permission checks",
+      "forecast": "B",
+      "acceptance": "A Unicode paste survives restart and becomes inaccessible at its configured deadline.",
+      "path": "004_expiring_pastes",
+      "check": "expiring_pastes"
+    },
+    {
+      "id": "005",
+      "title": "Versioned settings API:",
+      "scope": "**Versioned settings API:** update schema-listed fields, compare revision numbers, retain history, and roll back a selected revision.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "JSON types, enums, copy/value semantics, history",
+      "forecast": "B",
+      "acceptance": "Stale updates fail; rollback reconstructs the exact earlier settings.",
+      "path": "005_versioned_settings",
+      "check": "versioned_settings",
+      "assets": [
+        "schema.json"
+      ]
+    },
+    {
+      "id": "006",
+      "title": "Scenario-based mock API:",
+      "scope": "**Scenario-based mock API:** load route definitions, match method/path, validate request fields, advance scenario states, and record a transcript.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Routing, state machines, JSON, binary/text responses",
+      "forecast": "B",
+      "acceptance": "A scripted request sequence yields exactly the configured statuses and state transitions.",
+      "path": "006_mock_api",
+      "check": "mock_api",
+      "assets": [
+        "routes.json"
+      ]
+    },
+    {
+      "id": "007",
+      "title": "Leased work queue:",
+      "scope": "**Leased work queue:** enqueue JSON jobs, claim with a deadline, acknowledge, requeue expired leases, and inspect queue state.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "State transitions, time, persistent collections",
+      "forecast": "B",
+      "acceptance": "A crashed worker's job is reclaimable; an expired acknowledgement cannot remove a new lease.",
+      "path": "007_leased_queue",
+      "check": "leased_queue"
+    },
+    {
+      "id": "008",
+      "title": "Resource reservation service:",
+      "scope": "**Resource reservation service:** create resources, book UTC intervals, reject overlaps, cancel bookings, and show an agenda.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Date comparisons, interval rules, validation",
+      "forecast": "B",
+      "acceptance": "Overlapping bookings fail; adjacent half-open intervals and cancellations behave consistently.",
+      "path": "008_reservations",
+      "check": "reservations"
+    },
+    {
+      "id": "009",
+      "title": "Per-key rate-limit service:",
+      "scope": "**Per-key rate-limit service:** maintain sliding request windows, return allow/deny decisions, expose quota state, and restore it after restart.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "Float timestamps, list filtering, HTTP statuses",
+      "forecast": "B",
+      "acceptance": "Boundary-time requests obey the chosen window rule; different keys remain independent.",
+      "path": "009_rate_limiter",
+      "check": "rate_limiter"
+    },
+    {
+      "id": "010",
+      "title": "Server-sent-event notification board:",
+      "scope": "**Server-sent-event notification board:** publish small events, stream subscriptions, retain replay IDs, and handle reconnects and slow readers.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Long-lived HTTP, buffering, cancellation",
+      "forecast": "E: streaming responses, backpressure and disconnect handling",
+      "acceptance": "Reconnect resumes after the last acknowledged event; a slow subscriber does not block others.",
+      "path": "010_notification_board",
+      "check": "notification_board"
+    },
+    {
+      "id": "011",
+      "title": "Service health monitor:",
+      "scope": "**Service health monitor:** poll configured endpoints, record latency and outages, apply failure thresholds, and write a status report.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "HTTP errors, clocks, logging, time series",
+      "forecast": "E: recoverable network errors",
+      "acceptance": "One unreachable endpoint is reported without stopping checks of the remaining endpoints.",
+      "path": "011_health_monitor",
+      "check": "health_monitor",
+      "assets": [
+        "endpoints.json"
+      ]
+    },
+    {
+      "id": "012",
+      "title": "Paginated JSON harvester:",
+      "scope": "**Paginated JSON harvester:** follow a documented next-page URL, reject repeated cursors, deduplicate records, checkpoint, and resume a bounded import.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "HTTP client, sets, JSON, checkpoint files",
+      "forecast": "B",
+      "acceptance": "Restart resumes at the saved page; overlapping pages produce no duplicate record IDs.",
+      "path": "012_json_harvester",
+      "check": "json_harvester",
+      "assets": [
+        "harvest.json",
+        "pages-api.json"
+      ]
+    },
+    {
+      "id": "013",
+      "title": "Resumable file downloader:",
+      "scope": "**Resumable file downloader:** fetch in ranges, save progress, detect changed validators, verify a digest, and atomically publish the final file.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–500",
+      "coverage": "Binary client I/O, HTTP headers, hashing",
+      "forecast": "E: request/response headers, binary streaming, file handles and digest API",
+      "acceptance": "Interrupted download resumes correctly; a changed ETag prevents mixing file versions.",
+      "path": "013_resumable_download",
+      "check": "resumable_download",
+      "assets": [
+        "download.json",
+        "download-api.json"
+      ]
+    },
+    {
+      "id": "014",
+      "title": "HTTP contract test runner:",
+      "scope": "**HTTP contract test runner:** load fixture requests, check statuses and selected JSON fields, compare snapshots, and generate a failure report.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "JSON schemas, client/server behavior, diagnostics",
+      "forecast": "B",
+      "acceptance": "A known faulty test server produces the expected named mismatches and summary counts.",
+      "path": "014_contract_runner",
+      "check": "contract_runner",
+      "assets": [
+        "contracts.json"
+      ]
+    },
+    {
+      "id": "015",
+      "title": "Webhook delivery outbox:",
+      "scope": "**Webhook delivery outbox:** persist deliveries, send idempotency keys, classify failures, back off, and move exhausted items to a dead-letter list.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Retry state, headers, persistence, failure recovery",
+      "forecast": "E: custom client headers and recoverable I/O errors",
+      "acceptance": "A scripted sequence of disconnects and HTTP errors preserves pending deliveries across restart.",
+      "path": "015_delivery_outbox",
+      "check": "delivery_outbox",
+      "assets": [
+        "jobs.json"
+      ]
+    },
+    {
+      "id": "016",
+      "title": "Local website link auditor:",
+      "scope": "**Local website link auditor:** crawl a bounded local site, resolve relative links, deduplicate URLs, report broken links, and stop at a depth budget.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–450",
+      "coverage": "URL resolution, HTML parsing, graph traversal",
+      "forecast": "E: HTML parser, URL resolution and recoverable client errors",
+      "acceptance": "Cycles terminate; relative links resolve correctly; external hosts are excluded by policy.",
+      "path": "016_link_auditor",
+      "check": "link_auditor",
+      "assets": [
+        "audit.json",
+        "site-api.json"
+      ]
+    },
+    {
+      "id": "017",
+      "title": "JSON endpoint change watcher:",
+      "scope": "**JSON endpoint change watcher:** poll snapshots, compare nested fields, suppress configured paths, retain changes, and render a readable difference report.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Recursive JSON, object traversal, timestamps",
+      "forecast": "E: general object-key iteration and error recovery",
+      "acceptance": "Ignored fields produce no event; nested additions/removals are reported once per change.",
+      "path": "017_change_watcher",
+      "check": "change_watcher",
+      "assets": [
+        "watch.json",
+        "snapshots-api.json"
+      ]
+    },
+    {
+      "id": "018",
+      "title": "Quota-aware API batcher:",
+      "scope": "**Quota-aware API batcher:** read pending requests, honor rate-limit headers, checkpoint completed IDs, and resume without repeating successful work.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Response headers, retry timing, queues",
+      "forecast": "E: client response headers and recoverable errors",
+      "acceptance": "A fixture server's retry deadlines are respected; already completed IDs are skipped after restart.",
+      "path": "018_quota_batcher",
+      "check": "quota_batcher",
+      "assets": [
+        "batch.json",
+        "requests.json",
+        "quota-api.json"
+      ]
+    },
+    {
+      "id": "019",
+      "title": "Circuit-breaker gateway:",
+      "scope": "**Circuit-breaker gateway:** forward a fixed family of requests, count upstream failures, open the circuit, probe recovery, and expose state.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Nested HTTP calls, enums, deadlines",
+      "forecast": "E: recoverable client errors and forwarding headers/bodies",
+      "acceptance": "Closed/open/half-open transitions match a deterministic failure-and-recovery trace.",
+      "path": "019_circuit_gateway",
+      "check": "circuit_gateway",
+      "assets": [
+        "gateway.json",
+        "upstream-api.json"
+      ]
+    },
+    {
+      "id": "020",
+      "title": "Bounded HTTP load probe:",
+      "scope": "**Bounded HTTP load probe:** run a configured request schedule, limit concurrency, record latency buckets, and export reproducible summaries.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Concurrency, cancellation, numeric aggregation",
+      "forecast": "E: tasks/async or worker threads, arithmetic and histogram support",
+      "acceptance": "Concurrency never exceeds the limit; cancellation leaves no active workers or missing results.",
+      "path": "020_load_probe",
+      "check": "load_probe",
+      "assets": [
+        "load.json",
+        "probe-api.json"
+      ]
+    },
+    {
+      "id": "021",
+      "title": "Framed TCP task broker:",
+      "scope": "**Framed TCP task broker:** accept length-prefixed JSON jobs, acknowledge IDs, enforce frame limits, and maintain a persistent pending list.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Framing, bytes, JSON, sockets",
+      "forecast": "E: unified TCP/project profile, byte-buffer operations and binary integers",
+      "acceptance": "Split and coalesced writes yield the same jobs; oversized/truncated frames are rejected.",
+      "path": "021_tcp_broker",
+      "check": "tcp_broker",
+      "assets": [
+        "broker.json",
+        "requests.json"
+      ]
+    },
+    {
+      "id": "022",
+      "title": "Line-based room chat:",
+      "scope": "**Line-based room chat:** maintain several TCP peers, nicknames and rooms; broadcast messages, bound queues, and clean up disconnected peers.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Socket ownership, per-peer state, Unicode",
+      "forecast": "E: multiplexed sockets, buffer operations and cancellation",
+      "acceptance": "A slow or disconnected peer does not prevent messages reaching other room members.",
+      "path": "022_room_chat",
+      "check": "room_chat",
+      "assets": [
+        "rooms.json"
+      ]
+    },
+    {
+      "id": "023",
+      "title": "SMTP capture server:",
+      "scope": "**SMTP capture server:** support HELO/EHLO, MAIL, RCPT, DATA, RSET and QUIT; handle dot stuffing and save received messages locally.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Protocol enums, CRLF parsing, file persistence",
+      "forecast": "E: TCP/string integration and recoverable per-connection errors",
+      "acceptance": "An independent SMTP client delivers a message; dot-stuffed lines and invalid command order are handled correctly.",
+      "path": "023_smtp_capture",
+      "check": "smtp_capture",
+      "assets": [
+        "smtp.json"
+      ]
+    },
+    {
+      "id": "024",
+      "title": "RESP key-value server:",
+      "scope": "**RESP key-value server:** implement a bounded PING/GET/SET/DEL/INCR command set, expirations, a snapshot, and command errors.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "400–500",
+      "coverage": "Nested frame parsing, maps, integers, time",
+      "forecast": "E: unified TCP, numeric parsing, byte slicing and map deletion",
+      "acceptance": "An independent RESP client agrees on null replies, binary values and integer overflow errors.",
+      "path": "024_resp_store",
+      "check": "resp_store",
+      "assets": [
+        "kv.json"
+      ]
+    },
+    {
+      "id": "025",
+      "title": "UDP service directory:",
+      "scope": "**UDP service directory:** announce services, reply to discovery requests, age out peers, deduplicate announcements, and print a registry.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–380",
+      "coverage": "Datagram semantics, time, peer records",
+      "forecast": "E: UDP and socket address types",
+      "acceptance": "Duplicate/out-of-order announcements do not corrupt the registry; stale peers expire.",
+      "path": "025_udp_directory",
+      "check": "udp_directory",
+      "assets": [
+        "directory.json",
+        "requests.json"
+      ]
+    },
+    {
+      "id": "026",
+      "title": "DNS lookup diagnostic:",
+      "scope": "**DNS lookup diagnostic:** issue A/AAAA queries, match response IDs, decode bounded compression pointers, retry, and print answers/errors.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Binary parsing, bit operations, UDP",
+      "forecast": "E: UDP, struct-like byte codecs, bitwise operations and timeout recovery",
+      "acceptance": "Local DNS fixtures cover valid compression, pointer cycles, truncation and mismatched IDs.",
+      "path": "026_dns_diagnostic",
+      "check": "dns_diagnostic",
+      "assets": [
+        "dns.json"
+      ]
+    },
+    {
+      "id": "027",
+      "title": "Small WebSocket room server:",
+      "scope": "**Small WebSocket room server:** upgrade HTTP, accept bounded text frames, handle ping/pong/close, broadcast, and reject unsupported frames.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "400–500",
+      "coverage": "HTTP upgrade, framing, connection state",
+      "forecast": "E: upgraded connections, byte/bit operations, digest/base64 and multiplexing",
+      "acceptance": "An independent client exchanges Unicode text and ping/pong; invalid masking and over-limit frames fail predictably.",
+      "path": "027_websocket_rooms",
+      "check": "websocket_rooms",
+      "assets": [
+        "rooms.json",
+        "client.html"
+      ]
+    },
+    {
+      "id": "028",
+      "title": "MQTT telemetry sink:",
+      "scope": "**MQTT telemetry sink:** implement CONNECT, QoS-0 PUBLISH, PING and DISCONNECT; validate packet lengths and persist a per-topic history.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–500",
+      "coverage": "Variable-length framing, enums, JSON export",
+      "forecast": "E: TCP integration, binary codecs and recoverable peer errors",
+      "acceptance": "A local client publishes multiple topics; unsupported QoS and malformed lengths are rejected.",
+      "path": "028_mqtt_sink",
+      "check": "mqtt_sink",
+      "assets": [
+        "sink.json"
+      ]
+    },
+    {
+      "id": "029",
+      "title": "Chunked TCP file transfer:",
+      "scope": "**Chunked TCP file transfer:** pair a sender and receiver with chunk acknowledgements, resume offsets, checksums and safe final-file publication.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "400–500",
+      "coverage": "Bidirectional sockets, streaming files, integrity",
+      "forecast": "E: unified TCP, file handles, seek, hashing and I/O recovery",
+      "acceptance": "Interrupted transfer resumes and reproduces exact bytes; a corrupted chunk is detected.",
+      "path": "029_tcp_transfer",
+      "check": "tcp_transfer",
+      "assets": [
+        "transfer.json"
+      ]
+    },
+    {
+      "id": "030",
+      "title": "Unix-domain command bus:",
+      "scope": "**Unix-domain command bus:** serve local request IDs, dispatch a few commands, return structured errors, and clean up socket files on shutdown.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Local IPC, resource lifetime, filesystem cleanup",
+      "forecast": "E: Unix sockets, context-managed resources and graceful shutdown",
+      "acceptance": "Multiple local clients receive correctly correlated replies; restart handles a stale socket path.",
+      "path": "030_unix_bus",
+      "check": "unix_bus",
+      "assets": [
+        "bus.json",
+        "requests.json"
+      ]
+    },
+    {
+      "id": "031",
+      "title": "Directory inventory reporter:",
+      "scope": "**Directory inventory reporter:** traverse a tree, apply exclusions, record sizes/types/times, aggregate by extension, and export a manifest.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–380",
+      "coverage": "Paths, traversal, metadata, aggregation",
+      "forecast": "E: stat/scandir or walk, sorting and per-file error recovery",
+      "acceptance": "Fixture manifests match; symlinks, inaccessible paths and empty directories follow the documented policy.",
+      "path": "031_inventory",
+      "check": "inventory",
+      "assets": [
+        "inventory.json"
+      ]
+    },
+    {
+      "id": "032",
+      "title": "Batch rename planner:",
+      "scope": "**Batch rename planner:** apply naming rules, preview collisions, execute an approved plan in a fixture tree, and emit a reversible journal.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Regex, paths, transactions, rollback records",
+      "forecast": "E: rename, canonical paths, metadata and recoverable file errors",
+      "acceptance": "Collisions cause no partial renames; applying the reverse journal restores original names.",
+      "path": "032_rename_planner",
+      "check": "rename_planner",
+      "assets": [
+        "rename.json"
+      ]
+    },
+    {
+      "id": "033",
+      "title": "Duplicate-file finder:",
+      "scope": "**Duplicate-file finder:** group by size then digest, verify candidate bytes, report duplicates, and export an optional deduplication plan.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Hashing, binary files, grouping",
+      "forecast": "E: metadata, incremental digests and streaming reads",
+      "acceptance": "Equal-sized different files remain distinct; hash matches are confirmed by byte comparison.",
+      "path": "033_duplicate_finder",
+      "check": "duplicate_finder",
+      "assets": [
+        "duplicates.json"
+      ]
+    },
+    {
+      "id": "034",
+      "title": "Incremental snapshot backup:",
+      "scope": "**Incremental snapshot backup:** copy changed files, store version manifests, restore a selected version, and enforce a simple retention policy.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "400–500",
+      "coverage": "Metadata, hashes, file copying, recovery",
+      "forecast": "E: traversal, streaming copies, metadata and controlled deletion",
+      "acceptance": "A restored fixture tree matches its snapshot; an interrupted snapshot is never advertised as complete.",
+      "path": "034_snapshot_backup",
+      "check": "snapshot_backup",
+      "assets": [
+        "backup.json"
+      ]
+    },
+    {
+      "id": "035",
+      "title": "Two-tree synchronization planner:",
+      "scope": "**Two-tree synchronization planner:** compare source and destination, identify conflicts, produce ordered copy/remove operations, and validate a dry run.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Tree comparison, deterministic ordering, conflicts",
+      "forecast": "E: metadata, traversal, hashing and richer collections",
+      "acceptance": "The plan is idempotent and preserves conflicts instead of silently overwriting them.",
+      "path": "035_sync_planner",
+      "check": "sync_planner",
+      "assets": [
+        "sync.json"
+      ]
+    },
+    {
+      "id": "036",
+      "title": "Content-addressed artifact store:",
+      "scope": "**Content-addressed artifact store:** import files by digest, attach named manifests, retrieve artifacts, and collect only unreferenced blobs.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Hash maps, graph reachability, files",
+      "forecast": "E: digests, metadata, streaming copies and deletion",
+      "acceptance": "Shared blobs are stored once; collection preserves every blob reachable from a live manifest.",
+      "path": "036_artifact_store",
+      "check": "artifact_store",
+      "assets": [
+        "store.json"
+      ]
+    },
+    {
+      "id": "037",
+      "title": "Batch text normalizer:",
+      "scope": "**Batch text normalizer:** process an explicit file manifest, normalize line endings and trailing spaces, preview changes, save backups, and report results.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "220–320",
+      "coverage": "Unicode, string slices, text I/O, atomic replacement",
+      "forecast": "B",
+      "acceptance": "Reapplying normalization changes nothing; backups reproduce original UTF-8 bytes and line endings.",
+      "path": "037_text_normalizer",
+      "check": "text_normalizer"
+    },
+    {
+      "id": "038",
+      "title": "Layered configuration merger:",
+      "scope": "**Layered configuration merger:** merge nested base/site/user files, track value provenance, flag type conflicts, and export the resolved document.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Recursive dictionaries, JSON, diagnostics",
+      "forecast": "E: general mapping iteration and recursive record traversal",
+      "acceptance": "Override precedence and provenance are correct; incompatible value types produce precise paths.",
+      "path": "038_config_merger",
+      "check": "config_merger",
+      "assets": [
+        "merge.json",
+        "base.json",
+        "site.json",
+        "user.json"
+      ]
+    },
+    {
+      "id": "039",
+      "title": "Download-folder organizer:",
+      "scope": "**Download-folder organizer:** classify by extension and date, preview target folders, resolve filename collisions, move files, and journal changes.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Paths, metadata, date formatting, file mutation",
+      "forecast": "E: stat, rename and general date formatting",
+      "acceptance": "A fixture run matches its preview; name collisions do not overwrite unrelated files.",
+      "path": "039_download_organizer",
+      "check": "download_organizer",
+      "assets": [
+        "organize.json"
+      ]
+    },
+    {
+      "id": "040",
+      "title": "Fixture-tree scaffolder:",
+      "scope": "**Fixture-tree scaffolder:** consume a JSON manifest, validate relative names, create directories and text/binary fixtures, and emit a cleanup receipt.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "JSON validation, paths, bytes, directories",
+      "forecast": "B",
+      "acceptance": "The generated tree matches the manifest; absolute/traversal names and existing-file collisions are rejected.",
+      "path": "040_fixture_tree",
+      "check": "fixture_tree",
+      "assets": [
+        "fixtures.json"
+      ]
+    },
+    {
+      "id": "041",
+      "title": "CSV/JSON converter:",
+      "scope": "**CSV/JSON converter:** handle quoted cells and embedded newlines, apply declared column types, select columns, and report invalid rows.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–380",
+      "coverage": "Text codecs, type conversion, tabular data",
+      "forecast": "E: CSV adapter, numeric conversions and row-level error recovery",
+      "acceptance": "Round trips preserve commas, quotes, empty cells and embedded newlines.",
+      "path": "041_csv_json",
+      "check": "csv_json",
+      "assets": [
+        "convert.json",
+        "people.csv"
+      ]
+    },
+    {
+      "id": "042",
+      "title": "Schema-driven record cleaner:",
+      "scope": "**Schema-driven record cleaner:** validate fixed fields, normalize strings and UTC timestamps, apply defaults, and write accepted/rejected JSON records.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "JSON extraction, regex, dates, diagnostics",
+      "forecast": "B",
+      "acceptance": "Every input record is either preserved in accepted output or reported with field-level rejection reasons.",
+      "path": "042_record_cleaner",
+      "check": "record_cleaner",
+      "assets": [
+        "schema.json",
+        "records.json"
+      ]
+    },
+    {
+      "id": "043",
+      "title": "Streaming JSONL transformer:",
+      "scope": "**Streaming JSONL transformer:** read line by line, filter/project fields, maintain bounded batches, quarantine bad rows, and checkpoint offsets.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Iteration, streaming, cancellation, error boundaries",
+      "forecast": "E: file handles/seek, iterators and recoverable decode errors",
+      "acceptance": "Memory remains bounded with increasing input; restart neither loses nor repeats committed batches.",
+      "path": "043_jsonl_transform",
+      "check": "jsonl_transform",
+      "assets": [
+        "transform.json",
+        "events.jsonl"
+      ]
+    },
+    {
+      "id": "044",
+      "title": "CSV join utility:",
+      "scope": "**CSV join utility:** perform inner/left joins on declared keys, handle duplicate keys, select output fields, and report unmatched rows.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Hash joins, composite keys, collections",
+      "forecast": "E: CSV, tuple-key dictionaries, mapping iteration and sorting",
+      "acceptance": "Duplicate-key multiplicities and unmatched rows agree with a small independent reference implementation.",
+      "path": "044_csv_join",
+      "check": "csv_join",
+      "assets": [
+        "join.json",
+        "people.csv",
+        "teams.csv"
+      ]
+    },
+    {
+      "id": "045",
+      "title": "Nested JSON diff and patch:",
+      "scope": "**Nested JSON diff and patch:** compare objects and arrays, produce path-based changes, validate old values, and apply or reject a patch.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Recursive data, indexing, copy semantics",
+      "forecast": "E: mapping iteration, list mutation and recursive value types",
+      "acceptance": "Applying a generated patch reconstructs the target; a stale base document fails without partial mutation.",
+      "path": "045_json_patch",
+      "check": "json_patch",
+      "assets": [
+        "patch-job.json",
+        "before.json",
+        "after.json"
+      ]
+    },
+    {
+      "id": "046",
+      "title": "Event-log consistency checker:",
+      "scope": "**Event-log consistency checker:** validate event IDs, sequence progression, UTC ordering and allowed state transitions; export a diagnostic report.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "Enums, sets, temporal invariants, pretty output",
+      "forecast": "B",
+      "acceptance": "Fixtures identify exact duplicate IDs, missing sequence numbers and invalid transitions.",
+      "path": "046_event_log",
+      "check": "event_log",
+      "assets": [
+        "event-job.json",
+        "events.jsonl"
+      ]
+    },
+    {
+      "id": "047",
+      "title": "Versioned configuration migrator:",
+      "scope": "**Versioned configuration migrator:** chain explicit schema migrations, validate each version, back up inputs, and recover from an incomplete upgrade.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Multi-module transforms, JSON, atomic state",
+      "forecast": "B",
+      "acceptance": "Every supported old version reaches the same current schema; invalid inputs preserve the original file.",
+      "path": "047_config_migrator",
+      "check": "config_migrator",
+      "assets": [
+        "settings-v1.json"
+      ]
+    },
+    {
+      "id": "048",
+      "title": "Contact import deduplicator:",
+      "scope": "**Contact import deduplicator:** normalize names/addresses, merge by declared keys, retain provenance, and separate ambiguous conflicts for review.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Unicode, dictionaries, stable ordering, business rules",
+      "forecast": "B",
+      "acceptance": "Re-import is idempotent; conflicting values remain visible instead of being silently discarded.",
+      "path": "048_contact_import",
+      "check": "contact_import",
+      "assets": [
+        "contact-job.json",
+        "contacts.json"
+      ]
+    },
+    {
+      "id": "049",
+      "title": "JSON query console:",
+      "scope": "**JSON query console:** support a small filter/project/order/group grammar, validate field paths, and pretty-print results from saved datasets.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Parsing, higher-order sorting, grouped collections",
+      "forecast": "E: richer collection traversal, sort keys and arithmetic",
+      "acceptance": "Equivalent queries produce matching results; malformed expressions report their source positions.",
+      "path": "049_json_query",
+      "check": "json_query",
+      "assets": [
+        "query-job.json",
+        "dataset.json"
+      ]
+    },
+    {
+      "id": "050",
+      "title": "JSONL partition writer:",
+      "scope": "**JSONL partition writer:** load a bounded input file, group records by date/topic, write named shards, and persist row-count manifests.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "Nested collections, strings, paths, atomic writes",
+      "forecast": "B",
+      "acceptance": "The shards contain every input record exactly once and their counts match the manifest.",
+      "path": "050_jsonl_partition",
+      "check": "jsonl_partition",
+      "assets": [
+        "partition-job.json",
+        "events.jsonl"
+      ]
+    },
+    {
+      "id": "051",
+      "title": "LRU cache workbench:",
+      "scope": "**LRU cache workbench:** replay GET/PUT/DELETE traces, enforce capacity, inspect recency, collect hit statistics, and save/restore state.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "Ordered maps, deletion, identity/value behavior",
+      "forecast": "E: map deletion/reordering or deque operations, numeric division",
+      "acceptance": "Eviction order matches a reference trace, including overwrite and zero-capacity cases.",
+      "path": "051_lru_cache",
+      "check": "lru_cache",
+      "assets": [
+        "cache-job.json",
+        "trace.json"
+      ]
+    },
+    {
+      "id": "052",
+      "title": "TTL key-value notebook:",
+      "scope": "**TTL key-value notebook:** store JSON values with deadlines, inspect live entries, sweep expired entries, and persist bounded snapshots.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "Time, JSON, map/list updates, state recovery",
+      "forecast": "B",
+      "acceptance": "Expiration and replacement deadlines survive restart; expired entries never appear in reads.",
+      "path": "052_ttl_notebook",
+      "check": "ttl_notebook"
+    },
+    {
+      "id": "053",
+      "title": "Persistent priority work queue:",
+      "scope": "**Persistent priority work queue:** enqueue with priorities, preserve tie order, cancel or retry jobs, and reconstruct the heap from a snapshot.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Heaps, ordered tuples, queue state",
+      "forecast": "E: heapq, richer tuple ordering and collection operations",
+      "acceptance": "Pop order is stable for ties and unchanged after restoring a saved queue.",
+      "path": "053_priority_queue",
+      "check": "priority_queue",
+      "assets": [
+        "queue-job.json",
+        "trace.json"
+      ]
+    },
+    {
+      "id": "054",
+      "title": "Small document search engine:",
+      "scope": "**Small document search engine:** tokenize text, build an inverted index, update/remove documents, evaluate AND/OR queries, and rank results.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Sets, postings lists, tokenization, ranking",
+      "forecast": "E: set algebra, map iteration/deletion and sorting",
+      "acceptance": "Results agree with a brute-force scan; removed documents disappear from all postings.",
+      "path": "054_document_search",
+      "check": "document_search",
+      "assets": [
+        "search-job.json",
+        "trace.json"
+      ]
+    },
+    {
+      "id": "055",
+      "title": "Prefix autocomplete index:",
+      "scope": "**Prefix autocomplete index:** insert/update terms, delete terms, count usage, retrieve ranked prefix suggestions, and export the dictionary.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Trie nodes, recursive types, traversal",
+      "forecast": "E: typed recursive records, mutable nested maps and sorting",
+      "acceptance": "Suggestions match a reference scan for Unicode prefixes, updates and deletions.",
+      "path": "055_autocomplete",
+      "check": "autocomplete",
+      "assets": [
+        "autocomplete-job.json",
+        "trace.json"
+      ]
+    },
+    {
+      "id": "056",
+      "title": "Bloom-filter ingestion gate:",
+      "scope": "**Bloom-filter ingestion gate:** size a filter, ingest keys, persist its bit array, report likely duplicates, and compare against an exact audit set.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Bitsets, hashing, numerical sizing",
+      "forecast": "E: bytearray/bit operations, digest API and math",
+      "acceptance": "No inserted key becomes a false negative; measured false positives and storage size are reported.",
+      "path": "056_bloom_gate",
+      "check": "bloom_gate",
+      "assets": [
+        "bloom-job.json",
+        "trace.json"
+      ]
+    },
+    {
+      "id": "057",
+      "title": "External record sorter:",
+      "scope": "**External record sorter:** generate bounded sorted runs, merge them, verify ordering, and clean up interrupted temporary runs.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Iterators, heaps, file resources, stable sort",
+      "forecast": "E: streaming files, heapq, keyed sorting and resource cleanup",
+      "acceptance": "Output equals an in-memory reference while peak working data remains within the configured bound.",
+      "path": "057_external_sort",
+      "check": "external_sort",
+      "assets": [
+        "sort-job.json",
+        "records.jsonl"
+      ]
+    },
+    {
+      "id": "058",
+      "title": "Time-series ring-buffer recorder:",
+      "scope": "**Time-series ring-buffer recorder:** ingest samples, retain a rolling window, query summaries, export selected intervals, and restore saved state.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Deques, time windows, numeric aggregation",
+      "forecast": "E: deque operations, division and numerical helpers",
+      "acceptance": "Retention boundaries and summaries match a reference list across wraparound and restart.",
+      "path": "058_ring_recorder",
+      "check": "ring_recorder",
+      "assets": [
+        "ring-job.json",
+        "trace.json"
+      ]
+    },
+    {
+      "id": "059",
+      "title": "Interval-indexed log browser:",
+      "scope": "**Interval-indexed log browser:** import start/end spans, index overlaps, query a time range, update records, and show matching events.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Interval trees, bisect, recursive records",
+      "forecast": "E: typed records, ordered insertion and collection mutation",
+      "acceptance": "Indexed results equal brute-force interval checks for touching, nested and empty intervals.",
+      "path": "059_interval_browser",
+      "check": "interval_browser",
+      "assets": [
+        "interval-job.json",
+        "records.json",
+        "trace.json"
+      ]
+    },
+    {
+      "id": "060",
+      "title": "Append-only miniature database:",
+      "scope": "**Append-only miniature database:** implement GET/SET/DELETE, journal records, replay on startup, detect an incomplete tail, and compact to a snapshot.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "400–500",
+      "coverage": "Durable logs, binary/text boundaries, recovery",
+      "forecast": "E: append/seek/fsync, checksums, truncation and error recovery",
+      "acceptance": "Restart after each injected write interruption yields the last complete committed state.",
+      "path": "060_mini_database",
+      "check": "mini_database",
+      "assets": [
+        "database-job.json",
+        "trace.json"
+      ]
+    },
+    {
+      "id": "061",
+      "title": "Route planner:",
+      "scope": "**Route planner:** load a named weighted graph, apply closures, use Bellman–Ford, reconstruct routes, and explain unreachable paths or negative cycles.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Graphs, dictionaries, integer arithmetic, JSON",
+      "forecast": "B",
+      "acceptance": "Small graphs agree with an exhaustive oracle; closures and negative cycles produce correct diagnostics.",
+      "path": "061_route_planner",
+      "check": "route_planner",
+      "assets": [
+        "graph.json"
+      ]
+    },
+    {
+      "id": "062",
+      "title": "Dependency build planner:",
+      "scope": "**Dependency build planner:** load targets and edges, select requested targets, find prerequisites, produce build layers, and explain cycles.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Graph traversal, sets, maps, deterministic reports",
+      "forecast": "B",
+      "acceptance": "Every prerequisite precedes its target; cycle fixtures return a valid cycle witness.",
+      "path": "062_build_planner",
+      "check": "build_planner",
+      "assets": [
+        "build-job.json",
+        "graph.json",
+        "requests.json"
+      ]
+    },
+    {
+      "id": "063",
+      "title": "Small shift scheduler:",
+      "scope": "**Small shift scheduler:** read availability and staffing requirements, use bounded backtracking, score candidates, and explain unsatisfied constraints.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Backtracking, records, mutable search state",
+      "forecast": "E: dataclasses, nested list mutation and richer ordering",
+      "acceptance": "Every proposed schedule satisfies hard constraints; tiny cases match exhaustive best scores.",
+      "path": "063_shift_scheduler",
+      "check": "shift_scheduler",
+      "assets": [
+        "shift-job.json",
+        "staffing.json"
+      ]
+    },
+    {
+      "id": "064",
+      "title": "Parcel packing planner:",
+      "scope": "**Parcel packing planner:** group items under capacity rules, use a documented packing heuristic, retain package manifests, and report unplaceable items.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Greedy algorithms, sorting, record updates",
+      "forecast": "E: keyed sorting and typed records",
+      "acceptance": "Every item is assigned once or rejected explicitly; no package exceeds its capacity.",
+      "path": "064_parcel_planner",
+      "check": "parcel_planner",
+      "assets": [
+        "parcel-job.json",
+        "packing.json"
+      ]
+    },
+    {
+      "id": "065",
+      "title": "Terrain route visualizer:",
+      "scope": "**Terrain route visualizer:** load a text grid, assign terrain costs, find a path with A*, render it in ASCII, and export search statistics.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Priority queues, grids, path reconstruction",
+      "forecast": "E: heapq, nested sequence updates and numeric helpers",
+      "acceptance": "Path cost agrees with a reference shortest-path solver; unreachable destinations are handled.",
+      "path": "065_terrain_routes",
+      "check": "terrain_routes",
+      "assets": [
+        "terrain-job.json",
+        "grid.txt",
+        "terrain.json",
+        "requests.json"
+      ]
+    },
+    {
+      "id": "066",
+      "title": "Dependency impact auditor:",
+      "scope": "**Dependency impact auditor:** load a module graph, compute reverse dependencies and strongly connected groups, then explain the impact of changed modules.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Graph algorithms, recursive state, collections",
+      "forecast": "E: richer sets/maps and convenient recursive records",
+      "acceptance": "Reported affected modules match reachability; strongly connected groups satisfy mutual reachability.",
+      "path": "066_dependency_impact",
+      "check": "dependency_impact",
+      "assets": [
+        "impact-job.json",
+        "graph.json",
+        "requests.json"
+      ]
+    },
+    {
+      "id": "067",
+      "title": "Repeated-phrase document auditor:",
+      "scope": "**Repeated-phrase document auditor:** tokenize documents, index n-grams, merge overlapping matches, and produce a cross-document report.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Sequence windows, tuple keys, grouping",
+      "forecast": "E: list slicing, tuple-key maps and sorting",
+      "acceptance": "Known repeated passages are found with stable positions and without counting overlapping windows repeatedly.",
+      "path": "067_phrase_auditor",
+      "check": "phrase_auditor",
+      "assets": [
+        "phrase-job.json",
+        "sources.json"
+      ]
+    },
+    {
+      "id": "068",
+      "title": "Huffman file compressor:",
+      "scope": "**Huffman file compressor:** construct a codebook, encode a bounded file, write a checked container, decode it, and report compression statistics.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Trees, heaps, bitstreams, byte containers",
+      "forecast": "E: heapq, binary codecs, mutable bytes and division",
+      "acceptance": "Empty, single-symbol and binary fixtures round-trip; malformed codebooks are rejected.",
+      "path": "068_huffman",
+      "check": "huffman",
+      "assets": [
+        "huffman-job.json",
+        "sample.bin"
+      ]
+    },
+    {
+      "id": "069",
+      "title": "Timetable journey planner:",
+      "scope": "**Timetable journey planner:** load scheduled connections, account for transfer time, compute earliest arrival, and print the selected journey.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Temporal graphs, heaps, date arithmetic",
+      "forecast": "E: heapq, duration operations and typed records",
+      "acceptance": "Results match exhaustive tiny timetables, including overnight journeys and missed transfers.",
+      "path": "069_timetable",
+      "check": "timetable",
+      "assets": [
+        "timetable-job.json",
+        "timetable.json",
+        "requests.json"
+      ]
+    },
+    {
+      "id": "070",
+      "title": "Sudoku batch-solving tool:",
+      "scope": "**Sudoku batch-solving tool:** read boards, validate givens, solve with a search budget, detect multiple solutions, and export diagnostics and statistics.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Backtracking, nested data, cancellation budgets",
+      "forecast": "E: nested list mutation, integer division/modulo and richer record types",
+      "acceptance": "Invalid, unsatisfiable, unique and multiple-solution boards are distinguished correctly.",
+      "path": "070_sudoku",
+      "check": "sudoku",
+      "assets": [
+        "sudoku-job.json",
+        "boards.json"
+      ]
+    },
+    {
+      "id": "071",
+      "title": "Access-log analyzer:",
+      "scope": "**Access-log analyzer:** parse a documented log format, extract request fields, aggregate status/path counts, select time windows, and report malformed lines.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Regex captures, time, maps, ranking",
+      "forecast": "E: regex match groups, numeric parsing and sorting",
+      "acceptance": "Parsed fields and aggregate counts match hand-labeled fixture logs.",
+      "path": "071_access_log",
+      "check": "access_log",
+      "assets": [
+        "access-job.json",
+        "sources.json",
+        "front.log",
+        "api.log"
+      ]
+    },
+    {
+      "id": "072",
+      "title": "Small static-site builder:",
+      "scope": "**Small static-site builder:** process a defined Markdown subset, generate heading anchors/navigation, escape HTML, and write a linked site from a manifest.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Unicode parsing, recursion, files, HTML generation",
+      "forecast": "B",
+      "acceptance": "Golden pages match; duplicate headings remain linkable and source HTML is safely escaped.",
+      "path": "072_static_site",
+      "check": "static_site",
+      "assets": [
+        "site-job.json",
+        "site.json",
+        "home.md",
+        "guide.md"
+      ]
+    },
+    {
+      "id": "073",
+      "title": "Template rendering engine:",
+      "scope": "**Template rendering engine:** support escaped substitutions, a bounded loop/condition syntax and includes; detect missing values and include cycles.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Recursive parsing, scopes, JSON, source errors",
+      "forecast": "B",
+      "acceptance": "Nested templates match golden output; include cycles and malformed blocks report useful locations.",
+      "path": "073_template_renderer",
+      "check": "template_renderer",
+      "assets": [
+        "template-job.json",
+        "project.json",
+        "page.txt",
+        "item.txt",
+        "data.json"
+      ]
+    },
+    {
+      "id": "074",
+      "title": "Expression calculator with variables:",
+      "scope": "**Expression calculator with variables:** parse numbers and operators, support parentheses and assignment, retain a session, and report expression errors.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Tokenization, precedence, numeric types",
+      "forecast": "E: numeric conversion, division/modulo and recoverable arithmetic errors",
+      "acceptance": "Precedence matches an independent evaluator; division by zero does not destroy the session.",
+      "path": "074_expression_calculator",
+      "check": "calculator",
+      "assets": [
+        "calculator-job.json",
+        "session.json",
+        "expressions.txt"
+      ]
+    },
+    {
+      "id": "075",
+      "title": "INI-style configuration editor:",
+      "scope": "**INI-style configuration editor:** parse sections and quoted string values, preserve a documented comment policy, expand named variables, and rewrite files.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–380",
+      "coverage": "String scanning, dictionaries, round-trip formats",
+      "forecast": "B",
+      "acceptance": "Parse/write/parse preserves values; duplicate keys and variable cycles are diagnosed.",
+      "path": "075_ini_editor",
+      "check": "ini_editor",
+      "assets": [
+        "ini-job.json",
+        "settings.ini",
+        "edits.json"
+      ]
+    },
+    {
+      "id": "076",
+      "title": "Minimal command shell:",
+      "scope": "**Minimal command shell:** parse quoting, run external commands and bounded pipelines, manage environment overrides, and report exit statuses.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–500",
+      "coverage": "Processes, streams, parsing, resource cleanup",
+      "forecast": "E: subprocess, pipes, process groups and signal handling",
+      "acceptance": "Arguments retain their quoting semantics; a failed pipeline leaves no live child processes.",
+      "path": "076_command_shell",
+      "check": "command_shell",
+      "assets": [
+        "shell-job.json"
+      ]
+    },
+    {
+      "id": "077",
+      "title": "Python source-outline browser:",
+      "scope": "**Python source-outline browser:** read a project manifest, parse modules, list definitions/imports/docstrings, and emit a cross-linked HTML outline.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "AST traversal, recursive nodes, project structure",
+      "forecast": "E: AST adapter or typed parser nodes",
+      "acceptance": "Outlines agree with CPython AST fixtures, including decorators and nested definitions.",
+      "path": "077_source_outline",
+      "check": "source_outline",
+      "assets": [
+        "outline-project.json"
+      ]
+    },
+    {
+      "id": "078",
+      "title": "Regex batch rewrite tool:",
+      "scope": "**Regex batch rewrite tool:** prevalidate ASCII rules, preview literal replacements, back up explicitly listed files, and produce a per-rule audit.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "Regex, text I/O, logging, dry-run behavior",
+      "forecast": "B",
+      "acceptance": "Invalid rules cause no writes; literal replacement semantics match in Python and Rust.",
+      "path": "078_regex_rewrite",
+      "check": "regex_rewrite",
+      "assets": [
+        "rewrite-job.json",
+        "sample.txt"
+      ]
+    },
+    {
+      "id": "079",
+      "title": "Tiny automation-language interpreter:",
+      "scope": "**Tiny automation-language interpreter:** implement a documented let/if/repeat grammar, build an AST, execute within a step budget, and trace variables.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Tagged AST nodes, scopes, recursion, diagnostics",
+      "forecast": "E: dataclasses/tagged unions, numeric conversion and recoverable errors",
+      "acceptance": "The step limit terminates loops; nested scopes and source-position errors match fixtures.",
+      "path": "079_automation_language",
+      "check": "automation_language",
+      "assets": [
+        "automation-job.json",
+        "sample.auto"
+      ]
+    },
+    {
+      "id": "080",
+      "title": "Stateful syntax-highlighting exporter:",
+      "scope": "**Stateful syntax-highlighting exporter:** lex a small configuration language, handle multiline strings/comments, escape input, and emit themed HTML.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–380",
+      "coverage": "Enums, state machines, Unicode slices, HTML",
+      "forecast": "B",
+      "acceptance": "Token boundaries match fixtures; unfinished strings and hostile markup cannot corrupt output HTML.",
+      "path": "080_syntax_highlighter",
+      "check": "syntax_highlighter",
+      "assets": [
+        "highlight-job.json",
+        "sample.cfg"
+      ]
+    },
+    {
+      "id": "081",
+      "title": "Recurring reminder daemon:",
+      "scope": "**Recurring reminder daemon:** load fixed-interval UTC reminders, advance deadlines, apply a missed-run policy, persist progress, and log due reminders.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "Time, enums, persistence, long-running loops",
+      "forecast": "B",
+      "acceptance": "A supplied clock trace yields the expected reminders before and after restart.",
+      "path": "081_reminder_daemon",
+      "check": "reminder_daemon",
+      "assets": [
+        "reminder-job.json",
+        "clock.json"
+      ]
+    },
+    {
+      "id": "082",
+      "title": "Cron schedule explorer:",
+      "scope": "**Cron schedule explorer:** parse a documented five-field subset, calculate the next runs, explain rejected expressions, and export a schedule.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Calendar arithmetic, sets, formatting",
+      "forecast": "E: datetime field access, weekday/calendar operations and numeric parsing",
+      "acceptance": "Month boundaries, leap days and weekday combinations match known UTC fixtures.",
+      "path": "082_cron_explorer",
+      "check": "cron_explorer",
+      "assets": [
+        "cron-job.json"
+      ]
+    },
+    {
+      "id": "083",
+      "title": "Activity timer journal:",
+      "scope": "**Activity timer journal:** start/pause/resume/stop named sessions over HTTP, retain completed intervals, and export totals in seconds.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "Monotonic/wall time, state machines, JSON",
+      "forecast": "B",
+      "acceptance": "Paused time is excluded; illegal transitions fail; completed intervals survive restart.",
+      "path": "083_activity_timer",
+      "check": "activity_timer",
+      "assets": [
+        "requests.http"
+      ]
+    },
+    {
+      "id": "084",
+      "title": "Rotating log router:",
+      "scope": "**Rotating log router:** read several live logs, parse levels, apply filters, route to files, rotate by size, and preserve read positions.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "File handles, logging handlers, offsets",
+      "forecast": "E: seek/tail, metadata, configurable handlers and I/O recovery",
+      "acceptance": "Rotation and restart neither skip nor duplicate complete input lines.",
+      "path": "084_log_router",
+      "check": "log_router",
+      "assets": [
+        "router-job.json",
+        "application.txt",
+        "worker.txt"
+      ]
+    },
+    {
+      "id": "085",
+      "title": "Job deadline inspector:",
+      "scope": "**Job deadline inspector:** read expected jobs and completion events, classify late/missing/on-time results, apply grace periods, and emit a report.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "220–320",
+      "coverage": "RFC3339, comparisons, enums, diagnostics",
+      "forecast": "B",
+      "acceptance": "Exact deadline/grace boundaries are classified correctly, including explicit input time offsets.",
+      "path": "085_deadline_inspector",
+      "check": "deadline_inspector",
+      "assets": [
+        "deadline-job.json",
+        "jobs.json",
+        "events.json"
+      ]
+    },
+    {
+      "id": "086",
+      "title": "Cross-timezone appointment converter:",
+      "scope": "**Cross-timezone appointment converter:** import appointments, resolve timezones, detect ambiguous/nonexistent times, and print equivalent schedules.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Timezone semantics, typed errors, formatting",
+      "forecast": "E: zoneinfo, local datetime construction and fold handling",
+      "acceptance": "DST transitions are handled according to an explicit user-selectable ambiguity policy.",
+      "path": "086_timezone_converter",
+      "check": "timezone_converter",
+      "assets": [
+        "timezone-job.json"
+      ]
+    },
+    {
+      "id": "087",
+      "title": "Debounced directory watcher:",
+      "scope": "**Debounced directory watcher:** poll or subscribe to a tree, classify changes, collapse bursts, retain an event journal, and resume watching.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Filesystem events, timers, maps",
+      "forecast": "E: metadata/watch API and cancellable waits",
+      "acceptance": "Rapid rewrites collapse into the configured event sequence; renames and deletions remain visible.",
+      "path": "087_directory_watcher",
+      "check": "directory_watcher",
+      "assets": [
+        "watch-job.json",
+        "observed/welcome.txt"
+      ]
+    },
+    {
+      "id": "088",
+      "title": "Discrete-event scheduler simulator:",
+      "scope": "**Discrete-event scheduler simulator:** simulate arrivals, queues, workers and deadlines with a fixed seed, then export event traces and summary statistics.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Heaps, reproducible randomness, numerical aggregation",
+      "forecast": "E: heapq, seeded random API and arithmetic",
+      "acceptance": "A seed reproduces the trace; conservation of jobs and queue-capacity invariants always hold.",
+      "path": "088_scheduler_simulator",
+      "check": "scheduler_simulator",
+      "assets": [
+        "scheduler-job.json"
+      ]
+    },
+    {
+      "id": "089",
+      "title": "Structured-log redactor:",
+      "scope": "**Structured-log redactor:** read bounded JSONL logs, validate selected fields, apply ordered literal/ASCII-regex masking rules, and produce audit counts.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "JSON, regex, strings, logging, pretty output",
+      "forecast": "B",
+      "acceptance": "Fixture secrets are absent from both output records and audit reports; unrelated fields are preserved.",
+      "path": "089_log_redactor",
+      "check": "log_redactor",
+      "assets": [
+        "redactor-job.json",
+        "sample.jsonl"
+      ]
+    },
+    {
+      "id": "090",
+      "title": "Checkpointed batch worker:",
+      "scope": "**Checkpointed batch worker:** process deterministic record jobs in batches, save results and progress together, resume after interruption, and report completion.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Atomic snapshots, explicit state, restart semantics",
+      "forecast": "B",
+      "acceptance": "Interrupting at each checkpoint boundary yields the same final results as an uninterrupted run.",
+      "path": "090_batch_worker",
+      "check": "batch_worker",
+      "assets": [
+        "batch-job.json",
+        "jobs.jsonl"
+      ]
+    },
+    {
+      "id": "091",
+      "title": "Process-based test runner:",
+      "scope": "**Process-based test runner:** load test commands, set temporary environments, capture output, enforce deadlines, and write a structured result report.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Subprocesses, deadlines, streams, cleanup",
+      "forecast": "E: subprocess and process-group cancellation",
+      "acceptance": "Hanging and failing fixtures are reported correctly; timeout cleanup removes all child processes.",
+      "path": "091_process_runner",
+      "check": "process_runner",
+      "assets": [
+        "runner-job.json"
+      ]
+    },
+    {
+      "id": "092",
+      "title": "Incremental build executor:",
+      "scope": "**Incremental build executor:** load a small dependency manifest, check file freshness, execute serial build steps, cache results, and explain rebuilds.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Filesystem metadata, graphs, child processes",
+      "forecast": "E: stat, subprocess and recoverable command errors",
+      "acceptance": "Editing one input rebuilds exactly the affected targets; failed steps do not produce valid cache entries.",
+      "path": "092_build_executor",
+      "check": "build_executor",
+      "assets": [
+        "build-job.json",
+        "source.txt",
+        "artifacts/.keep"
+      ]
+    },
+    {
+      "id": "093",
+      "title": "Local process supervisor:",
+      "scope": "**Local process supervisor:** start configured services, capture logs, restart failures with backoff, expose status, and shut down the whole group.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Resource ownership, signals, asynchronous events",
+      "forecast": "E: processes, signals and cancellable concurrent I/O",
+      "acceptance": "Flapping services obey restart limits; shutdown leaves no managed process running.",
+      "path": "093_process_supervisor",
+      "check": "process_supervisor",
+      "assets": [
+        "supervisor-job.json"
+      ]
+    },
+    {
+      "id": "094",
+      "title": "Rust-import validation workbench:",
+      "scope": "**Rust-import validation workbench:** dispatch JSON commands to a few small native adapters, validate results, compare Python references, and save an inspection report.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–380",
+      "coverage": "Multi-module imports, bytes/tuples/JSON, native boundaries",
+      "forecast": "E: local recovery of fallible native calls; existing direct Rust imports cover normal cases",
+      "acceptance": "Checked integer conversion, Unicode, binary buffers, non-finite floats and Result errors behave as specified.",
+      "path": "094_rust_imports",
+      "check": "rust_imports",
+      "assets": [
+        "imports-job.json"
+      ],
+      "native_adapters": [
+        "native_numbers.rs",
+        "native_text.rs",
+        "native_values.rs"
+      ]
+    },
+    {
+      "id": "095",
+      "title": "Project code-metrics browser:",
+      "scope": "**Project code-metrics browser:** enumerate Python modules, count structural constructs, build import links, flag oversized functions, and export HTML/JSON reports.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "ASTs, traversal, aggregation, source locations",
+      "forecast": "E: AST adapter, directory traversal and sorting",
+      "acceptance": "Reported symbols and locations match a hand-labeled multi-package fixture.",
+      "path": "095_code_metrics",
+      "check": "code_metrics",
+      "assets": [
+        "metrics-job.json"
+      ]
+    },
+    {
+      "id": "096",
+      "title": "Small package constraint resolver:",
+      "scope": "**Small package constraint resolver:** read a local version index, parse a bounded semantic-version grammar, backtrack dependencies, and explain conflicts.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Parsing, search, immutable candidate state",
+      "forecast": "E: typed records, ordering, richer collections and optional results",
+      "acceptance": "Tiny repositories agree with exhaustive solutions; unsatisfiable constraints have a reproducible explanation.",
+      "path": "096_package_resolver",
+      "check": "package_resolver",
+      "assets": [
+        "package-index.json",
+        "resolver-job.json"
+      ]
+    },
+    {
+      "id": "097",
+      "title": "Source-header compliance checker:",
+      "scope": "**Source-header compliance checker:** inspect a supplied file manifest, validate permitted headers and year strings, group violations, and emit suggested text edits.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "220–320",
+      "coverage": "Text slices, regex, dates as strings, reporting",
+      "forecast": "B",
+      "acceptance": "Each fixture violation has an exact file/line; suggested edits preserve unrelated source text.",
+      "path": "097_source_headers",
+      "check": "source_headers",
+      "assets": [
+        "headers-job.json",
+        "sample/client.txt",
+        "sample/transport.txt"
+      ]
+    },
+    {
+      "id": "098",
+      "title": "Transfer benchmark harness:",
+      "scope": "**Transfer benchmark harness:** launch local sender/receiver programs, vary payload sizes/chunking, measure completion, verify digests, and compare runs.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Cross-process networking, clocks, measurements",
+      "forecast": "E: subprocess, hashing and richer numerical summaries",
+      "acceptance": "Python/Python, Python/Rust, Rust/Python and Rust/Rust pairs transfer identical fixture bytes.",
+      "path": "098_transfer_bench",
+      "check": "transfer_bench",
+      "assets": [
+        "transfer-job.json"
+      ]
+    },
+    {
+      "id": "099",
+      "title": "Environment configuration validator:",
+      "scope": "**Environment configuration validator:** load a field schema, parse JSON-encoded scalar settings, apply defaults/dependencies, and print a redacted effective configuration.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–350",
+      "coverage": "Environment, JSON scalar types, enums, pretty output",
+      "forecast": "B",
+      "acceptance": "Missing/invalid combinations are diagnosed; secret settings never appear unmasked in the report.",
+      "path": "099_environment_validator",
+      "check": "environment_validator",
+      "assets": [
+        "settings-job.json",
+        "schema.json"
+      ]
+    },
+    {
+      "id": "100",
+      "title": "Text diff and patch utility:",
+      "scope": "**Text diff and patch utility:** compare bounded text files with an LCS-based diff, create context hunks, check the base, and apply or reject a patch.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Dynamic programming, sequence mutation, text I/O",
+      "forecast": "E: indexed list updates, richer iteration and sequence slicing",
+      "acceptance": "Diff/apply round trips preserve Unicode and final-newline state; stale hunks are rejected.",
+      "path": "100_text_patch",
+      "check": "text_patch",
+      "assets": [
+        "patch-job.json",
+        "before.txt",
+        "after.txt"
+      ]
+    },
+    {
+      "id": "101",
+      "title": "Shared-expense allocator:",
+      "scope": "**Shared-expense allocator:** import integer-cent expenses, split by declared shares, distribute remainder cents, retain settlements, and report balances.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Exact integer arithmetic, maps, deterministic rules",
+      "forecast": "E: integer division/modulo and sorting",
+      "acceptance": "Allocated cents exactly equal the input total; settlement balances sum to zero.",
+      "path": "101_expense_allocator",
+      "check": "expense_allocator",
+      "assets": [
+        "expenses.json"
+      ]
+    },
+    {
+      "id": "102",
+      "title": "Inventory reservation ledger:",
+      "scope": "**Inventory reservation ledger:** record receipts, reserve stock for orders, release/cancel reservations, reconcile counts, and persist an audit trail.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Enums, integer invariants, JSON, atomic persistence",
+      "forecast": "B",
+      "acceptance": "No accepted transaction makes available stock negative; replay reproduces the same balances.",
+      "path": "102_inventory_ledger",
+      "check": "inventory_ledger",
+      "assets": [
+        "inventory-job.json"
+      ]
+    },
+    {
+      "id": "103",
+      "title": "Dimensional unit converter:",
+      "scope": "**Dimensional unit converter:** parse quantities, track dimension exponents, combine conversion factors, reject incompatible units, and retain a conversion notebook.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Typed records, tuples, numeric conversion",
+      "forecast": "E: division, numeric parsing and compound dictionary keys",
+      "acceptance": "Round trips stay within tolerance; incompatible dimensions are rejected before producing values.",
+      "path": "103_unit_converter",
+      "check": "unit_converter",
+      "assets": [
+        "units-job.json"
+      ]
+    },
+    {
+      "id": "104",
+      "title": "Series/parallel circuit calculator:",
+      "scope": "**Series/parallel circuit calculator:** load a bounded resistor tree, validate components, evaluate equivalent resistance, and explain each reduction step.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Recursive records, floats, arithmetic errors",
+      "forecast": "E: division, typed recursive structures and recoverable numeric errors",
+      "acceptance": "Known circuits match analytic results; zero/invalid inputs follow documented rules without panics.",
+      "path": "104_circuit_calculator",
+      "check": "circuit_calculator",
+      "assets": [
+        "circuit-job.json",
+        "networks.json"
+      ]
+    },
+    {
+      "id": "105",
+      "title": "Telemetry trend analyzer:",
+      "scope": "**Telemetry trend analyzer:** read timestamped samples, detect gaps, compute rolling statistics and outliers, and export a compact report.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Sliding windows, floating point, numerical stability",
+      "forecast": "E: math/statistics helpers, division and deque operations",
+      "acceptance": "Summaries agree within declared tolerances; empty and constant series remain well-defined.",
+      "path": "105_telemetry_analyzer",
+      "check": "telemetry_analyzer",
+      "assets": [
+        "trend-job.json",
+        "telemetry.json"
+      ]
+    },
+    {
+      "id": "106",
+      "title": "Electricity-tariff simulator:",
+      "scope": "**Electricity-tariff simulator:** import interval consumption, apply time bands and tiers, compare fictional tariff definitions, and explain each charge.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Decimal arithmetic, time bands, aggregation",
+      "forecast": "E: decimal/fixed-point helpers and calendar operations",
+      "acceptance": "Hand-calculated fixtures agree exactly; changing interval partitioning does not change the total charge.",
+      "path": "106_tariff_simulator",
+      "check": "tariff_simulator",
+      "assets": [
+        "tariff-job.json",
+        "usage.json"
+      ]
+    },
+    {
+      "id": "107",
+      "title": "Recipe and shopping-list scaler:",
+      "scope": "**Recipe and shopping-list scaler:** parse rational quantities, resize portions, convert compatible units, combine ingredients, and save weekly plans.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Fractions, normalization, nested collections",
+      "forecast": "E: rational numbers, division and richer ordered grouping",
+      "acceptance": "Scaling up then down recovers exact rational quantities; incompatible units remain separate.",
+      "path": "107_recipe_scaler",
+      "check": "recipe_scaler",
+      "assets": [
+        "recipe-job.json",
+        "cookbook.json"
+      ]
+    },
+    {
+      "id": "108",
+      "title": "Tournament standings manager:",
+      "scope": "**Tournament standings manager:** register teams, validate results, calculate rankings with documented tie breakers, and export fixtures and tables.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Records, sorting, stable ties, persistence",
+      "forecast": "E: keyed multi-field sorting and richer record types",
+      "acceptance": "Standings match hand-worked seasons; editing a result recomputes all affected ties.",
+      "path": "108_tournament_standings",
+      "check": "tournament_standings",
+      "assets": [
+        "tournament-job.json",
+        "fixtures.json"
+      ]
+    },
+    {
+      "id": "109",
+      "title": "Warehouse movement simulator:",
+      "scope": "**Warehouse movement simulator:** load a grid, replay robot/box commands, detect blocked moves, support undo, and print/export the resulting layout.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Mutable grids, enums, undo records",
+      "forecast": "E: nested list updates and typed records",
+      "acceptance": "Undo restores the exact initial grid; blocked moves preserve all invariants.",
+      "path": "109_warehouse_simulator",
+      "check": "warehouse_simulator",
+      "assets": [
+        "warehouse-job.json",
+        "program.json"
+      ]
+    },
+    {
+      "id": "110",
+      "title": "Population simulation runner:",
+      "scope": "**Population simulation runner:** validate a small growth model, integrate fixed timesteps, compare parameter sets, and export series plus an SVG plot.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Numerical loops, floats, data export, rendering",
+      "forecast": "E: division, numerical helpers and number formatting",
+      "acceptance": "Simple analytic cases stay within a declared error bound; invalid timestep settings are rejected.",
+      "path": "110_population_simulator",
+      "check": "population_simulator",
+      "assets": [
+        "population-job.json",
+        "experiment.json"
+      ]
+    },
+    {
+      "id": "111",
+      "title": "PNG structure inspector:",
+      "scope": "**PNG structure inspector:** walk chunks, decode dimensions/metadata, check CRCs and ordering, and produce an HTML/JSON report without decoding pixels.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Binary layouts, checksums, bounds checking",
+      "forecast": "E: struct-like codecs, byte slicing and CRC API",
+      "acceptance": "Known chunks are described correctly; truncation, impossible lengths and bad CRCs are detected.",
+      "path": "111_png_inspector",
+      "check": "png_inspector",
+      "assets": [
+        "png-job.json",
+        "sample.png"
+      ]
+    },
+    {
+      "id": "112",
+      "title": "PCM WAV analyzer:",
+      "scope": "**PCM WAV analyzer:** read mono 16-bit PCM, inspect levels, normalize with clipping checks, and generate a waveform preview and output file.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Signed binary integers, numerical scaling, files",
+      "forecast": "E: binary codecs, mutable byte buffers and arithmetic",
+      "acceptance": "Output headers are valid; clipping is reported and sample values agree with a reference calculation.",
+      "path": "112_wav_analyzer",
+      "check": "wav_analyzer",
+      "assets": [
+        "wav-job.json",
+        "sample.wav"
+      ]
+    },
+    {
+      "id": "113",
+      "title": "BMP thumbnail maker:",
+      "scope": "**BMP thumbnail maker:** parse uncompressed 24-bit BMP, handle row padding/orientation, resize by nearest neighbor, and write a contact sheet.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "320–450",
+      "coverage": "Binary headers, grids, coordinate arithmetic",
+      "forecast": "E: bytearray, integer division and sequence mutation",
+      "acceptance": "Fixtures cover top-down/bottom-up images and padded rows; output pixels match golden images.",
+      "path": "113_bmp_thumbnails",
+      "check": "bmp_thumbnails",
+      "assets": [
+        "bmp-job.json",
+        "project.json",
+        "sample-0.bmp",
+        "sample-1.bmp",
+        "sample-2.bmp",
+        "sample-3.bmp",
+        "sample-4.bmp"
+      ]
+    },
+    {
+      "id": "114",
+      "title": "PPM image filter pipeline:",
+      "scope": "**PPM image filter pipeline:** parse a bounded P6 format, crop/invert/threshold images, generate histograms, and emit transformed images plus a manifest.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Byte/text boundaries, image buffers, numerical loops",
+      "forecast": "E: binary slicing, mutable buffers and numeric conversion",
+      "acceptance": "Pixel results match fixtures; invalid dimensions and truncated rasters are rejected before allocation.",
+      "path": "114_ppm_filters",
+      "check": "ppm_filters",
+      "assets": [
+        "ppm-job.json",
+        "sample.ppm"
+      ]
+    },
+    {
+      "id": "115",
+      "title": "Sprite-atlas packer:",
+      "scope": "**Sprite-atlas packer:** load small PPM sprites from a manifest, pack rectangles with padding, compose an atlas, and write coordinate metadata.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Packing heuristics, image copying, JSON manifests",
+      "forecast": "E: mutable buffers, indexed sequences and keyed sorting",
+      "acceptance": "Sprites never overlap; extracting every sprite from the atlas reproduces its source pixels.",
+      "path": "115_sprite_atlas",
+      "check": "sprite_atlas",
+      "assets": [
+        "atlas-job.json",
+        "sprites.json",
+        "sample-0.ppm",
+        "sample-1.ppm",
+        "sample-2.ppm",
+        "sample-3.ppm",
+        "sample-4.ppm",
+        "sample-5.ppm"
+      ]
+    },
+    {
+      "id": "116",
+      "title": "SVG metrics dashboard generator:",
+      "scope": "**SVG metrics dashboard generator:** validate a JSON dataset, calculate scales/ticks, lay out bar/line charts, escape labels, and write a standalone dashboard.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Floating point, formatting, HTML/XML escaping",
+      "forecast": "E: division, rounding and numerical formatting",
+      "acceptance": "Negative/constant/empty datasets render valid SVG; labels cannot inject markup.",
+      "path": "116_svg_dashboard",
+      "check": "svg_dashboard",
+      "assets": [
+        "dashboard-job.json",
+        "dataset.json"
+      ]
+    },
+    {
+      "id": "117",
+      "title": "Terminal task dashboard:",
+      "scope": "**Terminal task dashboard:** read task-status snapshots, render bounded progress columns, refresh in place, and preserve readable fallback output.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "280–400",
+      "coverage": "Terminal I/O, Unicode display width, timers",
+      "forecast": "E: terminal capability/size APIs, flushing and display-width handling",
+      "acceptance": "Narrow windows and wide Unicode text do not corrupt layout; redirected output remains readable.",
+      "path": "117_terminal_dashboard",
+      "check": "terminal_dashboard",
+      "assets": [
+        "tasks-job.json",
+        "tasks.json"
+      ]
+    },
+    {
+      "id": "118",
+      "title": "ZIP manifest validator:",
+      "scope": "**ZIP manifest validator:** list entries, detect duplicate/traversal names, enforce expanded-size budgets, verify CRCs, and report archive structure.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "250–380",
+      "coverage": "Archive adapters, paths, size accounting",
+      "forecast": "E: zipfile-like adapter and recoverable archive errors",
+      "acceptance": "Crafted fixture archives are classified without extracting files or exceeding inspection budgets.",
+      "path": "118_zip_validator",
+      "check": "zip_validator",
+      "assets": [
+        "zip-job.json",
+        "sample.zip"
+      ]
+    },
+    {
+      "id": "119",
+      "title": "Gzip log archiver:",
+      "scope": "**Gzip log archiver:** stream rotated logs into bounded archives, keep an index, verify decompression, and recover incomplete archive attempts.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "300–420",
+      "coverage": "Compression streams, file lifetimes, recovery",
+      "forecast": "E: gzip, streaming handles, metadata and error handling",
+      "acceptance": "Every completed archive decompresses to the original bytes; interrupted files are not marked complete.",
+      "path": "119_gzip_archiver",
+      "check": "gzip_archiver",
+      "assets": [
+        "gzip-job.json",
+        "access-001.log",
+        "worker-001.log"
+      ]
+    },
+    {
+      "id": "120",
+      "title": "Binary traffic-fixture replayer:",
+      "scope": "**Binary traffic-fixture replayer:** parse a custom timestamped direction/length format, inspect records, replay against a local TCP peer, and compare replies.",
+      "minimum_sloc": 200,
+      "maximum_sloc": 500,
+      "estimate": "350–480",
+      "coverage": "Binary parsing, sockets, deadlines, deterministic replay",
+      "forecast": "E: unified TCP, binary codecs, streaming/seek and recoverable errors",
+      "acceptance": "Fragmented replay yields the expected transcript; malformed lengths and reply mismatches identify the failing record.",
+      "path": "120_traffic_replayer",
+      "check": "traffic_replayer",
+      "assets": [
+        "traffic-job.json",
+        "sample.traffic"
+      ]
+    }
+  ]
+}

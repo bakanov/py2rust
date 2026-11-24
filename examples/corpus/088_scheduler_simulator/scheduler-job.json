@@ -1,0 +1,1 @@
+{"version":1,"workers":2,"queue_capacity":4,"workload":{"mode":"generated","seed":20261014,"count":40,"gap":[0,5],"service":[2,16],"slack":[2,24]},"output":"simulation"}

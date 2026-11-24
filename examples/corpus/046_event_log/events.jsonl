@@ -1,0 +1,4 @@
+{"id":"a-1","stream":"room-a","sequence":1,"time":"2026-01-01T10:00:00Z","from":"new","to":"active"}
+{"id":"b-1","stream":"room-b","sequence":1,"time":"2026-01-01T15:00:00+05:00","from":"new","to":"active"}
+{"id":"a-3","stream":"room-a","sequence":3,"time":"2026-01-01T10:00:02Z","from":"active","to":"paused"}
+{"id":"a-3","stream":"room-a","sequence":3,"time":"2026-01-01T10:00:02Z","from":"active","to":"paused"}

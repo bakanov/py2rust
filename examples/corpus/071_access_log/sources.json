@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "name": "front",
+      "path": "front.log"
+    },
+    {
+      "name": "api",
+      "path": "api.log"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+Chat server
+Host: localhost
+Port: 8080
+Keep uploaded files

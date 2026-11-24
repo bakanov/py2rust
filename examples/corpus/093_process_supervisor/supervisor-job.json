@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "state": "supervisor-session",
+  "stop": "supervisor-stop",
+  "run_ms": 2000,
+  "grace_ms": 200,
+  "services": [
+    {"id": "greeting", "argv": ["/usr/bin/printf", "Hello from a supervised native process!\n"], "cwd": ".", "environment": {}, "restarts": 0, "backoff_ms": 50, "max_backoff_ms": 200, "log_bytes": 4096},
+    {"id": "waiting", "argv": ["/usr/bin/sleep", "10"], "cwd": ".", "environment": {}, "restarts": 1, "backoff_ms": 50, "max_backoff_ms": 200, "log_bytes": 4096}
+  ]
+}

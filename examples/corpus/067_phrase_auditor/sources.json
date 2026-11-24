@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "documents": [
+    {
+      "id": "draft",
+      "text": "The quick brown fox jumps over the lazy dog. Then rests."
+    },
+    {
+      "id": "notes",
+      "text": "A quick, brown fox jumps over a fence. STRASSE Café."
+    },
+    {
+      "id": "quote",
+      "text": "Quick brown fox jumps over the lazy dog! Straße café."
+    },
+    {
+      "id": "unrelated",
+      "text": "Network clients retry failed requests."
+    }
+  ]
+}

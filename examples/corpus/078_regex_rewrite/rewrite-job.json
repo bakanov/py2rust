@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "files": ["sample.txt"],
+  "backup": "backup",
+  "rules": [
+    {"name": "label", "pattern": "INFO", "replacement": "NOTE"},
+    {"name": "ending", "pattern": "\\bTODO$", "replacement": "done: $1 is literal"}
+  ]
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "overnight",
+    "from": "A",
+    "to": "D",
+    "depart_after": "2026-10-12T23:40:00Z"
+  },
+  {
+    "id": "missed",
+    "from": "A",
+    "to": "C",
+    "depart_after": "2026-10-13T00:06:00Z"
+  },
+  {
+    "id": "same",
+    "from": "B",
+    "to": "B",
+    "depart_after": "2026-10-13T00:10:00Z"
+  },
+  {
+    "id": "island",
+    "from": "A",
+    "to": "Island",
+    "depart_after": "2026-10-12T23:40:00Z"
+  },
+  {
+    "id": "exact",
+    "from": "B",
+    "to": "C",
+    "depart_after": "2026-10-13T00:14:59Z"
+  }
+]

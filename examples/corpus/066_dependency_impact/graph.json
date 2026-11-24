@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "modules": [
+    "app",
+    "api",
+    "auth",
+    "cache",
+    "db",
+    "models",
+    "tools",
+    "unused"
+  ],
+  "edges": [
+    {
+      "module": "app",
+      "depends_on": "api"
+    },
+    {
+      "module": "api",
+      "depends_on": "auth"
+    },
+    {
+      "module": "api",
+      "depends_on": "cache"
+    },
+    {
+      "module": "auth",
+      "depends_on": "models"
+    },
+    {
+      "module": "models",
+      "depends_on": "auth"
+    },
+    {
+      "module": "models",
+      "depends_on": "db"
+    },
+    {
+      "module": "cache",
+      "depends_on": "db"
+    },
+    {
+      "module": "tools",
+      "depends_on": "tools"
+    }
+  ]
+}

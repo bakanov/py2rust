@@ -1,0 +1,8 @@
+{
+  "max_peers": 16,
+  "max_topics": 64,
+  "history": 16,
+  "topic_bytes": 256,
+  "payload_bytes": 16384,
+  "total_bytes": 1048576
+}

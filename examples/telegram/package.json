@@ -1,0 +1,9 @@
+{
+  "name": "paper-plane-chat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Python-to-Rust chat application",
+  "main": "desktop/main.cjs",
+  "scripts": {"desktop": "electron .", "package": "node tools/package.cjs"},
+  "devDependencies": {"electron": "44.5.1"}
+}

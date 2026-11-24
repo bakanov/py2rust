@@ -1,0 +1,14 @@
+# Each iteration has its own local variables.
+let total = 0
+let next = 1
+repeat 5 {
+  let contribution = next * next
+  set total = total + contribution
+  if contribution % 2 == 0 {
+    emit contribution
+  } else {
+    emit -contribution
+  }
+  set next = next + 1
+}
+emit total

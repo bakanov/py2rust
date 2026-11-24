@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "mode": "process",
+  "input": "sample.wav",
+  "output": "report",
+  "settings": {
+    "method": "gain",
+    "numerator": 3,
+    "denominator": 2
+  }
+}

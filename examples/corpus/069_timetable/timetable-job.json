@@ -1,0 +1,5 @@
+{
+  "timetable": "timetable.json",
+  "requests": "requests.json",
+  "output": "journey-plan"
+}

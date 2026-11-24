@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "program": "sample.auto",
+  "steps": 100,
+  "output": "../../../build/automation-demo"
+}

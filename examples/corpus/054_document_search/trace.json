@@ -1,0 +1,10 @@
+[
+  {"op":"PUT","document":{"id":"python","title":"Python network notes","text":"HTTP clients exchange JSON. Python can compile to Rust."}},
+  {"op":"PUT","document":{"id":"rust","title":"Rust services","text":"Rust HTTP servers can store searchable messages and files."}},
+  {"op":"PUT","document":{"id":"notes","title":"Заметки","text":"Поиск сообщений. Café and café normalize to the same token."}},
+  {"op":"SEARCH","query":{"and":["HTTP",{"or":["python","rust"]}]},"offset":0,"limit":10},
+  {"op":"SEARCH","query":"CAFÉ","offset":0,"limit":10},
+  {"op":"DELETE","id":"rust"},
+  {"op":"SEARCH","query":"rust","offset":0,"limit":10},
+  {"op":"INSPECT"}
+]

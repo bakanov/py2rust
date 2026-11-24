@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "name": "main",
+      "source": "main.py"
+    },
+    {
+      "name": "project",
+      "source": "project.py"
+    },
+    {
+      "name": "outline",
+      "source": "outline.py"
+    },
+    {
+      "name": "pages",
+      "source": "pages.py"
+    },
+    {
+      "name": "documents",
+      "source": "documents.py"
+    }
+  ],
+  "output": "../../../build/source-outline-demo"
+}

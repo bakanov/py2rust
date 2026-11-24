@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "sources": [
+    {"id": "application", "path": "application.txt"},
+    {"id": "worker", "path": "worker.txt"}
+  ],
+  "routes": [
+    {"id": "general", "sources": ["application", "worker"], "minimum": "INFO", "contains": ""},
+    {"id": "alerts", "sources": ["application", "worker"], "minimum": "ERROR", "contains": ""},
+    {"id": "requests", "sources": ["application"], "minimum": "DEBUG", "contains": "request"}
+  ],
+  "output": "routed",
+  "segment_bytes": 4096,
+  "segments": 8,
+  "batch_lines": 64
+}

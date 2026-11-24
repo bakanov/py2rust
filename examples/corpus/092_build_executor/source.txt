@@ -1,0 +1,2 @@
+This input is copied by two dependent native build steps.
+Editing it rebuilds both targets; a repeated unchanged build runs neither command.

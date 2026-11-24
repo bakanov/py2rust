@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "mode": "inspect",
+  "input": "sample.zip",
+  "output": "report",
+  "limits": {
+    "entries": 512,
+    "entry_bytes": 8388608,
+    "total_bytes": 33554432
+  }
+}

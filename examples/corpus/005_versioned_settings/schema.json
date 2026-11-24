@@ -1,0 +1,9 @@
+{
+  "fields": [
+    {"name": "enabled", "kind": "bool", "default": true},
+    {"name": "workers", "kind": "int", "default": 2, "min": 1, "max": 16},
+    {"name": "greeting", "kind": "string", "default": "Hello, 世界", "max_length": 80, "pattern": ""},
+    {"name": "theme", "kind": "choice", "default": "system", "choices": ["light", "dark", "system"]},
+    {"name": "rooms", "kind": "strings", "default": ["general"], "max_items": 8}
+  ]
+}

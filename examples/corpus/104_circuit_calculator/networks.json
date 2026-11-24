@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "series",
+      "tree": {
+        "kind": "series",
+        "children": [
+          {
+            "kind": "resistor",
+            "ohms": "100",
+            "id": "n1"
+          },
+          {
+            "kind": "resistor",
+            "ohms": "220",
+            "id": "n2"
+          },
+          {
+            "kind": "resistor",
+            "ohms": "330",
+            "id": "n3"
+          }
+        ],
+        "id": "n0"
+      }
+    },
+    {
+      "id": "parallel",
+      "tree": {
+        "kind": "parallel",
+        "children": [
+          {
+            "kind": "resistor",
+            "ohms": "100",
+            "id": "n1"
+          },
+          {
+            "kind": "resistor",
+            "ohms": "300",
+            "id": "n2"
+          }
+        ],
+        "id": "n0"
+      }
+    },
+    {
+      "id": "nested",
+      "tree": {
+        "kind": "series",
+        "children": [
+          {
+            "kind": "parallel",
+            "children": [
+              {
+                "kind": "series",
+                "children": [
+                  {
+                    "kind": "resistor",
+                    "ohms": "10",
+                    "id": "n3"
+                  },
+                  {
+                    "kind": "resistor",
+                    "ohms": "20",
+                    "id": "n4"
+                  }
+                ],
+                "id": "n2"
+              },
+              {
+                "kind": "resistor",
+                "ohms": "60",
+                "id": "n5"
+              }
+            ],
+            "id": "n1"
+          },
+          {
+            "kind": "resistor",
+            "ohms": "5",
+            "id": "n6"
+          }
+        ],
+        "id": "n0"
+      }
+    },
+    {
+      "id": "open_series",
+      "tree": {
+        "kind": "series",
+        "children": [
+          {
+            "kind": "open",
+            "id": "n1"
+          },
+          {
+            "kind": "resistor",
+            "ohms": "10",
+            "id": "n2"
+          }
+        ],
+        "id": "n0"
+      }
+    },
+    {
+      "id": "open_parallel",
+      "tree": {
+        "kind": "parallel",
+        "children": [
+          {
+            "kind": "open",
+            "id": "n1"
+          },
+          {
+            "kind": "resistor",
+            "ohms": "120",
+            "id": "n2"
+          }
+        ],
+        "id": "n0"
+      }
+    },
+    {
+      "id": "short_series",
+      "tree": {
+        "kind": "series",
+        "children": [
+          {
+            "kind": "resistor",
+            "ohms": "0",
+            "id": "n1"
+          },
+          {
+            "kind": "resistor",
+            "ohms": "500",
+            "id": "n2"
+          }
+        ],
+        "id": "n0"
+      }
+    }
+  ]
+}

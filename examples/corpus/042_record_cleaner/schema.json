@@ -1,0 +1,12 @@
+{
+  "unknown": "reject",
+  "fields": [
+    {"name": "id", "kind": "int", "min": 1},
+    {"name": "name", "kind": "string", "case": "upper", "min_length": 2, "max_length": 30},
+    {"name": "email", "kind": "string", "case": "lower", "pattern": "[a-z0-9]+@[a-z]+[.]example"},
+    {"name": "joined", "kind": "timestamp"},
+    {"name": "active", "kind": "bool", "default": true},
+    {"name": "score", "kind": "float", "default": 0.0, "min": 0, "max": 1},
+    {"name": "nickname", "kind": "string", "required": false, "nullable": true}
+  ]
+}

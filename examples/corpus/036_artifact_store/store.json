@@ -1,0 +1,6 @@
+{
+  "repository": "./artifact-store",
+  "max_nodes": 10000,
+  "max_bytes": 17179869184,
+  "max_blob_bytes": 1073741824
+}

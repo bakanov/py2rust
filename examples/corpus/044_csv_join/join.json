@@ -1,0 +1,17 @@
+{
+  "left": {"path": "people.csv", "delimiter": ",", "keys": ["team"]},
+  "right": {"path": "teams.csv", "delimiter": ",", "keys": ["id"]},
+  "output": "joined",
+  "kind": "left",
+  "duplicates": "all",
+  "order": "left",
+  "delimiter": ",",
+  "select": [
+    {"side": "left", "column": "name", "as": "Person"},
+    {"side": "right", "column": "name", "as": "Team"}
+  ],
+  "max_rows": 10000,
+  "max_field_bytes": 65536,
+  "max_input_bytes": 4194304,
+  "max_output_rows": 100000
+}

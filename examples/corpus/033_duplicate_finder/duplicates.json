@@ -1,0 +1,11 @@
+{
+  "root": "tree",
+  "exclude": ["(^|/)\\.git(/|$)"],
+  "min_size": 0,
+  "max_size": 1073741824,
+  "max_hash_bytes": 1073741824,
+  "max_compare_bytes": 1073741824,
+  "max_comparisons": 100000,
+  "digest_chars": 64,
+  "chunk_bytes": 65536
+}

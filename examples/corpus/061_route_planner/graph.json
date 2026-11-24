@@ -1,0 +1,12 @@
+{
+  "nodes": ["Office", "Park", "Station"],
+  "edges": [
+    {"id": "office-park", "from": "Office", "to": "Park", "cost": 2},
+    {"id": "park-station", "from": "Park", "to": "Station", "cost": 2},
+    {"id": "direct", "from": "Office", "to": "Station", "cost": 6}
+  ],
+  "queries": [
+    {"from": "Office", "to": "Station"},
+    {"from": "Office", "to": "Station", "closed_edges": ["park-station"]}
+  ]
+}

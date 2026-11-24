@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "title": "Field notes & tools",
+  "pages": [
+    {
+      "id": "index",
+      "title": "Home",
+      "source": "home.md"
+    },
+    {
+      "id": "guide",
+      "title": "Guide <draft>",
+      "source": "guide.md"
+    }
+  ]
+}

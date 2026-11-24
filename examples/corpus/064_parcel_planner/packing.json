@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "max_packages": 3,
+  "boxes": [
+    {
+      "id": "small",
+      "weight_limit_g": 10,
+      "volume_limit_cm3": 8,
+      "item_limit": 3,
+      "tare_g": 2,
+      "cost_cents": 100,
+      "stock": 2
+    },
+    {
+      "id": "large",
+      "weight_limit_g": 20,
+      "volume_limit_cm3": 20,
+      "item_limit": 5,
+      "tare_g": 2,
+      "cost_cents": 180,
+      "stock": 1
+    }
+  ],
+  "items": [
+    {
+      "id": "a",
+      "destination": "north",
+      "weight_g": 7,
+      "volume_cm3": 4,
+      "separate": false
+    },
+    {
+      "id": "b",
+      "destination": "north",
+      "weight_g": 6,
+      "volume_cm3": 4,
+      "separate": false
+    },
+    {
+      "id": "c",
+      "destination": "north",
+      "weight_g": 4,
+      "volume_cm3": 5,
+      "separate": false
+    },
+    {
+      "id": "d",
+      "destination": "south",
+      "weight_g": 3,
+      "volume_cm3": 2,
+      "separate": false
+    },
+    {
+      "id": "e",
+      "destination": "north",
+      "weight_g": 20,
+      "volume_cm3": 25,
+      "separate": false
+    },
+    {
+      "id": "f",
+      "destination": "north",
+      "weight_g": 2,
+      "volume_cm3": 2,
+      "separate": true
+    },
+    {
+      "id": "g",
+      "destination": "north",
+      "weight_g": 2,
+      "volume_cm3": 1,
+      "separate": false
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"version":1,"input":"sample.jsonl","output":"sanitized","missing":"skip","targets":[["message"],["context","token"],["recipients",0,"email"]],"rules":[{"kind":"literal","pattern":"demo-secret-42","replacement":"[TOKEN]"},{"kind":"regex","pattern":"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}","replacement":"[EMAIL]"}]}

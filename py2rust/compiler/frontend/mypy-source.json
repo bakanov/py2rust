@@ -1,0 +1,9 @@
+{
+  "upstream_version": "2.5.0+dev",
+  "source_sha256": "4bf94537ed28a98d071a080ca0a69a273bf2515bec54b5a1895f40e5f75c9f35",
+  "wheel_version": "2.5.0+dev.py2rust.4bf94537ed28",
+  "source_file_count": 1449,
+  "purpose": "Reviewed pure-Python frontend shared by mypy and mypyc; compiled mypy visitors are unsupported.",
+  "upstream_repository": "https://github.com/python/mypy",
+  "upstream_revision": "1572a18848d181f5cd91877aa3ab4e1644b14f20"
+}

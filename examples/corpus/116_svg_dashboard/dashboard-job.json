@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "mode": "render",
+  "input": "dataset.json",
+  "output": "report",
+  "columns": 2
+}

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "sequence": 1,
+  "title": "Network delivery jobs",
+  "tasks": [
+    {
+      "id": "connect",
+      "label": "Connect to 東京 gateway",
+      "state": "running",
+      "done": 5,
+      "total": 8
+    },
+    {
+      "id": "upload",
+      "label": "Upload screenshots 📷",
+      "state": "running",
+      "done": 675,
+      "total": 1000
+    },
+    {
+      "id": "index",
+      "label": "Index saved notes",
+      "state": "queued",
+      "done": 0,
+      "total": 16
+    },
+    {
+      "id": "search",
+      "label": "Refresh search cache",
+      "state": "done",
+      "done": 24,
+      "total": 24
+    },
+    {
+      "id": "retry",
+      "label": "Retry file delivery",
+      "state": "failed",
+      "done": 3,
+      "total": 10
+    },
+    {
+      "id": "watch",
+      "label": "Watch 👩🏽‍💻 work queue",
+      "state": "running",
+      "done": 0,
+      "total": 0
+    }
+  ]
+}

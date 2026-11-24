@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "packages": {
+    "Client": [
+      {
+        "version": "2.0.0",
+        "dependencies": {
+          "Http": "^2.0.0"
+        }
+      },
+      {
+        "version": "1.0.0",
+        "dependencies": {
+          "Http": "^1.0.0"
+        }
+      }
+    ],
+    "Extension": [
+      {
+        "version": "2.0.0",
+        "dependencies": {
+          "Http": "<2.0.0"
+        }
+      },
+      {
+        "version": "1.0.0",
+        "dependencies": {
+          "Http": "<2.0.0"
+        }
+      }
+    ],
+    "Http": [
+      {
+        "version": "2.0.0",
+        "dependencies": {}
+      },
+      {
+        "version": "1.5.0",
+        "dependencies": {}
+      }
+    ],
+    "Unused": [
+      {
+        "version": "1.0.0",
+        "dependencies": {
+          "Missing": "*"
+        }
+      }
+    ]
+  }
+}

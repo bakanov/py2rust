@@ -1,0 +1,19 @@
+{
+  "inputs": [
+    "contacts.json"
+  ],
+  "state": "",
+  "output": "imported",
+  "keys": [
+    [
+      "email"
+    ],
+    [
+      "phone"
+    ],
+    [
+      "name",
+      "address"
+    ]
+  ]
+}

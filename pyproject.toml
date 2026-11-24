@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py2rust"
+version = "0.1.0"
+description = "Compile complete typed Python-subset applications to standalone Rust"
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = ["tree-sitter==0.26.1", "tree-sitter-rust==0.24.2", "mypy==2.5.0+dev.py2rust.4bf94537ed28"]
+
+[project.optional-dependencies]
+typed-frontend = []  # Compatibility extra: the pinned frontend is now required.
+service-reference = ["html5lib==1.1", "wcwidth==0.2.14", "uniseg==0.9.1"]
+corpus-checks = ["redis==6.4.0", "websockets==17.1", "paho-mqtt==2.1.0"]
+test = ["pytest==9.2.0", "black==26.10.1", "ruff==0.17.6", "html5lib==1.1", "wcwidth==0.2.14", "uniseg==0.9.1"]
+
+[project.scripts]
+py2rust = "py2rust.compiler.project:main"
+py2rust-project = "py2rust.compiler.project:main"
+py2rust-service = "py2rust.compiler.service:main"
+
+[tool.setuptools.packages.find]
+include = ["py2rust*"]
+
+[tool.setuptools.package-data]
+"py2rust.compiler.frontend" = ["mypy-source.json"]
+"py2rust.compiler" = ["service_runtime/Cargo.toml", "service_runtime/Cargo.lock", "service_runtime/src/*.rs"]
+
+[tool.black]
+line-length = 120
+force-exclude = "py2rust/compiler/native/runtime_contracts\\.py$"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["build", "dist", "examples/corpus"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

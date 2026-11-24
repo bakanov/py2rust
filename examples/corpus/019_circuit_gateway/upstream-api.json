@@ -1,0 +1,11 @@
+{
+  "states": ["first-failure", "second-failure", "ready"],
+  "initial": "first-failure",
+  "routes": [
+    {"id": "first", "method": "GET", "path": "/upstream/catalog", "when": "first-failure", "next": "second-failure", "status": 503, "body": {"error": "maintenance"}},
+    {"id": "second", "method": "GET", "path": "/upstream/catalog", "when": "second-failure", "next": "ready", "status": 503, "body": {"error": "maintenance"}},
+    {"id": "recovered", "method": "GET", "path": "/upstream/catalog", "when": "ready", "status": 200, "body": {"items": ["paper", "pen"]}},
+    {"id": "notes-get", "method": "GET", "path": "/upstream/notes", "status": 200, "body": {"notes": ["Saved ideas"]}},
+    {"id": "notes-post", "method": "POST", "path": "/upstream/notes", "status": 201, "body": {"accepted": true}}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "states": ["initial", "noise", "changed"],
+  "initial": "initial",
+  "routes": [
+    {"id": "initial", "method": "GET", "path": "/snapshot", "when": "initial", "next": "noise", "status": 200,
+     "body": {"profile": {"name": "Alice", "roles": ["reader"]}, "observed_at": 1}},
+    {"id": "noise", "method": "GET", "path": "/snapshot", "when": "noise", "next": "changed", "status": 200,
+     "body": {"profile": {"name": "Alice", "roles": ["reader"]}, "observed_at": 2}},
+    {"id": "changed", "method": "GET", "path": "/snapshot", "when": "changed", "status": 200,
+     "body": {"profile": {"name": "Alice", "roles": ["reader", "writer"]}, "observed_at": 3}}
+  ]
+}

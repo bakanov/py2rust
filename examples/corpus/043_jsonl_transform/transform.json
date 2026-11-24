@@ -1,0 +1,10 @@
+{
+  "input": "events.jsonl",
+  "output": "transformed",
+  "select": ["id", "message"],
+  "where": {"kind": "message"},
+  "chunk_bytes": 65536,
+  "max_line_bytes": 1048576,
+  "batch_rows": 100,
+  "batch_bytes": 4194304
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "source": "crm",
+    "id": "1",
+    "name": "  José  García ",
+    "email": "jose@EXAMPLE.COM",
+    "phone": "+34 (912) 345-678"
+  },
+  {
+    "source": "address-book",
+    "id": "A",
+    "name": "José García",
+    "email": "jose@example.com",
+    "address": "  Calle Mayor 1  "
+  },
+  {
+    "source": "crm",
+    "id": "2",
+    "name": "Ada Lovelace",
+    "email": "ada@example.com",
+    "organization": "Analytical Engines"
+  },
+  {
+    "source": "legacy",
+    "id": "X",
+    "name": "Different Ada",
+    "email": "ada@example.com"
+  },
+  {
+    "source": "import",
+    "id": "bad",
+    "phone": "local extension 123"
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "start": "http://127.0.0.1:8781/",
+  "max_depth": 3,
+  "max_pages": 100,
+  "max_links": 1000,
+  "max_edges": 5000,
+  "max_body": 262144,
+  "timeout_ms": 2000
+}

@@ -1,0 +1,7 @@
+{
+  "trace": "trace.json",
+  "state": "",
+  "capacity": 3,
+  "window_ms": 10,
+  "output": "ring-run"
+}

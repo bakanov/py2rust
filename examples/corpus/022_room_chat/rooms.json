@@ -1,0 +1,13 @@
+{
+  "max_peers": 32,
+  "max_rooms": 16,
+  "line_bytes": 2048,
+  "queue_bytes": 16384,
+  "queue_lines": 128,
+  "commands_per_tick": 8,
+  "write_bytes": 16384,
+  "send_buffer": 8192,
+  "partial_ms": 3000,
+  "idle_ms": 60000,
+  "close_ms": 200
+}

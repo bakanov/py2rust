@@ -1,0 +1,4 @@
+// A local transport fixture.
+pub fn endpoint() -> &'static str {
+    "http://127.0.0.1:8080"
+}

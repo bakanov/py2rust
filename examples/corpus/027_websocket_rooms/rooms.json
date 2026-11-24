@@ -1,0 +1,12 @@
+{
+  "max_peers": 32,
+  "message_bytes": 8192,
+  "queue_bytes": 262144,
+  "frames_per_tick": 4,
+  "handshake_ms": 3000,
+  "partial_ms": 3000,
+  "idle_ms": 60000,
+  "close_ms": 500,
+  "send_buffer": 8192,
+  "write_bytes": 16384
+}

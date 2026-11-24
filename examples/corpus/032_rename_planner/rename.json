@@ -1,0 +1,7 @@
+{
+  "root": "tree",
+  "paths": ["old-notes.txt", "old-photo.png"],
+  "rules": [{"pattern": "^old-", "replace": "saved-"}],
+  "overrides": {},
+  "max_bytes": 8388608
+}

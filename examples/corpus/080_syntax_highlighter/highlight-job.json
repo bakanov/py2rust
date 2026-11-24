@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "files": [{"label": "Local service", "source": "sample.cfg"}],
+  "theme": "light",
+  "output": "../../../build/highlight-demo"
+}

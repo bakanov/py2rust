@@ -1,0 +1,1 @@
+{"version": 1, "templates": [{"id": "page", "source": "page.txt"}, {"id": "item", "source": "item.txt"}], "jobs": [{"id": "index", "template": "page", "data": "data.json", "steps": 1000}]}

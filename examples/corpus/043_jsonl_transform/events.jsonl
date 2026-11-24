@@ -1,0 +1,4 @@
+{"id": 1, "kind": "message", "message": "Hello, 世界"}
+{"id": 2, "kind": "heartbeat", "message": "filtered out"}
+This malformed row is preserved in quarantine.bin.
+{"id": 3, "kind": "message", "message": "Readable Python, standalone Rust"}

@@ -1,0 +1,31 @@
+[
+  {
+    "id": "database",
+    "changed": [
+      "db"
+    ]
+  },
+  {
+    "id": "cycle",
+    "changed": [
+      "auth"
+    ]
+  },
+  {
+    "id": "two roots",
+    "changed": [
+      "cache",
+      "auth"
+    ]
+  },
+  {
+    "id": "none",
+    "changed": []
+  },
+  {
+    "id": "tool",
+    "changed": [
+      "tools"
+    ]
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "grid": "grid.txt",
+  "terrain": "terrain.json",
+  "requests": "requests.json",
+  "output": "terrain-routes"
+}

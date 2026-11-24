@@ -1,0 +1,10 @@
+{
+  "states": ["ready"],
+  "initial": "ready",
+  "routes": [
+    {"id": "load-ready", "method": "GET", "path": "/load/ready", "status": 200, "body": {"ready": true}},
+    {"id": "load-busy", "method": "GET", "path": "/load/busy", "status": 503,
+     "headers": [{"name": "Retry-After", "value": "1"}], "body": {"error": "busy"}},
+    {"id": "load-create", "method": "POST", "path": "/load/create", "status": 201, "body": {"accepted": true}}
+  ]
+}

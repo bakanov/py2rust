@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "title": "Network metrics",
+  "charts": [
+    {
+      "id": "traffic",
+      "title": "Traffic change",
+      "kind": "bar",
+      "unit": "MiB",
+      "points": [
+        {
+          "label": "P0",
+          "value": -20
+        },
+        {
+          "label": "P1",
+          "value": 0
+        },
+        {
+          "label": "P2",
+          "value": 60
+        },
+        {
+          "label": "P3",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "latency",
+      "title": "Request latency",
+      "kind": "line",
+      "unit": "ms",
+      "points": [
+        {
+          "label": "P0",
+          "value": 18
+        },
+        {
+          "label": "P1",
+          "value": 25
+        },
+        {
+          "label": "P2",
+          "value": 22
+        },
+        {
+          "label": "P3",
+          "value": 40
+        },
+        {
+          "label": "P4",
+          "value": 32
+        },
+        {
+          "label": "P5",
+          "value": 19
+        }
+      ]
+    },
+    {
+      "id": "errors",
+      "title": "Rejected requests",
+      "kind": "bar",
+      "unit": "requests",
+      "points": [
+        {
+          "label": "P0",
+          "value": -7
+        },
+        {
+          "label": "P1",
+          "value": -3
+        },
+        {
+          "label": "P2",
+          "value": -9
+        },
+        {
+          "label": "P3",
+          "value": -2
+        }
+      ]
+    },
+    {
+      "id": "steady",
+      "title": "Stable connections",
+      "kind": "line",
+      "unit": "connections",
+      "points": [
+        {
+          "label": "P0",
+          "value": 12
+        },
+        {
+          "label": "P1",
+          "value": 12
+        },
+        {
+          "label": "P2",
+          "value": 12
+        },
+        {
+          "label": "P3",
+          "value": 12
+        }
+      ]
+    },
+    {
+      "id": "zero",
+      "title": "Dropped messages",
+      "kind": "bar",
+      "unit": "messages",
+      "points": [
+        {
+          "label": "P0",
+          "value": 0
+        },
+        {
+          "label": "P1",
+          "value": -0.0
+        },
+        {
+          "label": "P2",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "empty",
+      "title": "Waiting for samples",
+      "kind": "line",
+      "unit": "ms",
+      "points": []
+    }
+  ]
+}

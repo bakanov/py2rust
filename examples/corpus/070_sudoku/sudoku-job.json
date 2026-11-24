@@ -1,0 +1,4 @@
+{
+  "boards": "boards.json",
+  "output": "sudoku-results"
+}

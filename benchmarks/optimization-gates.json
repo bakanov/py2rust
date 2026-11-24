@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {"name": "borrow large payloads", "project": "benchmarks/rust_quality", "entry": "kernels.py", "function": "kernels.py:read_payload", "parameters": {"data": "borrow"}, "deny": ["unknown-effects", "snapshot-iteration"]},
+    {"name": "borrow collection scans", "project": "benchmarks/rust_quality", "entry": "kernels.py", "function": "kernels.py:sum_values", "parameters": {"values": "borrow"}, "decisions": [{"operation": "iteration", "mode": "borrow"}], "deny": ["unknown-effects", "snapshot-iteration"]},
+    {"name": "build growing strings", "project": "benchmarks/rust_quality", "entry": "kernels.py", "function": "kernels.py:build_text", "decisions": [{"operation": "string_append", "mode": "builder"}], "deny": ["unknown-effects"]},
+    {"name": "chat rendering views and builders", "project": "examples/telegram", "entry": "main.py", "function": "app/render.py:inline_format", "parameters": {"body": "borrow"}, "decisions": [{"operation": "slice", "mode": "borrow"}, {"operation": "string_append", "mode": "builder"}], "deny": ["snapshot-iteration"]},
+    {"name": "traffic payload views", "project": "examples/corpus/120_traffic_replayer", "entry": "main.py", "function": "replay.py:exchange", "parameters": {"data": "borrow"}, "decisions": [{"operation": "slice", "mode": "borrow"}], "deny": ["snapshot-iteration"]},
+    {"name": "gzip path arguments", "project": "examples/corpus/119_gzip_archiver", "entry": "main.py", "function": "documents.py:absolute", "parameters": {"path": "borrow", "base": "borrow"}, "deny": ["snapshot-iteration"]}
+  ]
+}

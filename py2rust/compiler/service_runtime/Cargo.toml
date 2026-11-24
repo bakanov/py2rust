@@ -1,0 +1,54 @@
+[package]
+name = "py2rust-service-runtime"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83"
+
+[dependencies]
+# Raw DEFLATE inspection with explicit byte budgets; pure Rust backend.
+flate2 = { version = "=1.0.35", default-features = false, features = ["rust_backend"] }
+num-bigint = "=0.4.8"
+serde = { version = "=1.0.228", features = ["derive"] }
+serde_json = { version = "=1.0.145", features = ["arbitrary_precision", "raw_value"] }
+regex = "=1.12.2"
+# Bounded assertions implement Python final-LF anchors and ASCII non-boundaries.
+fancy-regex = "=0.14.0"
+# Match the Unicode 15.1 normalization tables in the Python 3.13 reference.
+unicode-normalization = "=0.1.23"
+# Match the Unicode 16 grapheme reference used by terminal_cells.
+unicode-segmentation = "=1.12.0"
+chrono = "=0.4.43"
+# Read caller-supplied TZif data without a bundled database or Python runtime.
+# Version 0.7 requires a newer Rust toolchain; preserve the Rust 1.83 baseline.
+tz-rs = { version = "=0.6.14", default-features = false, features = ["std"] }
+indexmap = { version = "=2.7.1", features = ["serde"] }
+subtle = "=2.6.1"
+ring = "=0.17.14"
+base64 = "=0.22.1"
+scraper = { version = "=0.22.0", default-features = false }
+ureq = { version = "=2.12.1", default-features = false, features = ["tls"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+rustls-pemfile = "=2.2.0"
+# zeroize 1.9 requires edition 2024; retain the Rust 1.83 baseline.
+zeroize = "=1.8.2"
+tokio = { version = "=1.49.0", features = ["rt", "net", "time"] }
+mio = { version = "=1.2.4", features = ["os-poll", "os-ext"] }
+socket2 = "=0.6.5"
+libc = "=0.2.190"
+tokio-rustls = { version = "=0.26.2", default-features = false, features = ["ring", "tls12"] }
+hyper = { version = "=1.6.0", features = ["server", "http1"] }
+hyper-util = { version = "=0.1.10", features = ["tokio"] }
+http-body-util = "=0.1.2"
+# Keep the dependency graph usable with the installed Rust 1.83 toolchain.
+url = "=2.5.0"
+
+# Ruff 0.9.10 is compatible with the Rust 1.83 baseline; immutable upstream revision.
+ruff_python_parser = { git = "https://github.com/astral-sh/ruff", rev = "0dfa810e9aad9a465596768b0211c31dd41d3e73" }
+ruff_python_ast = { git = "https://github.com/astral-sh/ruff", rev = "0dfa810e9aad9a465596768b0211c31dd41d3e73" }
+ruff_text_size = { git = "https://github.com/astral-sh/ruff", rev = "0dfa810e9aad9a465596768b0211c31dd41d3e73" }
+# Match the Python 3.13 reference's Unicode 15.1 named escapes.
+unicode_names2 = "=1.2.2"
+
+[build-dependencies]
+# The runtime crate otherwise allows this generator to float to Unicode 16.
+unicode_names2_generator = "=1.2.2"

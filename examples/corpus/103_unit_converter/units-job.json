@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "mode": "convert",
+  "notebook": null,
+  "output": "report",
+  "conversions": [
+    {
+      "id": "speed",
+      "quantity": "90 km/h",
+      "to": "m/s"
+    },
+    {
+      "id": "force",
+      "quantity": "12 kg*m/s^2",
+      "to": "N"
+    },
+    {
+      "id": "pressure",
+      "quantity": "1 bar",
+      "to": "kPa"
+    },
+    {
+      "id": "volume",
+      "quantity": "750 mL",
+      "to": "L"
+    },
+    {
+      "id": "distance",
+      "quantity": "5 ft",
+      "to": "cm"
+    },
+    {
+      "id": "temperature",
+      "quantity": "20 degC",
+      "to": "degF"
+    },
+    {
+      "id": "resistance",
+      "quantity": "2 V/A",
+      "to": "ohm"
+    },
+    {
+      "id": "heat_rate",
+      "quantity": "18 delta_degF/min",
+      "to": "K/s"
+    },
+    {
+      "id": "dimensionless",
+      "quantity": "2 (km/m)^2",
+      "to": "1"
+    },
+    {
+      "id": "scientific",
+      "quantity": "+1_250.0e-2 m/s",
+      "to": "km/h"
+    }
+  ]
+}

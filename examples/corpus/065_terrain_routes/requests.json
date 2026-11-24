@@ -1,0 +1,57 @@
+[
+  {
+    "id": "across",
+    "start": [
+      0,
+      0
+    ],
+    "goal": [
+      0,
+      8
+    ]
+  },
+  {
+    "id": "weighted",
+    "start": [
+      2,
+      0
+    ],
+    "goal": [
+      2,
+      8
+    ]
+  },
+  {
+    "id": "unreachable",
+    "start": [
+      0,
+      0
+    ],
+    "goal": [
+      7,
+      0
+    ]
+  },
+  {
+    "id": "blocked",
+    "start": [
+      1,
+      1
+    ],
+    "goal": [
+      0,
+      0
+    ]
+  },
+  {
+    "id": "same",
+    "start": [
+      3,
+      4
+    ],
+    "goal": [
+      3,
+      4
+    ]
+  }
+]

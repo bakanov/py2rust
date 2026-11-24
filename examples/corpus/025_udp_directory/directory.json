@@ -1,0 +1,7 @@
+{
+  "max_services": 100,
+  "remember_ms": 60000,
+  "max_datagram": 4096,
+  "reply_ms": 200,
+  "attempts": 3
+}

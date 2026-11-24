@@ -1,0 +1,14 @@
+{
+  "root": "/tmp/download-organizer-demo/downloads",
+  "categories": {
+    "archives": [".zip", ".tar.gz", ".gz"],
+    "documents": [".pdf", ".txt", ".md"],
+    "images": [".png", ".jpg", ".jpeg", ".webp"]
+  },
+  "date_format": "%Y/%m",
+  "include_hidden": false,
+  "skip_suffixes": [".part", ".tmp", ".crdownload"],
+  "max_entries": 10000,
+  "max_files": 1000,
+  "max_bytes": 17179869184
+}

@@ -1,0 +1,63 @@
+[
+  {
+    "op": "QUERY",
+    "start_ms": 9,
+    "end_ms": 10,
+    "text": "",
+    "offset": 0,
+    "limit": 20
+  },
+  {
+    "op": "POINT",
+    "time_ms": 10,
+    "text": "",
+    "offset": 0,
+    "limit": 20
+  },
+  {
+    "op": "QUERY",
+    "start_ms": 10,
+    "end_ms": 10,
+    "text": "",
+    "offset": 0,
+    "limit": 20
+  },
+  {
+    "op": "QUERY",
+    "start_ms": 2,
+    "end_ms": 3,
+    "text": "STRASSE",
+    "offset": 0,
+    "limit": 20
+  },
+  {
+    "op": "PUT",
+    "event": {
+      "id": "a",
+      "start_ms": 12,
+      "end_ms": 14,
+      "text": "updated request",
+      "data": {
+        "source": "sample"
+      }
+    }
+  },
+  {
+    "op": "POINT",
+    "time_ms": 10,
+    "text": "",
+    "offset": 0,
+    "limit": 20
+  },
+  {
+    "op": "DELETE",
+    "id": "outer"
+  },
+  {
+    "op": "GET",
+    "id": "missing"
+  },
+  {
+    "op": "INSPECT"
+  }
+]

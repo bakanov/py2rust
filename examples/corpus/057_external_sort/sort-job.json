@@ -1,0 +1,12 @@
+{
+  "inputs": ["records.jsonl"],
+  "field": "priority",
+  "kind": "integer",
+  "chunk_bytes": 4096,
+  "record_bytes": 4096,
+  "fan_in": 2,
+  "max_rows": 1000,
+  "memory_mib": 128,
+  "output": "sorted-run",
+  "workspace": "sort-work"
+}

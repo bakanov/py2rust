@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "mode": "watch",
+  "input": "tasks.json",
+  "output": "report",
+  "columns": 80,
+  "refreshes": 5,
+  "interval_ms": 1000
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper Plane</title><link rel="icon" href="/icon.svg"><link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<svg class="svg-library" xmlns="http://www.w3.org/2000/svg"><defs>
+ <symbol id="search-icon" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+ <symbol id="clip-icon" viewBox="0 0 24 24"><path d="m8 13 7-7a3 3 0 0 1 4 4l-9 9a5 5 0 0 1-7-7L13 2m-7 13 8-8"/></symbol>
+ <symbol id="send-icon" viewBox="0 0 24 24"><path d="m3 3 19 9-19 9 4-9-4-9Zm4 9h15"/></symbol>
+ <symbol id="plus-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+ <symbol id="menu-icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+ <symbol id="back-icon" viewBox="0 0 24 24"><path d="m14 5-7 7 7 7"/></symbol>
+ <symbol id="note-icon" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></symbol>
+</defs></svg>
+<div id="app" class="app-shell" hidden>
+ <aside class="sidebar">
+  <header class="sidebar-toolbar"><button class="icon-button" id="account" aria-label="Account and access key"><svg><use href="#menu-icon"/></svg></button><label class="search-field"><svg><use href="#search-icon"/></svg><input id="search" type="search" placeholder="Search" aria-label="Search messages and files" autocomplete="off"></label></header>
+  <div class="sidebar-heading"><div><h1>Paper Plane<span class="brand-dot"></span></h1><p>A place for your conversations</p></div><button id="new-conversation" class="icon-button new-button" aria-label="New chat or saved notebook"><svg><use href="#plus-icon"/></svg></button></div>
+  <nav class="tabs" aria-label="Conversation filters"><button class="selected" data-category="all">All chats</button><button data-category="notes">Saved notes</button></nav>
+  <div id="search-scope" hidden><span>Searching this conversation</span><button id="clear-scope">Search all</button></div>
+  <div class="sidebar-scroll"><div id="chat-list"></div><div id="search-results"></div></div>
+  <footer class="sidebar-footer"><span class="status-dot"></span><span id="connection-status">Connected</span><button id="profile-name" aria-label="Open account"></button></footer>
+ </aside>
+ <main class="conversation-pane">
+  <header class="conversation-header"><button id="back" class="icon-button mobile-back" aria-label="Back to chats"><svg><use href="#back-icon"/></svg></button><div id="chat-avatar"></div><div class="conversation-title"><h2 id="chat-title"></h2><p id="chat-subtitle"></p></div><button id="search-chat" class="icon-button" aria-label="Search this conversation"><svg><use href="#search-icon"/></svg></button><button id="rename-chat" class="icon-button" aria-label="Rename conversation" title="Rename conversation">···</button></header>
+  <section id="timeline" class="timeline" aria-label="Messages"><div id="messages" class="messages"></div></section>
+  <div id="drop-overlay" hidden><svg><use href="#clip-icon"/></svg><strong>Drop your files here</strong><span>Images, documents, and everything in between</span></div>
+  <form id="composer" class="composer">
+   <div id="edit-banner" hidden>Editing message <button type="button" id="cancel-edit">Cancel</button></div>
+   <div id="attachments" class="attachment-tray"></div>
+   <div class="compose-row"><button type="button" id="attach" class="icon-button" aria-label="Attach files"><svg><use href="#clip-icon"/></svg></button><textarea id="message-input" rows="1" maxlength="16000" placeholder="Write a message…" aria-label="Write a message"></textarea><button id="send" class="send-button" aria-label="Send message"><svg><use href="#send-icon"/></svg></button></div>
+   <div class="compose-tools"><div><button type="button" id="bold" aria-label="Bold text" title="Bold (Ctrl+B)"><b>B</b></button><button type="button" id="italic" aria-label="Italic text" title="Italic (Ctrl+I)"><i>I</i></button><span>Markdown supported</span></div><span>Enter to send · Shift+Enter for a new line</span></div>
+   <input id="file-input" type="file" multiple hidden>
+  </form>
+ </main>
+</div>
+<section id="welcome" class="welcome" hidden><div class="welcome-card"><img src="/icon.svg" alt="" width="76" height="76"><p class="eyebrow">YOUR CONVERSATIONS, TOGETHER</p><h1>Welcome to Paper Plane</h1><p>Chats for people. Little notebooks for yourself.<br>Messages, screenshots, and files — all in one place.</p><form id="welcome-form"><label id="welcome-label" for="identity">What should we call you?</label><input id="identity" required maxlength="40" placeholder="Your name" autocomplete="off"><button class="primary-button" id="join">Create profile</button></form><button id="switch-login" class="text-button">Already have an access key? Sign in</button><p class="welcome-footnote">Saved notes are private. Chats are shared with people on this server.</p></div></section>
+<dialog id="create-dialog"><form id="create-form"><div class="dialog-heading"><h2>Make a little space</h2><button type="button" data-close="create-dialog" class="icon-button" aria-label="Close">×</button></div><div class="type-options"><label><input type="radio" name="kind" value="note" checked><strong>Saved notebook</strong><span>Your own messages, images, and files</span></label><label><input type="radio" name="kind" value="chat"><strong>Shared chat</strong><span>A room for everyone on this server</span></label></div><label for="conversation-name">Name</label><input id="conversation-name" placeholder="e.g. Reading list" maxlength="80" required><button class="primary-button">Create conversation</button></form></dialog>
+<dialog id="account-dialog"><div class="dialog-heading"><h2 id="account-title">Your account</h2><button data-close="account-dialog" class="icon-button" aria-label="Close">×</button></div><p>Use this private access key to sign in from another browser or desktop. Keep it somewhere safe.</p><textarea id="access-key" readonly rows="3" aria-label="Your private access key"></textarea><button id="copy-key" class="primary-button">Copy access key</button><button id="logout" class="text-button danger">Sign out</button></dialog>
+<dialog id="rename-dialog"><form id="rename-form"><div class="dialog-heading"><h2>Rename conversation</h2><button type="button" data-close="rename-dialog" class="icon-button" aria-label="Close">×</button></div><label for="rename-input">Name</label><input id="rename-input" maxlength="80" required><button class="primary-button">Save name</button></form></dialog>
+<dialog id="confirm-dialog"><div class="dialog-heading"><h2>Delete this message?</h2><button data-close="confirm-dialog" class="icon-button" aria-label="Close">×</button></div><p>This removes the message from the conversation for everyone.</p><button id="confirm-delete" class="primary-button destructive">Delete message</button></dialog>
+<dialog id="image-dialog" class="image-dialog"><button data-close="image-dialog" class="image-close icon-button" aria-label="Close image">×</button><img id="lightbox" alt="Attachment preview"></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+</body></html>

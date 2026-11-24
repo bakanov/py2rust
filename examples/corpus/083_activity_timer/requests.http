@@ -1,0 +1,32 @@
+### Start a session. Use a fresh ID for each new session.
+POST http://127.0.0.1:8793/start
+Content-Type: application/json
+
+{"id":"coding-1","name":"Coding"}
+
+### Pause; time until resume will not count.
+POST http://127.0.0.1:8793/pause
+Content-Type: application/json
+
+{"id":"coding-1"}
+
+### Resume the same session.
+POST http://127.0.0.1:8793/resume
+Content-Type: application/json
+
+{"id":"coding-1"}
+
+### Stop permanently; saved intervals remain available.
+POST http://127.0.0.1:8793/stop
+Content-Type: application/json
+
+{"id":"coding-1"}
+
+### Read one session.
+GET http://127.0.0.1:8793/session?id=coding-1
+
+### Totals per session and activity name.
+GET http://127.0.0.1:8793/report
+
+### Download the complete JSON report and interval history.
+GET http://127.0.0.1:8793/export

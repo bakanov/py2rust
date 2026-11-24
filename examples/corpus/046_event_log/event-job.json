@@ -1,0 +1,18 @@
+{
+  "input": "events.jsonl",
+  "output": "diagnostics",
+  "states": ["new", "active", "paused", "closed"],
+  "initial_state": "new",
+  "transitions": [
+    {"from": "new", "to": "active"},
+    {"from": "active", "to": "paused"},
+    {"from": "paused", "to": "active"},
+    {"from": "active", "to": "closed"}
+  ],
+  "first_sequence": 1,
+  "global_time_order": true,
+  "max_streams": 1000,
+  "max_records": 10000,
+  "max_line_bytes": 65536,
+  "max_input_bytes": 8388608
+}

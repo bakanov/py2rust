@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "start": "2028-02-27T00:00:00Z",
+  "days": 7,
+  "limit": 20,
+  "schedules": [
+    {
+      "id": "workdays",
+      "expression": "*/15 9-10 * * 1-5"
+    },
+    {
+      "id": "leapday",
+      "expression": "0 9 29 2 *"
+    },
+    {
+      "id": "first-or-monday",
+      "expression": "30 8 1 * 1"
+    }
+  ],
+  "output": "../../../build/cron-demo"
+}

@@ -1,0 +1,7 @@
+[
+  {"id":"hello","op":"echo","args":{"message":"Hello, 世界"}},
+  {"id":"save","op":"set","args":{"key":"note","value":"Local command bus"}},
+  {"id":"read","op":"get","args":"note"},
+  {"id":"sum","op":"sum","args":[8,13,-2]},
+  {"id":"stats","op":"stats","args":null}
+]

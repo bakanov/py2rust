@@ -1,0 +1,4 @@
+INFO request accepted for /messages
+DEBUG request headers parsed
+ERROR request failed for /attachments
+INFO message saved: Привет, 世界

@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "mode": "archive",
+  "directory": "archives",
+  "inputs": [{"id": "access-001", "path": "access-001.log"}, {"id": "worker-001", "path": "worker-001.log"}],
+  "level": 6,
+  "limits": {"source_bytes": 8388608, "compressed_bytes": 9437184, "total_bytes": 33554432}
+}

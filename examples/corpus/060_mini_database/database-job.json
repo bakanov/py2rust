@@ -1,0 +1,5 @@
+{
+  "database": "database",
+  "trace": "trace.json",
+  "capacity": 16
+}

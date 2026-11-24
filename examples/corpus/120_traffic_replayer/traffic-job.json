@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "mode": "inspect",
+  "fixture": "sample.traffic",
+  "limits": {
+    "fixture_bytes": 8388608,
+    "records": 256,
+    "payload_bytes": 1048576,
+    "scheduled_ms": 60000
+  }
+}

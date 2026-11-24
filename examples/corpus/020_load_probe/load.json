@@ -1,0 +1,19 @@
+{
+  "concurrency": 4,
+  "timeout_ms": 1000,
+  "duration_ms": 5000,
+  "max_lag_ms": 2000,
+  "max_body": 65536,
+  "buckets_ms": [1, 5, 20, 100, 1000],
+  "targets": [
+    {"id": "healthy", "url": "http://127.0.0.1:8786/load/ready"},
+    {"id": "busy", "url": "http://127.0.0.1:8786/load/busy"},
+    {"id": "created", "url": "http://127.0.0.1:8786/load/create", "method": "POST",
+     "headers": {"Content-Type": "application/json"}, "body_hex": "7b226a6f62223a226c6f6164227d"}
+  ],
+  "schedule": [
+    {"target": "healthy", "count": 8, "at_ms": 0, "interval_ms": 50},
+    {"target": "busy", "count": 3, "at_ms": 25, "interval_ms": 100},
+    {"target": "created", "count": 3, "at_ms": 0, "interval_ms": 120}
+  ]
+}

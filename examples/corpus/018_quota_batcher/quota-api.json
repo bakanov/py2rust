@@ -1,0 +1,16 @@
+{
+  "states": ["ready", "throttled", "available"],
+  "initial": "ready",
+  "routes": [
+    {"id": "profile", "method": "GET", "path": "/api/profile", "status": 200,
+     "body": {"name": "Alice", "roles": ["reader"]}},
+    {"id": "quota", "method": "GET", "path": "/api/projects", "when": "ready", "next": "throttled",
+     "status": 429, "headers": [{"name": "Retry-After", "value": "3"}], "body": {"error": "try again later"}},
+    {"id": "projects", "method": "GET", "path": "/api/projects", "when": "throttled", "next": "available",
+     "status": 200, "body": {"projects": ["Paper Plane", "Python to Rust"]}},
+    {"id": "projects-repeat", "method": "GET", "path": "/api/projects", "when": "available",
+     "status": 200, "body": {"projects": ["Paper Plane", "Python to Rust"]}},
+    {"id": "notifications", "method": "GET", "path": "/api/notifications", "status": 200,
+     "body": {"unread": 4}}
+  ]
+}

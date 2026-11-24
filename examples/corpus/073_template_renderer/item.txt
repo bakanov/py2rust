@@ -1,0 +1,1 @@
+<li>{{ item.name }}: {% if item.done %}done{% else %}pending{% endif %}</li>

@@ -1,0 +1,5 @@
+name,visits,active,note
+"Ada, Lovelace",12,true,"Two lines:
+quoted ""hello"""
+世界,0,false,\N
+Invalid,not-an-integer,true,Reported without dropping the source row

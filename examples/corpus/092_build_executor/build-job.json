@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "state": ".build-state",
+  "targets": [
+    {
+      "id": "first", "inputs": {"text": "source.txt"}, "dependencies": [], "output": "artifacts/first.txt",
+      "argv": ["/usr/bin/cp", "{input:text}", "{output}"], "environment": {"LANG": "C"},
+      "timeout_ms": 3000, "max_output": 4096
+    },
+    {
+      "id": "second", "inputs": {}, "dependencies": ["first"], "output": "artifacts/second.txt",
+      "argv": ["/usr/bin/cp", "{dependency:first}", "{output}"], "environment": {"LANG": "C"},
+      "timeout_ms": 3000, "max_output": 4096
+    }
+  ]
+}

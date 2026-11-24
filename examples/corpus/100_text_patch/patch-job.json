@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "mode": "diff",
+  "base": "before.txt",
+  "target": "after.txt",
+  "context": 2,
+  "output": "comparison"
+}

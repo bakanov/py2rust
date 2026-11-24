@@ -1,0 +1,13 @@
+{
+  "base_url": "http://127.0.0.1:8767",
+  "timeout_ms": 1000,
+  "cases": [
+    {"name": "reset scenario", "method": "POST", "path": "/_mock/reset", "status": 200,
+     "fields": [{"path": "scenario", "value": "signed-out"}]},
+    {"name": "login", "method": "POST", "path": "/login", "body": {"user": "alice"}, "status": 201,
+     "fields": [{"path": "logged_in", "value": true}]},
+    {"name": "profile", "path": "/profile", "status": 200,
+     "fields": [{"path": "name", "value": "Alice"}]},
+    {"name": "logout", "method": "POST", "path": "/logout", "status": 204}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "mode": "resolve",
+  "index": "package-index.json",
+  "output": "resolution",
+  "roots": {
+    "Client": "*",
+    "Extension": "*"
+  },
+  "max_steps": 500,
+  "max_conflicts": 32
+}

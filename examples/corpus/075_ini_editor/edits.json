@@ -1,0 +1,1 @@
+[{"op":"set","section":"server","key":"port","value":"9090"},{"op":"set","section":"client","key":"endpoint","value":"${server.url}"}]

@@ -1,0 +1,12 @@
+{
+  "states": ["ready"],
+  "initial": "ready",
+  "routes": [
+    {"id": "home", "method": "GET", "path": "/", "status": 200, "encoding": "text",
+     "headers": [{"name": "Content-Type", "value": "text/html; charset=utf-8"}],
+     "body": "<!doctype html><title>Example site</title><a href='/guide/'>Guide</a><a href='/missing'>Broken link</a>"},
+    {"id": "guide", "method": "GET", "path": "/guide/", "status": 200, "encoding": "text",
+     "headers": [{"name": "Content-Type", "value": "text/html; charset=utf-8"}],
+     "body": "<!doctype html><title>Guide</title><a href='../#home'>Home</a><a href='https://example.org/'>External</a>"}
+  ]
+}

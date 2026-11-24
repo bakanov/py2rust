@@ -1,0 +1,8 @@
+# Integer and real arithmetic; a failed assignment preserves the session.
+total = price * quantity
+split = total / 3
+quantity = 1 / 0
+quantity
+-7 // 3
+-7 % 3
+adjusted = -(total + 2) * 0.5

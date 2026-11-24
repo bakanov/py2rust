@@ -1,0 +1,5 @@
+{
+  "input": "dataset.json",
+  "query": "filter \"/active\" == true | group \"/team\" as \"team\" sum \"/score\" as \"points\" | order \"/sums/points\" desc",
+  "output": "result.json"
+}

@@ -1,0 +1,14 @@
+{
+  "states": ["signed-out", "signed-in"],
+  "initial": "signed-out",
+  "routes": [
+    {"id": "login", "method": "POST", "path": "/login", "when": "signed-out", "next": "signed-in", "status": 201,
+     "require": [{"field": "user", "kind": "string", "equals": "alice"}], "body": {"logged_in": true}},
+    {"id": "profile", "method": "GET", "path": "/profile", "when": "signed-in", "status": 200,
+     "body": {"name": "Alice", "active": true}, "headers": [{"name": "X-Scenario", "value": "authenticated"}]},
+    {"id": "logout", "method": "POST", "path": "/logout", "when": "signed-in", "next": "signed-out",
+     "status": 204, "encoding": "text", "body": ""},
+    {"id": "binary", "method": "GET", "path": "/binary", "status": 200, "encoding": "hex", "body": "00 ff FE 0a"},
+    {"id": "welcome", "method": "GET", "path": "/welcome", "status": 200, "encoding": "text", "body": "Hello, 世界"}
+  ]
+}

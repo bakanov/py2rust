@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "mode": "benchmark",
+  "output": "measurements",
+  "sender": {
+    "argv": [
+      ".py2rust/rust/target/debug/transfer-bench"
+    ],
+    "environment": {},
+    "cwd": "."
+  },
+  "receiver": {
+    "argv": [
+      ".py2rust/rust/target/debug/transfer-bench"
+    ],
+    "environment": {},
+    "cwd": "."
+  },
+  "repetitions": 3,
+  "cases": [
+    {
+      "id": "small",
+      "size": 4096,
+      "seed": 17,
+      "send_chunk": 257,
+      "receive_chunk": 1024,
+      "timeout_ms": 3000
+    },
+    {
+      "id": "bulk",
+      "size": 1048576,
+      "seed": 211,
+      "send_chunk": 65536,
+      "receive_chunk": 16384,
+      "timeout_ms": 5000
+    }
+  ]
+}

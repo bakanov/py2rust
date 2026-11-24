@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "root": ".",
+  "output": "../095-code-metrics-report",
+  "package": "",
+  "exclude": ["__pycache__"],
+  "thresholds": {"lines": 40, "statements": 25, "depth": 3}
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "release",
+    "targets": [
+      "package",
+      "docs"
+    ]
+  },
+  {
+    "id": "cycle-diagnostic",
+    "targets": [
+      "loop-a",
+      "docs"
+    ]
+  },
+  {
+    "id": "nothing",
+    "targets": []
+  }
+]

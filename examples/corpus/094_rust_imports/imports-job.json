@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "output": "inspection",
+  "cases": [
+    {
+      "id": "case_0",
+      "operation": "narrow",
+      "arguments": {
+        "value": -9223372036854775808
+      },
+      "expect": {
+        "kind": "error",
+        "code": "integer_range"
+      }
+    },
+    {
+      "id": "case_4",
+      "operation": "narrow",
+      "arguments": {
+        "value": -4611686018427387904
+      },
+      "expect": null
+    },
+    {
+      "id": "case_12",
+      "operation": "narrow",
+      "arguments": {
+        "value": 1
+      },
+      "expect": {
+        "kind": "value",
+        "value": 1
+      }
+    },
+    {
+      "id": "case_80",
+      "operation": "add",
+      "arguments": {
+        "left": -9223372036854775808,
+        "right": -1
+      },
+      "expect": null
+    },
+    {
+      "id": "case_132",
+      "operation": "unicode",
+      "arguments": {
+        "text": ""
+      },
+      "expect": {
+        "kind": "value",
+        "value": [
+          0,
+          0,
+          ""
+        ]
+      }
+    },
+    {
+      "id": "case_138",
+      "operation": "unicode",
+      "arguments": {
+        "text": "a\u0000b"
+      },
+      "expect": {
+        "kind": "value",
+        "value": [
+          3,
+          3,
+          "b\u0000a"
+        ]
+      }
+    },
+    {
+      "id": "case_158",
+      "operation": "accept",
+      "arguments": {
+        "text": "deny"
+      },
+      "expect": null
+    },
+    {
+      "id": "case_182",
+      "operation": "float",
+      "arguments": {
+        "mode": "finite"
+      },
+      "expect": null
+    },
+    {
+      "id": "case_184",
+      "operation": "nested",
+      "arguments": {
+        "mode": "finite"
+      },
+      "expect": null
+    },
+    {
+      "id": "case_196",
+      "operation": "nested",
+      "arguments": {
+        "mode": "negative_inf"
+      },
+      "expect": null
+    },
+    {
+      "id": "case_202",
+      "operation": "roundtrip",
+      "arguments": {
+        "value": null
+      },
+      "expect": null
+    },
+    {
+      "id": "case_204",
+      "operation": "roundtrip",
+      "arguments": {
+        "value": false
+      },
+      "expect": {
+        "kind": "value",
+        "value": false
+      }
+    },
+    {
+      "id": "case_206",
+      "operation": "roundtrip",
+      "arguments": {
+        "value": true
+      },
+      "expect": null
+    },
+    {
+      "id": "case_208",
+      "operation": "roundtrip",
+      "arguments": {
+        "value": -9223372036854775808
+      },
+      "expect": null
+    }
+  ]
+}

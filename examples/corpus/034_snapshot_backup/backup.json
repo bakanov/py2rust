@@ -1,0 +1,7 @@
+{
+  "repository": "./backup-store",
+  "source": "./source",
+  "keep": 3,
+  "max_entries": 10000,
+  "max_bytes": 1073741824
+}

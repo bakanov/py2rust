@@ -1,0 +1,8 @@
+{
+  "url": "http://127.0.0.1:8767/artifact.txt",
+  "target": "downloaded-artifact.txt",
+  "sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+  "max_bytes": 1024,
+  "chunk_size": 1024,
+  "timeout_ms": 5000
+}

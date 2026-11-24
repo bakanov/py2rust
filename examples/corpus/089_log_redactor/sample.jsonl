@@ -1,0 +1,2 @@
+{"level":"info","message":"Login for alice@example.test with demo-secret-42","context":{"token":"demo-secret-42","attempt":1},"recipients":[{"email":"alice@example.test","role":"owner"}],"active":true}
+{"level":"warning","message":"Retry bob@example.test","context":{"attempt":2},"recipients":[],"active":false}

@@ -1,0 +1,1 @@
+{"max_peers":32,"frame_bytes":16384,"queue_bytes":65536,"keys":128,"receipts":256,"value_bytes":4096,"session_ms":60000,"partial_ms":3000,"drain_ms":1000,"write_bytes":65536,"allow_stop":0}

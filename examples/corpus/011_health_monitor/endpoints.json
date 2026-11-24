@@ -1,0 +1,8 @@
+{
+  "endpoints": [{"id": "notification-board", "url": "http://127.0.0.1:8775/status"}],
+  "failure_threshold": 2,
+  "recovery_threshold": 2,
+  "retain": 20,
+  "timeout_ms": 1000,
+  "max_body": 65536
+}

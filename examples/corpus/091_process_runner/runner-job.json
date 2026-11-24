@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "output": "test-results",
+  "environment": {"LANG": "C.UTF-8", "TEST_MESSAGE": "Hello from an isolated environment"},
+  "tests": [
+    {
+      "id": "greeting", "argv": ["/usr/bin/printf", "%s\n", "Hello, Rust!"], "cwd": ".", "environment": {},
+      "stdin": {"encoding": "utf8", "data": ""}, "timeout_ms": 3000, "max_output": 1024,
+      "expect": {"exit_code": 0, "stdout": {"mode": "utf8", "value": "Hello, Rust!\n"},
+                 "stderr": {"mode": "utf8", "value": ""}}
+    },
+    {
+      "id": "environment", "argv": ["/usr/bin/printenv", "TEST_MESSAGE"], "cwd": ".", "environment": {},
+      "stdin": {"encoding": "utf8", "data": ""}, "timeout_ms": 3000, "max_output": 1024,
+      "expect": {"exit_code": 0, "stdout": {"mode": "contains", "value": "isolated environment"},
+                 "stderr": {"mode": "ignore", "value": ""}}
+    },
+    {
+      "id": "expected-failure", "argv": ["/usr/bin/false"], "cwd": ".", "environment": {},
+      "stdin": {"encoding": "utf8", "data": ""}, "timeout_ms": 3000, "max_output": 0,
+      "expect": {"exit_code": 1, "stdout": {"mode": "utf8", "value": ""},
+                 "stderr": {"mode": "utf8", "value": ""}}
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "tzdata": "/usr/share/zoneinfo",
+  "targets": [
+    "UTC",
+    "Europe/Berlin",
+    "Asia/Yekaterinburg"
+  ],
+  "appointments": [
+    {
+      "id": "winter_meeting",
+      "label": "Winter Meeting",
+      "local": "2026-01-20T15:00:00",
+      "zone": "America/New_York",
+      "ambiguity": "reject",
+      "gap": "reject"
+    },
+    {
+      "id": "fall_earlier",
+      "label": "Fall Earlier",
+      "local": "2026-11-01T01:30:00",
+      "zone": "America/New_York",
+      "ambiguity": "earlier",
+      "gap": "reject"
+    },
+    {
+      "id": "fall_later",
+      "label": "Fall Later",
+      "local": "2026-11-01T01:30:00",
+      "zone": "America/New_York",
+      "ambiguity": "later",
+      "gap": "reject"
+    },
+    {
+      "id": "spring_shift",
+      "label": "Spring Shift",
+      "local": "2026-03-08T02:30:00",
+      "zone": "America/New_York",
+      "ambiguity": "reject",
+      "gap": "shift_forward"
+    },
+    {
+      "id": "spring_review",
+      "label": "Spring Review",
+      "local": "2026-03-08T02:30:00",
+      "zone": "America/New_York",
+      "ambiguity": "reject",
+      "gap": "reject"
+    }
+  ],
+  "output": "converted"
+}

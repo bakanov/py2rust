@@ -1,0 +1,7 @@
+[
+  {"op": "submit", "id": "note-1", "payload": {"text": "Hello from a complete Python-to-Rust project"}},
+  {"op": "pending", "limit": 10},
+  {"op": "ack", "id": "note-1"},
+  {"op": "get", "id": "note-1"},
+  {"op": "stats"}
+]

@@ -1,0 +1,7 @@
+{
+  "base_url": "http://127.0.0.1:8783/api/",
+  "attempts": 4,
+  "backoff": 2,
+  "timeout_ms": 2000,
+  "max_body": 65536
+}

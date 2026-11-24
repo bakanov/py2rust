@@ -1,0 +1,10 @@
+{
+  "layers": [
+    {"name": "base", "path": "base.json", "required": true},
+    {"name": "site", "path": "site.json", "required": true},
+    {"name": "user", "path": "user.json", "required": false}
+  ],
+  "type_changes": [],
+  "output": "resolved.json",
+  "max_nodes": 20000
+}
