@@ -3,6 +3,7 @@ use crate::Result;
 
 const MAX_BYTES: usize = 64 * 1024 * 1024;
 
+#[inline]
 fn check_size(length: usize) -> Result<()> {
     if length > MAX_BYTES {
         return Err("byte buffer exceeds 64 MiB".into());
@@ -10,6 +11,7 @@ fn check_size(length: usize) -> Result<()> {
     Ok(())
 }
 
+#[inline]
 pub fn byte_value(value: i64) -> Result<u8> {
     Ok(u8::try_from(value).map_err(|_| "byte must be in range 0..255")?)
 }
@@ -46,6 +48,7 @@ pub fn byte_buffer_checked(data: Vec<u8>) -> Result<Vec<u8>> {
     Ok(data)
 }
 
+#[inline]
 pub fn byte_buffer_append(data: &mut Vec<u8>, value: i64) -> Result<()> {
     let value = byte_value(value)?;
     check_size(

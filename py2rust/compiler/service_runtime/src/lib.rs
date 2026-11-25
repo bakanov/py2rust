@@ -150,6 +150,7 @@ pub fn bytes_xor(data: &[u8], key: &[u8]) -> Result<Vec<u8>> {
         .map(|(index, value)| value ^ key[index % key.len()])
         .collect())
 }
+#[inline]
 pub fn int_lshift(value: i64, count: i64) -> Result<i64> {
     if count < 0 {
         return Err("negative shift count".into());
@@ -162,6 +163,7 @@ pub fn int_lshift(value: i64, count: i64) -> Result<i64> {
     }
     Ok(i64::try_from((value as i128) << count).map_err(|_| "integer overflow")?)
 }
+#[inline]
 pub fn int_rshift(value: i64, count: i64) -> Result<i64> {
     if count < 0 {
         return Err("negative shift count".into());
@@ -552,6 +554,12 @@ pub fn json_loads(text: &str) -> Result<Json> {
     json_check(&value, 0)?;
     Ok(value)
 }
+/// Transfer existing JSON elements while retaining the normal conversion checks.
+pub fn json_from_array(values: Vec<Json>) -> Result<Json> {
+    let value = Value::Array(values);
+    json_check(&value, 0)?;
+    Ok(value)
+}
 pub fn to_json<T: Serialize + ?Sized>(value: &T) -> Result<Json> {
     let value = serde_json::to_value(value)?;
     json_check(&value, 0)?;
@@ -628,8 +636,30 @@ pub fn pretty<T: Serialize + ?Sized>(value: &T) -> Result<String> {
     Ok(serde_json::to_string_pretty(&to_json(value)?)?)
 }
 mod json_output;
+mod map_positions;
 pub use json_output::{json_dumps_view, pretty_view};
+pub use map_positions::{cached_map_get, cached_map_insert, cached_map_position};
 
+pub fn json_string_ref(value: &Json) -> Result<&str> {
+    Ok(value.as_str().ok_or("expected JSON string")?)
+}
+pub fn cached_json_string<'a>(
+    cache: &'a std::cell::OnceCell<String>,
+    value: &Json,
+    key: &str,
+) -> Result<&'a str> {
+    if let Some(text) = cache.get() {
+        return Ok(text.as_str());
+    }
+    // Validate only on the original control-flow path. Failed projections are
+    // not cached, so a handler can retry without suppressing checked errors.
+    let text = json_string_ref(json_key_ref(value, key)?)?.to_owned();
+    let _ = cache.set(text);
+    Ok(cache
+        .get()
+        .expect("projection cache was initialized")
+        .as_str())
+}
 pub fn json_string(value: &Json) -> Result<String> {
     Ok(value.as_str().ok_or("expected JSON string")?.to_string())
 }
@@ -719,6 +749,9 @@ pub fn str_rfind(value: &str, needle: &str) -> i64 {
         .map(|p| value[..p].chars().count() as i64)
         .unwrap_or(-1)
 }
+mod split_views;
+pub use split_views::{split_item, str_split_count, str_split_iter, str_split_whitespace_iter};
+
 pub fn str_split(value: &str, separator: &str) -> Result<Vec<String>> {
     if separator.is_empty() {
         return Err("empty separator".into());
@@ -962,7 +995,8 @@ pub fn remove_dir(path: &str) -> Result<()> {
 
 mod regular_expressions;
 pub use regular_expressions::{
-    regex_capture, regex_findall, regex_fullmatch, regex_replace, regex_search,
+    regex_capture, regex_capture_groups, regex_findall, regex_fullmatch, regex_replace,
+    regex_search,
 };
 
 mod web;
@@ -1391,3 +1425,9 @@ mod sparse_index_tests {
         assert_eq!(view.as_ptr(), text[1..].as_ptr());
     }
 }
+
+mod integer_lookup;
+pub use integer_lookup::IntLookup;
+
+mod memoization;
+pub use memoization::{memoized, MemoCache};

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from ..memory import (
     IterationUse,
+    binding_write_reasons,
     iteration_use,
 )
 from ..rules.iteration import (
@@ -15,19 +16,52 @@ from ..rules.iteration import (
     render_range,
     select_iteration,
 )
-from .values import Type
+from .values import Expr, Type
+from .split_emission import split_iterator, split_operands
 
 if TYPE_CHECKING:
     from ..service import ServiceCompiler
 
 
 def emit_for(compiler: ServiceCompiler, node: ast.For) -> str:
+    from .borrowed_maps import begin_borrowed_maps, finish_borrowed_maps
+    from .projection_cache import prepare_scan_caches
+
+    projection_caches_before = compiler.projection_caches.copy()
+    scan_caches_before = compiler.scan_caches.copy()
+    map_positions_before = compiler.map_positions.copy()
+    growing_sets_before = compiler.growing_sets.copy()
     compiler.check_name(node.target.id, node)
     before = compiler.locals.copy()
+    borrowed_map_loops_before = compiler.borrowed_map_loops.copy()
+    borrowed_maps = begin_borrowed_maps(compiler, node)
     borrowed_before = compiler.borrowed_parameters.copy()
+    integer_views_before = compiler.integer_views.copy()
     borrowed_str_before = compiler.borrowed_str_parameters.copy()
     item_borrowed = False
-    if (
+    byte_iteration = False
+    split_setup = prepare_scan_caches(compiler, node)
+    split = split_operands(compiler, node.iter, snapshot=True) if compiler.optimize_iteration else None
+    if split is not None:
+        source, separator = split
+        split_setup += f"let __split_source = {source.code};\n"
+        source = Expr("__split_source", Type("str"))
+        if separator is not None:
+            split_setup += f"let __split_separator = {separator.code};\n"
+            separator = Expr("__split_separator", Type("str"))
+        iterator = split_iterator(compiler, source, separator)
+        typ = Type("str")
+        writes = binding_write_reasons(ast.Module(body=node.body, type_ignores=[]), {node.target.id})
+        item_borrowed = node.target.id not in writes
+        if not item_borrowed:
+            iterator = f"({iterator}).map(str::to_owned)"
+        compiler.record_decision(
+            node,
+            "split_consumer",
+            "borrow_items" if item_borrowed else "owned_items",
+            "snapshot_backing_preserves_loop_input",
+        )
+    elif (
         isinstance(node.iter, ast.Call)
         and isinstance(node.iter.func, ast.Name)
         and node.iter.func.id == "range"
@@ -41,6 +75,8 @@ def emit_for(compiler: ServiceCompiler, node: ast.For) -> str:
         plan = iteration_use(node)
         if (
             compiler.optimize_iteration
+            and id(node) not in compiler.scan_caches
+            and id(node) not in compiler.borrowed_map_loops
             and isinstance(node.iter, ast.Name)
             and node.iter.id in compiler.locals
             and compiler.can_move_local(node.iter, compiler.locals[node.iter.id])
@@ -66,6 +102,7 @@ def emit_for(compiler: ServiceCompiler, node: ast.For) -> str:
         else:
             mode, reason = "owned_result", "computed_owned_iteration_source"
         compiler.record_decision(node, "iteration", mode, reason)
+        byte_iteration = value.type.name in {"bytes", "bytearray"} and isinstance(node.iter, ast.Name)
         if value.type.name == "str":
             typ = Type("str")
         elif value.type.name in {"bytes", "bytearray"}:
@@ -80,14 +117,35 @@ def emit_for(compiler: ServiceCompiler, node: ast.For) -> str:
         item_borrowed = rule.borrowed_item
         iterator = render_iteration(rule, value.type.name, value.code, len(value.type.args))
     compiler.borrowed_str_parameters.discard(node.target.id)
+    if split is not None and item_borrowed:
+        compiler.borrowed_str_parameters.add(node.target.id)
     compiler.locals[node.target.id] = typ
     if item_borrowed:
         compiler.borrowed_parameters.add(node.target.id)
     else:
         compiler.borrowed_parameters.discard(node.target.id)
+    if compiler.optimize and byte_iteration:
+        from .lookup_views import integer_lookup_views
+
+        split_setup += integer_lookup_views(compiler, node)
     body = "\n".join(compiler.block(node.body))
     compiler.locals = before
     compiler.borrowed_parameters = borrowed_before
+    compiler.integer_views = integer_views_before
     compiler.borrowed_str_parameters = borrowed_str_before
     binding = node.target.id if item_borrowed else compiler.binding(node.target.id)
-    return render_for(binding, iterator, body)
+    scan = compiler.scan_caches.get(id(node))
+    if scan is not None and item_borrowed:
+        index, caches = scan
+        for cache, initializer in caches:
+            split_setup += f"{cache}.resize_with({node.iter.id}.len(), {initializer});\n"
+        binding = f"({index}, {binding})"
+        iterator = f"({iterator}).enumerate()"
+    compiler.projection_caches = projection_caches_before
+    compiler.scan_caches = scan_caches_before
+    compiler.map_positions = map_positions_before
+    compiler.growing_sets = growing_sets_before
+    compiler.borrowed_map_loops = borrowed_map_loops_before
+    rendered = render_for(binding, iterator, body)
+    rendered = "{\n" + split_setup + rendered + "\n}" if split_setup else rendered
+    return finish_borrowed_maps(borrowed_maps, rendered)

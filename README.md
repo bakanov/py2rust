@@ -132,12 +132,14 @@ The analyzer's [Python implementation](examples/projects/access_log/analysis.py)
 and [handwritten Rust baseline](benchmarks/access_log/native.rs) implement the same
 summary for valid log records. Generated Rust already borrows the complete input
 as `&str`, uses `i64` counters with checked arithmetic, and produces a standalone
-executable. It still allocates strings when splitting lines and paths, builds
-generic JSON values, and uses separate dictionary lookup and insertion. The
-handwritten version uses borrowed string slices, typed Serde decoding, and the
-map entry API.
+executable. The shared compiler now avoids temporary split lists for immediate
+consumers and avoids key allocation on repeated counter hits. Generic JSON
+construction and owned derived strings remain optimization targets. See the
+[current compiler performance report](doc/COMPILER_PERFORMANCE.md) for measured
+before/after results, safety conditions and remaining gaps.
 
-On an Intel i3-12100 with Rust 1.83.0, seven alternating release runs gave:
+The **original baseline**, before these compiler optimizations, used an Intel
+i3-12100 with Rust 1.83.0. Seven alternating release runs gave:
 
 | Log records | Generated Rust (median) | Handwritten Rust (median) | Slowdown |
 | ---: | ---: | ---: | ---: |
@@ -167,6 +169,13 @@ setup, supply an existing matching checkout instead of `--fetch`. It is a compil
 See [frontend migration](doc/FRONTEND_MIGRATION.md) for current coverage and limits.
 
 ## Documentation
+
+- [Scaling improvements and final acceptance](doc/SCALING_IMPROVEMENTS.md): general compiler fixes for autocomplete, routing and scheduling, with checked results.
+- [Handwritten-Rust performance comparison](doc/NATIVE_PERFORMANCE_GOAL.md): the completed original 20-case gate (with the accepted resolver exception), ten additional comparisons and remaining gaps.
+
+- [Performance of 20 selected corpus applications](doc/CORPUS_SPEED_20.md): complete-job timings, memory, bottleneck analysis and reproducible evidence.
+
+- [Current compiler performance report](doc/COMPILER_PERFORMANCE.md): general split/counter improvements, selected-program verification and remaining gaps.
 
 - [Optimization results](doc/OPTIMIZATION_RESULTS.md): current timing, memory and readability evidence.
 - [Optimization plan](doc/OPTIMIZATION_PLAN.md): problem inventory, compiler analyses and regression gates.

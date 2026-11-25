@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 from typing import TYPE_CHECKING
 
+from ..memory import place_root
 from ..optimization import (
     string_append,
 )
@@ -15,6 +16,7 @@ from ..rules.assignment import (
 )
 from ..rust_text import quote
 from .values import Type
+from .counter_emission import emit_counter_update
 
 if TYPE_CHECKING:
     from ..service import ServiceCompiler
@@ -39,7 +41,22 @@ def emit_local(compiler: ServiceCompiler, node: ast.AnnAssign) -> str:
     compiler.check_name(name, node)
     if name in compiler.locals:
         compiler.error("use assignment to update an existing local", node)
-    typ = compiler.typ(node.annotation)
+    typ = getattr(node, "py2rust_representation_type", None) or compiler.typ(node.annotation)
+    from .record_cursors import bind_record_cursor
+
+    cursor = bind_record_cursor(compiler, node, typ)
+    if cursor is not None:
+        return cursor
+    from .field_moves import emit_field_move
+
+    moved = emit_field_move(compiler, node, typ)
+    if moved is not None:
+        return moved
+    from .projected_strings import bind_projected_string
+
+    projected = bind_projected_string(compiler, node, typ)
+    if projected is not None:
+        return projected
     if name in compiler.sequence_views:
         compiler.record_decision(node, "slice", "borrow", "readonly_sequence_slice_of_stable_parameter")
         value = compiler.local_read(node.value)
@@ -48,6 +65,17 @@ def emit_local(compiler: ServiceCompiler, node: ast.AnnAssign) -> str:
         compiler.locals[name] = typ
         item = "u8" if typ.name in {"bytes", "bytearray"} else typ.args[0].rust()
         return f"let {name}: &[{item}] = {compiler.reference(value)};"
+    if name in compiler.json_text_views:
+        source = compiler.local_read(node.value.args[0])
+        if source is None or source.type != Type("Json"):
+            compiler.error("JSON string view requires a stable JSON source", node)
+        compiler.locals[name] = typ
+        compiler.borrowed_parameters.add(name)
+        compiler.borrowed_str_parameters.add(name)
+        compiler.record_decision(node, "json_string", "borrow", "readonly_string_of_stable_json_backing")
+        if compiler.collect_costs:
+            compiler.record_runtime_helper(node.value, "json_string_ref")
+        return f"let {name}: &str = rt::json_string_ref({compiler.reference(source)})?;"
     if name in compiler.array_views:
         compiler.record_decision(node, "json_array", "borrow", "readonly_array_of_stable_json_parameter")
         value = compiler.local_read(node.value)
@@ -63,13 +91,61 @@ def emit_local(compiler: ServiceCompiler, node: ast.AnnAssign) -> str:
         value = compiler.string_slice(node.value, obj, view=True)
         compiler.locals[name] = typ
         return f"let {name}: &str = {value.code};"
+    if (
+        compiler.optimize
+        and compiler.optimize_json_views
+        and typ == Type("Json")
+        and name not in compiler.mutable_bindings
+        and place_root(node.value) in compiler.borrowed_parameters
+    ):
+        place = compiler.local_read(node.value)
+        if place is not None and place.type == typ:
+            compiler.locals[name] = typ
+            compiler.borrowed_parameters.add(name)
+            compiler.record_decision(node, "json_binding", "borrow", "readonly_projection_of_borrowed_source")
+            return f"let {name}: &rt::Json = {compiler.reference(place)};"
     value = compiler.expr(node.value, typ)
     compiler.record_owned_boundary(node.value)
     compiler.locals[name] = typ
+    if (
+        compiler.optimize
+        and compiler.optimize_idioms
+        and name not in compiler.mutable_bindings
+        and typ.name == "dict"
+        and typ.args[0] == Type("str")
+        and typ.args[1].name in {"str", "int", "bool"}
+        and isinstance(node.value, ast.Dict)
+        and len(node.value.keys) >= 4
+        and all(
+            isinstance(item, ast.Constant) and type(item.value) in {str, int, bool}
+            for item in [*node.value.keys, *node.value.values]
+        )
+    ):
+        # Literal construction cannot fail or observe state. The binding/write
+        # plan proves the table is read-only; escaping owned uses still clone.
+        compiler.borrowed_parameters.add(name)
+        compiler.record_decision(node, "constant_mapping", "shared", "readonly_scalar_literal_table")
+        return (
+            f"static __table_{name}: std::sync::OnceLock<{typ.rust()}> = std::sync::OnceLock::new(); "
+            f"let {name}: &{typ.rust()} = __table_{name}.get_or_init(|| {value.code});"
+        )
     return f"let {compiler.binding(name)}: {typ.rust()} = {value.code};"
 
 
 def emit_assignment(compiler: ServiceCompiler, node: ast.Assign) -> str:
+    from .map_positions import cached_map_operation
+
+    cached = cached_map_operation(compiler, node)
+    if cached is not None:
+        return cached.code
+    from .record_cursors import advance_record_cursor
+
+    cursor = advance_record_cursor(compiler, node)
+    if cursor is not None:
+        return cursor
+    counter = emit_counter_update(compiler, node)
+    if counter is not None:
+        return counter
     target = node.targets[0]
     if isinstance(target, ast.Subscript) and isinstance(target.value, ast.Subscript):
         return compiler.nested_list_assignment(target, node.value)

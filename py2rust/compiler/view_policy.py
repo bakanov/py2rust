@@ -1,4 +1,4 @@
-"""Plan borrowed slice and JSON-array locals on typed IR."""
+"""Plan borrowed slices, JSON arrays and JSON text on typed IR."""
 
 from collections import Counter
 from dataclasses import dataclass
@@ -37,6 +37,45 @@ def statements(body: tuple[ir.Statement, ...]) -> list[ir.Statement]:
     return result
 
 
+def json_backings(
+    function: ir.Function, stable: set[str], stable_expressions: frozenset[ir.Expression]
+) -> dict[ir.Statement, dict[str, str]]:
+    """Track stable JSON iteration items only inside their owning loop body."""
+    from .binding_policy import iteration_use
+
+    result = {}
+
+    def block(body: tuple[ir.Statement, ...], roots: dict[str, str]) -> None:
+        for item in body:
+            result[item] = roots
+            for index, child in enumerate(item.blocks):
+                nested = roots.copy()
+                if item.operation == "for":
+                    nested.pop(item.target, None)
+                    value = item.expressions[0]
+                    plan = iteration_use(item)
+                    if (
+                        index == 0
+                        and plan.mode == "borrow"
+                        and plan.borrow_item
+                        and plan.source in roots
+                        and value.operation == "runtime_call"
+                        and value.value == "json_array"
+                        and len(value.operands) == 1
+                        and value.operands[0] in stable_expressions
+                    ):
+                        nested[item.target] = roots[plan.source]
+                block(child, nested)
+            for handler in item.handlers:
+                nested = roots.copy()
+                nested.pop(handler.binding, None)
+                block(handler.body, nested)
+        return
+
+    block(function.body, {name: name for name in stable})
+    return result
+
+
 def analyze_function(function: ir.Function, stable_expressions: frozenset[ir.Expression]) -> FunctionViews:
     body = statements(function.body)
     stores = Counter(item.target for item in body if item.operation in {"assign", "for", "resource_scope"})
@@ -55,22 +94,29 @@ def analyze_function(function: ir.Function, stable_expressions: frozenset[ir.Exp
         ("text", {"builtins.str"}),
         ("sequence", SEQUENCES),
         ("array", {"py2rust.stdlib.Json"}),
+        ("json_text", {"py2rust.stdlib.Json"}),
     ):
         parameters = {parameter.name for parameter in function.parameters if parameter.type.name in types}
         stable = parameters - (stores.keys() if kind == "text" else write_reasons(function, parameters).keys())
+        scoped = json_backings(function, stable, stable_expressions) if kind in {"array", "json_text"} else {}
         candidates = []
         for item in declarations:
             value = item.expressions[0]
-            if kind == "array":
+            if kind in {"array", "json_text"}:
+                expected = (
+                    ir.ValueType("builtins.list", (ir.ValueType("py2rust.stdlib.Json"),))
+                    if kind == "array"
+                    else ir.ValueType("builtins.str")
+                )
                 if (
-                    item.target_type == ir.ValueType("builtins.list", (ir.ValueType("py2rust.stdlib.Json"),))
+                    item.target_type == expected
                     and value.operation == "runtime_call"
-                    and value.value == "json_array"
+                    and value.value == ("json_array" if kind == "array" else "json_string")
                     and len(value.operands) == 1
                     and value.operands[0] in stable_expressions
-                    and place_root(value.operands[0]) in stable
+                    and place_root(value.operands[0]) in scoped[item]
                 ):
-                    candidates.append((item, place_root(value.operands[0])))
+                    candidates.append((item, scoped[item][place_root(value.operands[0])]))
             elif (
                 item.target_type is not None
                 and item.target_type.name in (types | {"tuple"} if kind == "sequence" else types)

@@ -91,3 +91,20 @@ def render_indexed_list_mutation(kind: str, name: str, key: str, value: str, met
             + "(__value); }"
         )
     return ""
+
+
+def render_counter_update(name: str, key: str, default: str, increment: str) -> str:
+    # Do not use entry(...).or_insert(default): overflow must not insert a
+    # previously absent key. Existing values also remain unchanged on failure.
+    return (
+        "{ let __counter_key: &str = " + key + ";\n"
+        "match " + name + ".get_mut(__counter_key) {\n"
+        "Some(__counter) => { *__counter = (*__counter).checked_add(" + increment + ').ok_or("integer overflow")?; }\n'
+        "None => { let __counter_value = ("
+        + default
+        + ").checked_add("
+        + increment
+        + ').ok_or("integer overflow")?; '
+        + name
+        + ".insert(__counter_key.to_owned(), __counter_value); }\n} }"
+    )

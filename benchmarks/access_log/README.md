@@ -1,5 +1,8 @@
 # Access-log analyzer: Python → Rust versus handwritten Rust
 
+Raw report filenames below refer to [local archived reports](../REPORTS.md#local-archive),
+not files shipped in this repository. Source programs and Markdown summaries remain in Git.
+
 This selected complete application summarizes HTTP access logs. It exercises
 modules, a dataclass, typed dictionaries, strings, assertions, file I/O,
 environment variables and JSON. It is deliberately small enough to inspect.
@@ -9,7 +12,7 @@ environment variables and JSON. It is deliberately small enough to inspect.
 - [Sample input](../../examples/projects/access_log/sample.jsonl)
 - [Handwritten Rust](native.rs)
 - [Benchmark driver](../../tools/compare_access_log.py)
-- [Recorded raw measurements and source hashes](results.json)
+- [Recorded raw measurements and source hashes (local archive)](../REPORTS.md#local-archive) (`benchmarks/access_log/results.json`)
 
 ## Run and inspect
 
@@ -37,6 +40,12 @@ It builds both binaries in the same Cargo project with the same locked dependenc
 graph and release profile. Compilation is not included in the timings.
 
 ## Actual code comparison
+
+The excerpts and timings in this section are the original baseline. The latest
+shared compiler changes are described in [the current performance report](../../doc/COMPILER_PERFORMANCE.md).
+
+Project exports now use readable top-level names (see [naming rules](../../doc/projects.md#names-in-exported-rust)).
+The recorded timings and source hashes below predate that presentation-only change.
 
 Python accepts a whole string and iterates over its lines:
 
@@ -99,7 +108,7 @@ Other differences:
 | Route dictionary | `IndexMap<String, i64>`; separate `get` and `insert`, cloned keys | Same ordered map; `entry(...).or_default()` |
 | JSON input | Generic JSON tree, followed by field access and conversion | Serde `Event` schema |
 | Summary output | Explicit JSON object, including cloned route dictionary | Serialize borrowed `Summary` directly |
-| Naming | Module prefixes and numbered block suffixes | Ordinary `Summary`, `summarize`, `event` |
+| Naming | Readable exported `Summary`/`summarize`; numbered local block suffixes remain | Ordinary `Summary`, `summarize`, `event` |
 | Struct construction | `requests: requests`, etc. | Defaults and field updates |
 
 The emitted code is recognizable Rust, with ordinary structs, borrowed input,

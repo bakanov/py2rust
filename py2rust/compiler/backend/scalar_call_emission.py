@@ -14,6 +14,8 @@ from ..rules.conversions import render_conversion, select_conversion
 from ..rules.numeric import render_unary, select_unary_rule
 from ..rust_text import quote
 from .values import Expr, Type
+from .split_emission import split_consumer
+from .json_consumers import collection_length
 
 if TYPE_CHECKING:
     from ..service import ServiceCompiler
@@ -72,7 +74,12 @@ def emit_ord(compiler: ServiceCompiler, node: ast.Call) -> Expr:
 
 
 def emit_length(compiler: ServiceCompiler, node: ast.Call) -> Expr:
+    if id(node) in compiler.field_length_reads:
+        return Expr(compiler.field_length_reads[id(node)], Type("int"))
     argument = node.args[0]
+    fused = collection_length(compiler, argument) or split_consumer(compiler, argument)
+    if fused is not None:
+        return fused
     value = compiler.read_value(argument)
     local_name = argument.id if isinstance(argument, ast.Name) and argument.id in compiler.locals else ""
     rule = length_rule(value.type.name, local_name in compiler.indexed_text, local_name in compiler.cached_lengths)

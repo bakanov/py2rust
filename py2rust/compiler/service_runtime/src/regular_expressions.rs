@@ -223,7 +223,10 @@ pub fn regex_capture(pattern: &str, text: &str, full: bool) -> Result<Json> {
     let Some(captures) = cached_capture(pattern, full)?.groups(text)? else {
         return Ok(Json::Null);
     };
-    let (mut groups, mut spans) = (Vec::new(), Vec::new());
+    let (mut groups, mut spans) = (
+        Vec::with_capacity(captures.len()),
+        Vec::with_capacity(captures.len()),
+    );
     for value in captures {
         if let Some((start, end)) = value {
             groups.push(serde_json::json!(&text[start..end]));
@@ -236,7 +239,37 @@ pub fn regex_capture(pattern: &str, text: &str, full: bool) -> Result<Json> {
             spans.push(Json::Null);
         }
     }
-    Ok(serde_json::json!({"groups":groups,"spans":spans}))
+    // Move the already constructed JSON values; json! would serialize them again.
+    Ok(Json::Object(
+        [
+            ("groups".to_owned(), Json::Array(groups)),
+            ("spans".to_owned(), Json::Array(spans)),
+        ]
+        .into_iter()
+        .collect(),
+    ))
+}
+
+/// Internal lowering for capture results whose spans cannot be observed.
+pub fn regex_capture_groups(pattern: &str, text: &str, full: bool) -> Result<Json> {
+    if pattern.len() > 4096 || text.len() > 65536 {
+        return Err("regex capture exceeds pattern or input byte limit".into());
+    }
+    let Some(captures) = cached_capture(pattern, full)?.groups(text)? else {
+        return Ok(Json::Null);
+    };
+    let groups = captures
+        .into_iter()
+        .map(|span| match span {
+            Some((start, end)) => Json::String(text[start..end].to_owned()),
+            None => Json::Null,
+        })
+        .collect();
+    Ok(Json::Object(
+        [("groups".to_owned(), Json::Array(groups))]
+            .into_iter()
+            .collect(),
+    ))
 }
 
 fn spans(pattern: &str, text: &str) -> Result<Vec<Span>> {

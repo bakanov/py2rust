@@ -32,6 +32,15 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
     compiler.optimization_report = {}
     compiler.runtime_effect_selections = {}
     functions, main = collect_declarations(compiler, tree)
+    from .regex_consumers import prepare_regex_consumers
+
+    prepare_regex_consumers(compiler, functions)
+    from .projected_strings import prepare_projected_strings
+
+    prepare_projected_strings(compiler, functions)
+    from .shared_records import prepare_shared_records, record_definition
+
+    prepare_shared_records(compiler)
     output = [
         "#![allow(unused_mut, unused_variables, unused_parens, dead_code, non_camel_case_types, non_snake_case)]\nuse py2rust_service_runtime as rt;"
     ]
@@ -39,14 +48,8 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
         output.append(
             f"#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]\nenum {name} {{ {', '.join(values)} }}"
         )
-    for name, fields in compiler.records.items():
-        output.append(
-            "#[derive(Clone)]\nstruct "
-            + name
-            + " {\n"
-            + "\n".join(field + ": " + typ.rust() + "," for field, (typ, _) in fields.items())
-            + "\n}"
-        )
+    for name in compiler.records:
+        output.append(record_definition(compiler, name))
     legacy_functions = {node.name for node in functions if not hasattr(node, "py2rust_parameter_plan")}
     callbacks = callback_functions(tree, legacy_functions) if legacy_functions else set()
     compiler.parameter_uses = (
@@ -109,6 +112,12 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
             if compiler.optimize_iteration and compiler.optimize_json_views
             else {}
         )
+        view_plan = getattr(node, "py2rust_view_plan", None)
+        compiler.json_text_views = (
+            view_plan.bindings("json_text")
+            if view_plan is not None and compiler.optimize_json_views and compiler.optimize
+            else {}
+        )
         compiler.sequence_views = (
             sequence_slice_views(
                 node,
@@ -124,6 +133,18 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
         compiler.cached_lengths = (
             cached_lengths(node, string_parameters - compiler.indexed_text.keys()) if compiler.optimize else {}
         )
+        from .record_views import prepare_record_views
+
+        prepare_record_views(compiler, node)
+        from .field_moves import prepare_field_moves
+
+        prepare_field_moves(compiler, node)
+        from .record_cursors import prepare_record_cursors
+
+        prepare_record_cursors(compiler, node)
+        from .borrowed_maps import prepare_borrowed_maps
+
+        prepare_borrowed_maps(compiler, node)
         statements = node.body
         documentation = ast.get_docstring(node)
         if documentation:
@@ -139,6 +160,9 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
             ]
             + compiler.block(statements, scoped=False)
         )
+        from .memoization import wrap_parser
+
+        body = wrap_parser(compiler, node, body)
         success = "Ok(())" if compiler.result == Type("None") and not compiler.always_returns(statements) else ""
         output.append(
             ("\n".join("/// " + line for line in documentation.splitlines()) + "\n" if documentation else "")
@@ -157,10 +181,17 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
     compiler.borrowed_parameters = set()
     compiler.borrowed_str_parameters = set()
     compiler.ownership_uses = {}
+    compiler.record_cursors = {}
+    compiler.record_cursor_steps = {}
+    compiler.borrowed_maps = {}
+    compiler.borrowed_map_loops = set()
+    compiler.field_moves = {}
+    compiler.field_length_reads = {}
     compiler.indexed_text = {}
     compiler.slice_views = {}
     compiler.array_views = {}
     compiler.sequence_views = {}
+    compiler.json_text_views = {}
     compiler.mutable_bindings = mutable_bindings(main)
     output.append(
         str(

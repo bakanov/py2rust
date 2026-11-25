@@ -240,3 +240,32 @@ Unicode and byte buffers, recursive finite-float validation, and owned JSON. Its
 include inspection reports and repeatable expectations. Every Python application
 module compiles, while the generated executable calls the `.rs` files directly
 and has no Python runtime. Separate test shims are used only for CPython comparison.
+
+## Names in exported Rust
+
+Project commands (`transpile`, `build`, and `run`) assign readable Rust names at
+export, after linking and compiler analysis. For the access-log example:
+
+| Internal symbol | Exported Rust |
+| --- | --- |
+| `py__analysis__Summary` | `Summary` |
+| `py__analysis__summarize` | `summarize` |
+| `py__main__main` | `run_main` |
+
+Rust's `main` remains the executable entry point and calls `run_main`. When
+multiple modules export the same name, the compiler qualifies it with a readable
+module prefix, such as `left_value` and `right_value`, or `LeftSummary` and
+`RightSummary`. It also avoids Rust keywords and names already used by locals;
+a numeric suffix resolves remaining collisions deterministically.
+
+This is a syntax-aware identifier rewrite, not a text substitution. String
+values, comments, source paths and handwritten Rust files remain intact. The
+project manifest maps the exported names back to the original Python/Rust source
+locations. Internal IR and optimization reports retain stable linker IDs;
+exported function report rows additionally record `rust_symbol`. Low-level IR
+emission APIs still expose internal names. Block-local temporary naming is a
+separate concern and is unchanged by this pass.
+
+Rebuild your Docker image with `docker build -t py2rust-demo .` and run it again
+to get these names in a new export directory. Previously exported files are not
+modified.

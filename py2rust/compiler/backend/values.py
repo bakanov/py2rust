@@ -15,6 +15,8 @@ class Type:
         return ValueType(self.name, tuple(argument.value_type() for argument in self.args))
 
     def rust(self) -> str:
+        if self.name == "$json_ref":
+            return "&rt::Json"
         return render_owned_type(self.name, [argument.rust() for argument in self.args])
 
 

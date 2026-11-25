@@ -187,6 +187,8 @@ def expression(
         node = ast.Subscript(value=operands[0], slice=operands[1], ctx=ast.Load())
     else:
         raise AdapterError(f"unsupported IR expression {operation} at {value.source}")
+    if operation != "json_coerce":
+        node.py2rust_value_type = value.type
     if operation == "runtime_call":
         node.py2rust_effect_expression = value
     if operation in {"json_object", "json_array_literal"}:

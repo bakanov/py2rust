@@ -25,3 +25,13 @@ coverage.xml
 
 # Exported Docker example runs
 /docker-output/
+
+# Generated benchmark measurements and profiles (keep sources and Markdown summaries).
+/benchmarks/access_log/results.json
+/benchmarks/corpus_speed_10/**/*.json
+/benchmarks/corpus_speed_10/**/*.txt
+/benchmarks/corpus_speed_20/**/*.json
+/benchmarks/corpus_speed_20/**/*.txt
+/benchmarks/performance_2026_11/*.json
+/benchmarks/scaling/**/*.json
+/benchmarks/scaling/**/*.txt

@@ -131,7 +131,7 @@ def analyze_function(function: ir.Function) -> FunctionLiveness:
                 if node.protected
                 else (
                     "value_live_after_use"
-                    if name.value in live_out[index]
+                    if name.value in live_out[index] - node.writes
                     else "repeated_use_in_expression" if counts[name.value] != 1 else "last_use_on_all_successors"
                 )
             )

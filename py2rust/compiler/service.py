@@ -81,15 +81,29 @@ class ServiceCompiler:
         self.borrowed_parameters: set[str] = set()
         self.borrowed_str_parameters: set[str] = set()
         self.ownership_uses: dict = {}
+        self.projected_strings: dict = {}
+        self.projection_caches: dict = {}
+        self.scan_caches: dict = {}
+        self.map_positions: dict = {}
+        self.growing_sets: dict = {}
+        self.borrowed_maps: dict = {}
+        self.borrowed_map_loops: set[int] = set()
+        self.record_cursors: dict = {}
+        self.record_cursor_steps: dict = {}
+        self.field_moves: dict = {}
+        self.field_length_reads: dict = {}
         self.move_safety: MoveSafetyPlan | None = None
         self.indexed_text: dict = {}
         self.slice_views: dict[str, str] = {}
         self.array_views: dict[str, str] = {}
+        self.json_text_views: dict[str, str] = {}
+        self.integer_views: set[str] = set()
         self.sequence_views: dict[str, str] = {}
         self.imports: set[str] = set()
         self.modules: set[str] = set()
         self.enums: dict[str, dict[str, str | int]] = {}
         self.records: dict[str, dict[str, tuple[Type, Expr | None]]] = {}
+        self.shared_records: dict[str, str] = {}
         self.functions: dict[str, tuple] = dict(external_functions or {})
         self.constants: dict[str, Expr] = {}
         self.locals: dict[str, Type] = {}
@@ -254,6 +268,11 @@ class ServiceCompiler:
             self.error(f"Rust keyword cannot be a binding: {name}", node)
 
     def convert(self, expression: Expr, expected: Type, node: ast.AST) -> Expr:
+        if expected.name == "$json_ref" and expression.type == Type("Json"):
+            place = self.local_read(node)
+            if place is None or place.type != Type("Json"):
+                self.error("internal JSON view requires a stable source", node)
+            return Expr(self.reference(place), expected)
         if expression.type == expected:
             return expression
         if (
@@ -269,6 +288,17 @@ class ServiceCompiler:
                 if expression.borrowed:
                     value = f"({value}).to_owned()" if expression.type.name == "str" else f"*({value})"
                 return Expr(f"serde_json::Value::from({value})", expected)
+            if self.optimize and expression.type == Type("list", (Type("Json"),)):
+                self.record_decision(node, "json_conversion", "transfer", "reuse_owned_json_elements")
+                return Expr(f"rt::json_from_array({expression.code})?", expected)
+            # Conversion immediately serializes into an independent owned JSON
+            # tree. Borrow a stable place rather than cloning it before serde
+            # makes that tree. No borrowed value escapes this expression.
+            if self.optimize and isinstance(node, (ast.Name, ast.Attribute, ast.Subscript)):
+                place = self.local_read(node)
+                if place is not None and place.type == expression.type:
+                    self.record_decision(node, "json_conversion", "borrow", "serialization_returns_owned_tree")
+                    return Expr(f"rt::to_json({self.reference(place)})?", expected)
             return Expr(f"rt::to_json(&({expression.code}))?", expected)
         if expected.name == "float" and expression.type.name == "int":
             return Expr(f"({expression.code} as f64)", expected)
@@ -276,7 +306,7 @@ class ServiceCompiler:
 
     def move_context(self, node: ast.Name, typ: Type) -> MoveContext:
         use = self.ownership_uses.get(id(node))
-        views = (self.slice_views, self.array_views, self.sequence_views)
+        views = (self.slice_views, self.array_views, self.sequence_views, self.json_text_views)
         return MoveContext(
             local=node.id in self.locals,
             last_use=use is not None and use.mode == "move",
@@ -369,6 +399,11 @@ class ServiceCompiler:
 
     def local_read(self, node: ast.AST) -> Expr | None:
         """A reference can escape this expression only when rooted in a live local."""
+        from .backend.projected_strings import projected_string
+
+        projected = projected_string(self, node)
+        if projected is not None:
+            return projected
         options = BorrowOptions(self.optimize_text, self.optimize_slices, self.optimize_json_views)
         if (
             self.optimize_json_views
@@ -446,7 +481,8 @@ class ServiceCompiler:
                 if key.type.name not in {"str", "int"}:
                     self.error("JSON index must be str or int", node)
                 if key.type.name == "str":
-                    argument = quote(node.slice.value) if isinstance(node.slice, ast.Constant) else f"&({key.code})"
+                    place = self.argument_place(node.slice)
+                    argument = self.reference(place) if place is not None else f"&({key.code})"
                     helper = "json_key_ref"
                 else:
                     argument = key.code
@@ -459,7 +495,10 @@ class ServiceCompiler:
                     or not 0 <= node.slice.value < len(parent.type.args)
                 ):
                     self.error("tuple index must be a nonnegative constant in bounds", node)
-                return Expr(f"&({parent.code}).{node.slice.value}", parent.type.args[node.slice.value], borrowed=True)
+                field = parent.type.args[node.slice.value]
+                if field.name == "$json_ref":
+                    return Expr(f"({parent.code}).{node.slice.value}", Type("Json"), borrowed=True)
+                return Expr(f"&({parent.code}).{node.slice.value}", field, borrowed=True)
             if kind == "sequence":
                 key = self.expr(node.slice, Type("int"))
                 return Expr(
@@ -470,8 +509,10 @@ class ServiceCompiler:
                 )
             if kind == "mapping":
                 key = self.expr(node.slice, parent.type.args[0])
+                place = self.argument_place(node.slice) if self.optimize and key.type.name == "str" else None
+                key_reference = self.reference(place) if place is not None else f"&({key.code})"
                 return Expr(
-                    f'({parent.code}).get(&({key.code})).ok_or("missing dict key")?',
+                    f'({parent.code}).get({key_reference}).ok_or("missing dict key")?',
                     parent.type.args[1],
                     borrowed=True,
                 )
@@ -615,6 +656,9 @@ class ServiceCompiler:
                 values.append(self.reference(value))
             else:
                 values.append(value.code)
+        if name == "regex_capture" and getattr(node, "py2rust_regex_groups_only", False):
+            output_helper = "regex_capture_groups"
+            self.record_decision(node, "regex_capture", "groups_only", "all_uses_observe_only_groups_or_null")
         if self.collect_costs:
             self.record_runtime_helper(node, output_helper)
         call = f"rt::{output_helper}({', '.join(values)})"
@@ -702,9 +746,11 @@ class ServiceCompiler:
                     self.error("missing required dataclass argument: " + field, node)
                 values[field] = default.code
         # Rust evaluates field initializers in this supplied order, including reordered keywords.
-        return Expr(
-            name + " { " + ", ".join(field + ": " + value for field, value in values.items()) + " }", Type(name)
-        )
+        storage = self.shared_records.get(name, name)
+        value = storage + " { " + ", ".join(field + ": " + value for field, value in values.items()) + " }"
+        if storage != name:
+            value = f"{name}(std::sync::Arc::new({value}))"
+        return Expr(value, Type(name))
 
     def record_definition(self, node: ast.ClassDef) -> None:
         if (
@@ -949,6 +995,12 @@ class ServiceCompiler:
             ):
                 self.error("unsupported collection method", node)
             return None
+        if rule.key == "set.add" and obj.type.args[0] == Type("str"):
+            from .backend.projected_strings import insert_borrowed_string
+
+            inserted = insert_borrowed_string(self, node)
+            if inserted is not None:
+                return inserted
         if rule.form == "copy":
             return obj  # The checked collection read already produced its owned copy.
         if rule.key == "list.sort" and not self.orderable(obj.type.args[0]):

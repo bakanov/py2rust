@@ -19,6 +19,7 @@ from ..rules.numeric import (
 )
 from ..rust_text import quote
 from .values import Expr, Type
+from .json_consumers import borrowed_string_membership, key_membership
 
 if TYPE_CHECKING:
     from ..service import ServiceCompiler
@@ -45,6 +46,33 @@ def emit_unary(compiler: ServiceCompiler, node: ast.UnaryOp) -> Expr:
     if not rule.key:
         compiler.error("unsupported unary operator", node)
     return Expr(render_unary(rule, value.code), Type(rule.result))
+
+
+def string_concatenation(compiler: ServiceCompiler, node: ast.BinOp) -> Expr | None:
+    """Format one string chain without allocating every intermediate prefix."""
+    if not compiler.optimize or not compiler.optimize_idioms or not isinstance(node.op, ast.Add):
+        return None
+    operands: list[ast.AST] = []
+
+    def gather(value: ast.AST) -> None:
+        if isinstance(value, ast.BinOp) and isinstance(value.op, ast.Add):
+            gather(value.left)
+            gather(value.right)
+        else:
+            operands.append(value)
+        return
+
+    gather(node)
+    values = [compiler.expr(operand) for operand in operands]
+    if not all(value.type == Type("str") for value in values):
+        return None
+    arguments = []
+    for index, (operand, value) in enumerate(zip(operands, values)):
+        use = runtime_argument_use(RuntimeParameter("str", "shared"), operands, index)
+        place = compiler.argument_place(operand, allow_place=use.mode == "borrow")
+        arguments.append(compiler.reference(place) if place is not None else value.code)
+    compiler.record_decision(node, "string_concatenation", "fused", "typed_string_operands_in_source_order")
+    return Expr(f'format!("{"{}" * len(arguments)}", {", ".join(arguments)})', Type("str"))
 
 
 def emit_binary(compiler: ServiceCompiler, node: ast.BinOp, expected: Type | None) -> Expr:
@@ -75,6 +103,9 @@ def emit_binary(compiler: ServiceCompiler, node: ast.BinOp, expected: Type | Non
     if left.type == right.type and left.type.name == "set" and type(node.op) in set_methods:
         return compiler.set_operation(left, right, set_methods[type(node.op)])
     if isinstance(node.op, ast.Add) and left.type == right.type == Type("str"):
+        concatenated = string_concatenation(compiler, node)
+        if concatenated is not None:
+            return concatenated
         return Expr(f'format!("{{}}{{}}", {left.code}, {right.code})', left.type)
     if isinstance(node.op, ast.Add) and left.type == right.type == Type("bytes"):
         return Expr(f"[{left.code}, {right.code}].concat()", left.type)
@@ -98,12 +129,20 @@ def emit_binary(compiler: ServiceCompiler, node: ast.BinOp, expected: Type | Non
 
 
 def emit_comparison(compiler: ServiceCompiler, node: ast.Compare) -> Expr:
+    fused = borrowed_string_membership(compiler, node) or key_membership(compiler, node)
+    if fused is not None:
+        return fused
     operands = [node.left, *node.comparators]
     if len(node.ops) == 1:
-        left = compiler.expr(operands[0])
+        null_identity = (
+            compiler.optimize
+            and isinstance(node.ops[0], (ast.Is, ast.IsNot))
+            and any(isinstance(operand, ast.Constant) and operand.value is None for operand in operands)
+        )
+        left = compiler.read_value(operands[0]) if null_identity else compiler.expr(operands[0])
         right = (
             compiler.read_value(operands[1])
-            if isinstance(node.ops[0], (ast.In, ast.NotIn))
+            if null_identity or isinstance(node.ops[0], (ast.In, ast.NotIn))
             else compiler.expr(operands[1])
         )
         if (
@@ -126,6 +165,16 @@ def emit_comparison(compiler: ServiceCompiler, node: ast.Compare) -> Expr:
                         if operand.id in compiler.borrowed_str_parameters or operand.id in compiler.slice_views
                         else f"{place.code}.as_str()"
                     )
+                elif (
+                    isinstance(operand, (ast.Attribute, ast.Subscript))
+                    and runtime_argument_use(RuntimeParameter("str", "shared"), operands, index).mode == "borrow"
+                    and (place := compiler.local_read(operand)) is not None
+                    and place.type == Type("str")
+                ):
+                    # A checked string projection can be compared in place.
+                    # AsRef works for both String-backed and str-backed views.
+                    code = f"AsRef::<str>::as_ref({compiler.reference(place)})"
+                    compiler.record_decision(operand, "string_comparison", "borrow", "stable_projected_string")
                 else:
                     code = f"({value.code}).as_str()"
                 compared.append(Expr(code, Type("str"), borrowed=True))

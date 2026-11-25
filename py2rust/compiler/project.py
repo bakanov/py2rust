@@ -492,6 +492,17 @@ def create_project(
         code = project.compile()
     else:
         raise ProjectError("unknown compiler frontend: " + frontend, root)
+    from .rust_names import readable_names
+
+    symbols = {symbol: location["name"] for symbol, location in project.source_map.items()}
+    symbols.update(
+        (symbol_name(module.name, "rust_module"), module.name.replace(".", "_") + "_native")
+        for module in project.modules.values()
+        if module.tree is None
+    )
+    code, emitted_names = readable_names(code, symbols)
+    for row in project.optimization_report.get("functions", []):
+        row["rust_symbol"] = emitted_names.get(row["symbol"], row["symbol"])
     formatted = subprocess.run(
         ["rustfmt", "--edition=2021", "--config", "skip_children=true"],
         input=code,
@@ -551,7 +562,7 @@ def create_project(
         "entry": entry,
         "binary_name": binary_name,
         "frontend": frontend,
-        "symbols": project.source_map,
+        "symbols": {emitted_names.get(symbol, symbol): location for symbol, location in project.source_map.items()},
         "files": {name: hashlib.sha256(data).hexdigest() for name, data in files.items()},
     }
     # Managed files are replaced; user files and Cargo target caches are retained.

@@ -1,5 +1,8 @@
 # Recorded optimization measurements
 
+See [the 2026-11-25 compiler performance report](COMPILER_PERFORMANCE.md) for the
+latest split/counter before-and-after measurements and selected application checks.
+
 These historical measurements describe the host compiler at its Unicode
 codepoint-cache checkpoint; they are not fresh acceptance for later revisions. They are release builds with correctness checks and alternating samples;
 allocation counters run separately. Final acceptance passed: 825 regression tests and all 120 applications.

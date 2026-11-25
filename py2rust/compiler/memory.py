@@ -239,7 +239,7 @@ def _legacy_last_uses(function: ast.FunctionDef) -> dict[int, OwnershipUse]:
                 if node.protected
                 else (
                     "value_live_after_use"
-                    if name.id in live_out[index]
+                    if name.id in live_out[index] - node.writes
                     else ("repeated_use_in_expression" if counts[name.id] != 1 else "last_use_on_all_successors")
                 )
             )

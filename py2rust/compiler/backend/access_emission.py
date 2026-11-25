@@ -8,6 +8,7 @@ from __future__ import annotations
 import ast
 from typing import TYPE_CHECKING
 
+from .split_emission import split_consumer
 from ..library_contracts import LOG_LEVELS
 from ..memory import RuntimeParameter, runtime_argument_use
 from ..rules.access import (
@@ -61,8 +62,18 @@ def emit_attribute(compiler: ServiceCompiler, node: ast.Attribute) -> Expr:
         fields = compiler.records[obj.type.name]
         if node.attr not in fields:
             compiler.error("unknown dataclass field: " + node.attr, node)
-        receiver = node.value.id if isinstance(node.value, ast.Name) else f"({obj.code})"
-        return Expr(f"{receiver}.{node.attr}.clone()", fields[node.attr][0])
+        # Project through stable local storage without owning each ancestor record.
+        # The final field still crosses an owned boundary: collections/records must
+        # remain independent values, whereas scalar fields can be copied directly.
+        parent = compiler.local_read(node.value) if compiler.optimize else None
+        receiver = (
+            f"({parent.code})"
+            if parent is not None
+            else node.value.id if isinstance(node.value, ast.Name) else f"({obj.code})"
+        )
+        typ = fields[node.attr][0]
+        suffix = "" if compiler.optimize and typ.name in {"int", "float", "bool", "None"} else ".clone()"
+        return Expr(f"{receiver}.{node.attr}{suffix}", typ)
     if obj.type.name in compiler.enums and node.attr in {"name", "value"}:
         values = compiler.enums[obj.type.name]
         arms = []
@@ -77,6 +88,26 @@ def emit_attribute(compiler: ServiceCompiler, node: ast.Attribute) -> Expr:
 
 
 def emit_subscript(compiler: ServiceCompiler, node: ast.Subscript) -> Expr:
+    from .map_positions import cached_map_operation
+
+    cached = cached_map_operation(compiler, node)
+    if cached is not None:
+        return cached
+    constant = node.slice
+    position = None
+    if isinstance(constant, ast.Constant) and type(constant.value) is int:
+        position = constant.value
+    elif (
+        isinstance(constant, ast.UnaryOp)
+        and isinstance(constant.op, ast.USub)
+        and isinstance(constant.operand, ast.Constant)
+        and type(constant.operand.value) is int
+    ):
+        position = -constant.operand.value
+    if position is not None and -(2**63) <= position < 2**63:
+        fused = split_consumer(compiler, node.value, position)
+        if fused is not None:
+            return fused
     use = runtime_argument_use(RuntimeParameter("*", "shared"), [node], 0)
     obj = compiler.read_value(node.value) if use.mode == "borrow" else compiler.expr(node.value)
     if obj.type.name == "str" and isinstance(node.slice, ast.Slice):
@@ -94,7 +125,10 @@ def emit_subscript(compiler: ServiceCompiler, node: ast.Subscript) -> Expr:
             or not 0 <= node.slice.value < len(obj.type.args)
         ):
             compiler.error("tuple index must be a nonnegative constant in bounds", node)
-        return Expr(render_tuple_index(obj.code, node.slice.value), obj.type.args[node.slice.value])
+        field = obj.type.args[node.slice.value]
+        if field.name == "$json_ref":
+            return Expr(f"(*({obj.code}).{node.slice.value}).clone()", Type("Json"))
+        return Expr(render_tuple_index(obj.code, node.slice.value), field)
     key = compiler.expr(node.slice)
     prepared_text = isinstance(node.value, ast.Name) and node.value.id in compiler.indexed_text
     if obj.type.name == "Json":
@@ -120,4 +154,11 @@ def emit_subscript(compiler: ServiceCompiler, node: ast.Subscript) -> Expr:
         source = obj.code
     elif rule == "text.indexed":
         source = compiler.text_index(node.value.id)
+    if compiler.optimize and key.type.name == "str" and rule in {"json.key", "dictionary.value"}:
+        place = compiler.argument_place(node.slice)
+        if place is not None:
+            key_reference = compiler.reference(place)
+            if rule == "json.key":
+                return Expr(f"rt::json_key({source}, {key_reference})?", result)
+            return Expr(f'({source}).get({key_reference}).ok_or("missing dict key")?.clone()', result)
     return Expr(render_index(rule, source, key.code), result)

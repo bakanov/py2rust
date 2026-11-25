@@ -85,13 +85,34 @@ def runtime_summaries() -> dict[str, RuntimeSummary]:
         ),
         "regular_expressions.rs",
     )
+    add(
+        "regex_capture_groups",
+        Effects(
+            may_fail=True,
+            global_state=True,
+            costs=frozenset(
+                {"blocking", "compile_pattern_on_miss", "match_input", "retain_bounded_cache", "allocate_output"}
+            ),
+        ),
+        "regular_expressions.rs",
+    )
+    add(
+        "memoized",
+        Effects(
+            may_fail=True,
+            global_state=True,
+            costs=frozenset({"blocking", "retain_bounded_cache", "allocate_bounded_output"}),
+        ),
+        "memoization.rs",
+    )
     add("sha256_digest", Effects(costs=frozenset({"copy_bounded_state", "allocate_bounded_output"})), "resources.rs")
     add("sha256_update", Effects(costs=frozenset({"copy_bounded_state", "scan_input"})), "resources.rs")
     add("char_at_view", Effects(may_fail=True, costs=frozenset({"scan_input"})), "lib.rs", 0)
     add("json_int json_bool json_float", Effects(may_fail=True), "lib.rs")
     add("json_is_null", Effects(), "lib.rs")
+    add("json_from_array", Effects(may_fail=True, costs=frozenset({"validate_input"})), "lib.rs")
     add("json_kind", Effects(costs=frozenset({"allocate_bounded_output"})), "lib.rs")
-    add("json_array_ref json_index_ref", Effects(may_fail=True), "lib.rs", 0)
+    add("json_array_ref json_index_ref json_string_ref", Effects(may_fail=True), "lib.rs", 0)
     add("json_key_ref", Effects(may_fail=True, costs=frozenset({"map_lookup"})), "lib.rs", 0)
     add("json_string json_array json_index", Effects(may_fail=True, costs=frozenset({"copy_selected_value"})), "lib.rs")
     add("json_key json_get", Effects(may_fail=True, costs=frozenset({"map_lookup", "copy_selected_value"})), "lib.rs")

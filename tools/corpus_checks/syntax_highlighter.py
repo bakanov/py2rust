@@ -310,6 +310,8 @@ def rejection_cases(app: Application, directory: Path) -> int:
         result = app.run(directory, {"HIGHLIGHT_CONFIG": str(case.config)})
         assert result.returncode == 2 and not result.stdout and result.stderr, result
         assert snapshot(directory) == before
+    # Remove the alias so later cases exercise content limits, not link policy.
+    (directory / "hardlink").unlink()
     invalid_sources = [b"\xff", b"a\0", b"#" + b"x" * 65536, b"{" * 8193, b"/*" * 9 + b"*/" * 9]
     for source in invalid_sources:
         (directory / "input-0.cfg").write_bytes(source)
