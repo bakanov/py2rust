@@ -61,6 +61,7 @@ class Function:
     result: ValueType
     body: tuple[Statement, ...]
     source: Source
+    defaults: tuple[Expression, ...] = ()
 
 
 @dataclass(frozen=True)

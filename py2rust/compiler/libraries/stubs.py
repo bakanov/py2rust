@@ -4,11 +4,18 @@ import ast
 from pathlib import Path
 
 from ..exception_policy import RESOURCE_TYPES
-from . import RUNTIME, STANDARD, Replacement
+from . import CONSTANTS, RUNTIME, STANDARD, Replacement
 from .web import FIELDS
 
 
 def signature(replacement: Replacement) -> str:
+    if replacement.python_name == "json.dumps":
+        return (
+            "def dumps(value: object, /, *, ensure_ascii: bool = True, allow_nan: bool = True, "
+            "separators: tuple[str, str] = (', ', ': '), sort_keys: bool = False) -> str: ..."
+        )
+    if replacement.python_name == "json.loads":
+        return "def loads(text: str | bytes, /, *, object_pairs_hook: object = None) -> Json: ..."
     required = len(replacement.parameters) - len(replacement.trailing_defaults)
     parts = []
     for index, typ in enumerate(replacement.parameters):
@@ -80,11 +87,20 @@ def sources(root: Path) -> dict[str, tuple[Path, str]]:
             continue  # Keep typeshed builtin/logging types; lowering validates the supported call form.
         groups.setdefault(item.python_name.rsplit(".", 1)[0], []).append(item)
     for module, replacements in groups.items():
-        imports = "from typing import Callable\nfrom py2rust.stdlib import " + ", ".join(sorted(names)) + "\n"
+        imports = "from typing import Callable, TextIO\nfrom py2rust.stdlib import " + ", ".join(sorted(names)) + "\n"
         path = root.joinpath(*module.split("."))
         is_package = any(other.startswith(module + ".") for other in groups)
         stub_path = path / "__init__.pyi" if is_package else path.with_suffix(".pyi")
-        result[module] = (stub_path, imports + "\n".join(signature(item) for item in replacements))
+        constants = "\n".join(
+            f"{name.rsplit('.', 1)[1]}: {type(value).__name__}"
+            for name, value in CONSTANTS.items()
+            if name.rpartition(".")[0] == module and name not in {"sys.stdin", "sys.stdout", "sys.stderr"}
+        )
+        streams = "\nstdin: TextIO\nstdout: TextIO\nstderr: TextIO" if module == "sys" else ""
+        result[module] = (
+            stub_path,
+            imports + "\n".join(signature(item) for item in replacements) + "\n" + constants + streams,
+        )
         parent = module.rpartition(".")[0]
         while parent:
             result.setdefault(parent, (root.joinpath(*parent.split(".")) / "__init__.pyi", ""))

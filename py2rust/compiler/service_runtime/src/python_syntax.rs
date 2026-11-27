@@ -79,6 +79,32 @@ impl<'a> Syntax<'a> {
             Expr::Call(n) => {
                 json!({"kind":"Call","func":self.expr(&n.func)?,"args":self.expressions(&n.arguments.args)?,"keywords":self.keywords(&n.arguments.keywords)?})
             }
+            Expr::FString(n) => {
+                let mut values = Vec::new();
+                for element in n.value.elements() {
+                    match element {
+                        ast::FStringElement::Literal(literal) => values.push(self.node(
+                            element,
+                            json!({"kind":"Constant","tag":"str","text":literal.value}),
+                        )),
+                        ast::FStringElement::Expression(expression) => {
+                            if expression.format_spec.is_some() {
+                                return Err(self.unsupported(value));
+                            }
+                            values.push(self.node(
+                                element,
+                                json!({
+                                    "kind":"FormattedValue",
+                                    "value":self.expr(&expression.expression)?,
+                                    "format_spec":Json::Null,
+                                    "conversion":expression.conversion as i32,
+                                }),
+                            ));
+                        }
+                    }
+                }
+                json!({"kind":"JoinedStr","values":values})
+            }
             Expr::Attribute(n) => {
                 json!({"kind":"Attribute","value":self.expr(&n.value)?,"attr":n.attr.as_str()})
             }

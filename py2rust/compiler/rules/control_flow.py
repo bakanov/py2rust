@@ -40,11 +40,17 @@ def render_if(condition: str, body: list[str], otherwise: list[str]) -> str:
 
 
 def render_while(condition: str, body: list[str]) -> str:
+    if condition == "true":
+        return "loop {\n" + "\n".join(body) + "\n}"
     return "while " + condition + " {\n" + "\n".join(body) + "\n}"
 
 
 def render_assert(condition: str, message: str) -> str:
     return "if !(" + condition + ") { rt::assertion(false, &(" + message + "))?; }"
+
+
+def render_raise(message: str) -> str:
+    return "return Err(" + message + ".into());"
 
 
 def render_reraise(active_error: str) -> str:

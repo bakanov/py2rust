@@ -27,6 +27,13 @@ def emit_expression(compiler: ServiceCompiler, node: ast.AST, expected: Type | N
         return emit_literal(compiler, node, expected)
     if isinstance(node, ast.Name):
         return emit_name(compiler, node)
+    if isinstance(node, ast.NamedExpr):
+        value = compiler.expr(node.value)
+        declaration = "" if node.target.id in compiler.locals else "let mut "
+        compiler.locals[node.target.id] = value.type
+        binding = compiler.binding(node.target.id)
+        result = compiler.expr(ast.Name(id=node.target.id, ctx=ast.Load()))
+        return Expr(f"{{ {declaration}{binding} = {value.code}; {result.code} }}", value.type)
     if isinstance(node, (ast.List, ast.Set, ast.Tuple)):
         return emit_sequence(compiler, node, expected)
     if isinstance(node, ast.Dict):

@@ -61,6 +61,8 @@ def parser_parameter(compiler: ServiceCompiler, function: ast.FunctionDef) -> st
         if isinstance(node, ast.For):
             expensive = True
         if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
+            if "__block_" in node.id:
+                continue
             if node.id not in locals_ | BUILTINS | {"regex_fullmatch"}:
                 return None  # No globals, callbacks, environmental state or unknown callees.
         if isinstance(node, ast.Attribute):

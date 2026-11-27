@@ -19,7 +19,7 @@ from ..memory import IterationUse, OwnershipUse
 from ..memory_oracle import EvaluationProof
 from ..move_safety import MoveSafetyPlan
 from ..optimization import StringAppend
-from ..parameter_policy import FunctionParameters
+from ..parameter_policy import FunctionParameters, ParameterDecision
 from ..project_policy import module_layout, ordered_records
 from ..rust_imports import symbol_name
 from ..view_policy import FunctionViews
@@ -39,6 +39,8 @@ def locate(node: ast.AST, source: ir.Source) -> ast.AST:
 
 
 def name(symbol: str) -> str:
+    if symbol == "self":
+        return "self_"
     if symbol.endswith(".__name__"):
         return "__name__"
     if symbol.startswith("builtins."):
@@ -54,8 +56,24 @@ def annotation(typ: ir.ValueType) -> ast.expr:
         return ast.Name(id=typ.name.rsplit(".", 1)[1], ctx=ast.Load())
     if typ.name == "None":
         return ast.Constant(None)
+    if typ.name == "optional":
+        return ast.Subscript(value=ast.Name(id="Optional", ctx=ast.Load()), slice=annotation(typ.arguments[0]))
     if typ.name == "union":
-        raise AdapterError("union values require the new Rust backend")
+        return ast.Subscript(
+            value=ast.Name(id="Union", ctx=ast.Load()),
+            slice=ast.Tuple(elts=[annotation(item) for item in typ.arguments], ctx=ast.Load()),
+        )
+    if typ.name == "callable":
+        return ast.Subscript(
+            value=ast.Name(id="Callable", ctx=ast.Load()),
+            slice=ast.Tuple(
+                elts=[
+                    ast.List(elts=[annotation(item) for item in typ.arguments[:-1]], ctx=ast.Load()),
+                    annotation(typ.arguments[-1]),
+                ],
+                ctx=ast.Load(),
+            ),
+        )
     base = ast.Name(id=name(typ.name), ctx=ast.Load())
     if not typ.arguments:
         return base
@@ -129,12 +147,132 @@ def expression(
             args=operands,
             keywords=[],
         )
+    elif operation == "comprehend":
+        node = ast.Call(
+            func=ast.Name(id="__comprehend", ctx=ast.Load()),
+            args=operands[:1],
+            keywords=[],
+        )
+        target_count = int(value.operators[0]) if value.operators else 1
+        condition_counts = [int(count) for count in value.operators[1:]] or target_count * [0]
+        condition_groups = []
+        remaining = operands[1 + target_count :]
+        for count in condition_counts:
+            condition_groups.append(remaining[:count])
+            remaining = remaining[count:]
+        node.py2rust_comprehension = (
+            str(value.value).split("|"),
+            operands[0],
+            operands[1 : 1 + target_count],
+            condition_groups,
+            value.type.name,
+        )
+    elif operation == "enum_name":
+        node = ast.Call(func=ast.Name(id="__enum_name", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_enum_name = value.operators
+    elif operation == "choice":
+        node = ast.Call(func=ast.Name(id="__choice", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "accumulate":
+        node = ast.Call(func=ast.Name(id="__accumulate", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "dict_merge":
+        node = ast.Call(func=ast.Name(id="__dict_merge", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "next_counter":
+        node = ast.Call(func=ast.Name(id="__next_counter", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_counter = name(str(value.value))
+    elif operation == "defaultdict_list":
+        node = ast.Call(func=ast.Name(id="__defaultdict_list", ctx=ast.Load()), args=[], keywords=[])
+    elif operation == "defaultdict_set":
+        node = ast.Call(func=ast.Name(id="__defaultdict_set", ctx=ast.Load()), args=[], keywords=[])
+    elif operation == "format_value":
+        node = ast.Call(func=ast.Name(id="__format_value", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_format_value = str(value.value)
+    elif operation == "enum_members":
+        node = ast.Call(func=ast.Name(id="__enum_members", ctx=ast.Load()), args=[], keywords=[])
+        node.py2rust_enum_members = name(str(value.value))
+    elif operation == "int_enum_members":
+        node = ast.List(
+            elts=[ast.Constant(value=item) for item in value.value],
+            ctx=ast.Load(),
+        )
+    elif operation == "enum_from_value":
+        node = ast.Call(func=ast.Name(id="__enum_from_value", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_enum_from_value = name(str(value.value))
+    elif operation == "enum_name_exists":
+        node = ast.Call(func=ast.Name(id="__enum_name_exists", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_enum_name_exists = (name(str(value.value)), value.operators)
+    elif operation == "enum_from_name":
+        node = ast.Call(func=ast.Name(id="__enum_from_name", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_enum_from_name = (name(str(value.value)), value.operators)
+    elif operation == "sequence_index":
+        node = ast.Call(func=ast.Name(id="__sequence_index", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "is_type":
+        node = ast.Call(func=ast.Name(id="__is_type", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_is_type = (str(value.value), value.operators[0])
+    elif operation == "set_union":
+        node = ast.Call(func=ast.Name(id="__set_union", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "pack_float":
+        node = ast.Call(func=ast.Name(id="__pack_float", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "pack_ints":
+        node = ast.Call(func=ast.Name(id="__pack_ints", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "unpack_ints":
+        node = ast.Call(func=ast.Name(id="__unpack_ints", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_tuple_items = len(value.type.arguments)
+    elif operation == "unique_sequence":
+        node = ast.Call(func=ast.Name(id="__unique_sequence", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "optional_value":
+        node = ast.Call(func=ast.Name(id="__optional_value", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "counter":
+        node = ast.Call(func=ast.Name(id="__counter", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "unpack_float":
+        node = ast.Call(func=ast.Name(id="__unpack_float", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "shuffle":
+        node = ast.Call(func=ast.Name(id="__shuffle", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_shuffle = name(str(value.value))
+    elif operation == "map_random":
+        node = ast.Call(func=ast.Name(id="__map_random", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_map_random = str(value.value)
+    elif operation == "optional_len":
+        node = ast.Call(func=ast.Name(id="__optional_len", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "optional_unwrap":
+        node = ast.Call(func=ast.Name(id="__optional_unwrap", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "zip_pairs":
+        node = ast.Call(func=ast.Name(id="__zip_pairs", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "truthy":
+        node = ast.Call(func=ast.Name(id="__truthy", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "key_sorted":
+        node = ast.Call(func=ast.Name(id="__key_sorted", ctx=ast.Load()), args=operands[:1], keywords=[])
+        node.py2rust_key_sorted = (str(value.value), operands[1], operands[2:])
+    elif operation == "key_extreme":
+        node = ast.Call(func=ast.Name(id="__key_extreme", ctx=ast.Load()), args=operands[:1], keywords=[])
+        node.py2rust_key_extreme = (str(value.value), operands[1], value.operators[0], operands[2:])
+    elif operation == "class_name":
+        node = ast.Call(func=ast.Name(id="__class_name", ctx=ast.Load()), args=operands, keywords=[])
+    elif operation == "find":
+        node = ast.Call(
+            func=ast.Name(id="__find", ctx=ast.Load()),
+            args=operands[:2],
+            keywords=[],
+        )
+        node.py2rust_find = (str(value.value), operands[2], operands[3:])
+    elif operation == "indirect_call":
+        node = ast.Call(func=operands[0], args=operands[1:], keywords=[])
+    elif operation == "replace":
+        node = ast.Call(func=ast.Name(id="__replace", ctx=ast.Load()), args=operands, keywords=[])
+        node.py2rust_replace = (name(str(value.value)), value.operators)
     elif operation in {"construct", "call"}:
         labels = value.operators or ("",) * len(operands)
         node = ast.Call(
             func=ast.Name(id=name(str(value.value)), ctx=ast.Load()),
-            args=[operand for label, operand in zip(labels, operands) if not label],
-            keywords=[ast.keyword(arg=label, value=operand) for label, operand in zip(labels, operands) if label],
+            args=[
+                ast.Starred(value=operand, ctx=ast.Load()) if label == "*" else operand
+                for label, operand in zip(labels, operands)
+                if not label or label == "*"
+            ],
+            keywords=[
+                ast.keyword(arg=label, value=operand)
+                for label, operand in zip(labels, operands)
+                if label and label != "*"
+            ],
         )
     elif operation == "native_call":
         node = ast.Call(
@@ -142,6 +280,8 @@ def expression(
             args=operands,
             keywords=[],
         )
+    elif operation == "assign_expr":
+        node = ast.NamedExpr(target=ast.Name(id=name(str(value.value)), ctx=ast.Store()), value=operands[0])
     elif operation == "binary":
         node = ast.BinOp(left=operands[0], op=BINARY[value.value](), right=operands[1])
     elif operation == "unary":
@@ -232,6 +372,17 @@ class BlockAdapter:
             node = ast.Return(value=values[0] if values else None)
         elif operation == "expression":
             node = ast.Expr(value=values[0])
+        elif operation == "delete_slice":
+            bounds = dict(zip((item.target or "").split(","), values[1:]))
+            node = ast.Delete(
+                targets=[
+                    ast.Subscript(
+                        value=values[0],
+                        slice=ast.Slice(lower=bounds.get("start"), upper=bounds.get("stop")),
+                        ctx=ast.Del(),
+                    )
+                ]
+            )
         elif operation == "delete_index":
             node = ast.Delete(targets=[ast.Subscript(value=values[0], slice=values[1], ctx=ast.Del())])
         elif operation == "store_field":
@@ -244,6 +395,29 @@ class BlockAdapter:
                 targets=[ast.Subscript(value=values[1], slice=values[2], ctx=ast.Store())],
                 value=values[0],
             )
+        elif operation == "store_slice":
+            node = ast.Assign(
+                targets=[ast.Subscript(value=values[1], slice=ast.Slice(), ctx=ast.Store())],
+                value=values[0],
+            )
+        elif operation == "unpack_assign":
+            target_node = ast.parse(str(item.target), mode="eval").body
+
+            def store(pattern: ast.expr) -> ast.expr:
+                if isinstance(pattern, ast.Attribute):
+                    return ast.Name(id=name(ast.unparse(pattern)), ctx=ast.Store())
+                if isinstance(pattern, ast.Name):
+                    pattern.id = name(pattern.id)
+                    pattern.ctx = ast.Store()
+                elif isinstance(pattern, ast.Tuple):
+                    pattern.elts = [store(element) for element in pattern.elts]
+                    pattern.ctx = ast.Store()
+                return pattern
+
+            target_node = store(target_node)
+            node = ast.Assign(targets=[target_node], value=values[0])
+            self.locals.update(element.id for element in ast.walk(target_node) if isinstance(element, ast.Name))
+            node.py2rust_unpack_annotation = annotation(item.target_type)
         elif operation == "assign":
             if self.append_facts is not None:
                 plan = self.append_facts[item]
@@ -274,6 +448,9 @@ class BlockAdapter:
                     value=values[0],
                     simple=1,
                 )
+        elif operation == "group":
+            node = ast.If(test=ast.Constant(value=True), body=self.block(item.blocks[0]), orelse=[])
+            node.py2rust_group = True
         elif operation == "if":
             tail = self.block(item.blocks[-1])
             for test, body in reversed(list(zip(values, item.blocks[:-1]))):
@@ -291,7 +468,7 @@ class BlockAdapter:
             body = self.block(item.blocks[0])
             self.locals = before
             node = ast.For(
-                target=ast.Name(id=name(item.target), ctx=ast.Store()),
+                target=ast.parse(item.target, mode="eval").body,
                 iter=values[0],
                 body=body,
                 orelse=self.block(item.blocks[1]),
@@ -341,6 +518,8 @@ class BlockAdapter:
             )
         elif operation == "assert":
             node = ast.Assert(test=values[0], msg=values[1] if len(values) > 1 else None)
+        elif operation == "raise":
+            node = ast.Raise(exc=values[0], cause=None)
         elif operation == "reraise":
             node = ast.Raise(exc=None, cause=None)
         elif operation in {"pass", "break", "continue"}:
@@ -446,13 +625,13 @@ def linked_tree(
         for function in module.functions:
             args = ast.arguments(
                 posonlyargs=[],
-                args=[ast.arg(arg=p.name, annotation=annotation(p.type)) for p in function.parameters],
+                args=[ast.arg(arg=name(p.name), annotation=annotation(p.type)) for p in function.parameters],
                 kwonlyargs=[],
                 kw_defaults=[],
-                defaults=[],
+                defaults=[expression(default) for default in function.defaults],
             )
             body = BlockAdapter(
-                {p.name for p in function.parameters},
+                {name(p.name) for p in function.parameters},
                 exception_facts,
                 tail_returns,
                 evaluation_facts,
@@ -478,7 +657,15 @@ def linked_tree(
             if prepared_views is not None:
                 definitions[-1].py2rust_view_plan = prepared_views[function.name]
             if prepared_parameters is not None:
-                definitions[-1].py2rust_parameter_plan = prepared_parameters[function.name]
+                plan = prepared_parameters[function.name]
+                definitions[-1].py2rust_parameter_plan = FunctionParameters(
+                    name(plan.function),
+                    plan.callback,
+                    tuple(
+                        ParameterDecision(name(item.name), item.mode, item.reason, item.line)
+                        for item in plan.parameters
+                    ),
+                )
         declarations, executable = module_layout(module, entry)
         definitions.extend(
             BlockAdapter(set(), exception_facts, tail_returns, evaluation_facts, append_facts, iteration_facts).block(

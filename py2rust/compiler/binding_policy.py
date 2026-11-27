@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from . import ir
-from .parameter_policy import place_root, write_reasons
+from .parameter_policy import place_root, statement_targets, write_reasons
 from .view_policy import statements
 
 
@@ -20,11 +20,11 @@ def mutable_bindings(body: tuple[ir.Statement, ...], parameters: set[str]) -> fr
 
     def block(items: tuple[ir.Statement, ...], bindings: set[str]) -> None:
         for item in items:
-            if item.target is not None:
-                candidates.add(item.target)
-            if item.operation == "assign" and item.target not in bindings:
+            targets = statement_targets(item)
+            candidates.update(targets)
+            if item.operation in {"assign", "unpack_assign"} and any(target not in bindings for target in targets):
                 initializations.add(item)
-                bindings.add(item.target)
+                bindings.update(targets)
             if item.operation == "for":
                 initializations.add(item)
             for value in item.expressions:

@@ -5,6 +5,7 @@ from py2rust.stdlib import (
     json_array,
     json_bool,
     json_is_null,
+    json_int,
     json_keys,
     json_string,
     python_syntax_tree,
@@ -183,6 +184,23 @@ def expression(node: Json, context: Json, locals: dict[str, Json], functions: di
             "arguments": type_arguments,
         }
         return expression_as(node, context, locals, functions, container)
+    if kind == "JoinedStr":
+        result: Json = expression_node(node, path, "literal", value_type("builtins.str"), [], "str", "", [])
+        for item in json_array(node["values"]):
+            part: Json = result
+            if json_string(item["kind"]) == "Constant":
+                part = expression(item, context, locals, functions)
+            else:
+                assert json_string(item["kind"]) == "FormattedValue", position + ": unsupported f-string item"
+                assert json_is_null(item["format_spec"]), position + ": f-string format specifications are unsupported"
+                formatted: Json = expression(item["value"], context, locals, functions)
+                conversion_flag: int = json_int(item["conversion"])
+                spec: str = "!r" if conversion_flag == 114 else ""
+                part = expression_node(
+                    item, path, "format_value", value_type("builtins.str"), [formatted], "str", spec, []
+                )
+            result = expression_node(item, path, "binary", value_type("builtins.str"), [result, part], "str", "+", [])
+        return result
     if kind == "Attribute":
         owner: Json = expression(node["value"], context, locals, functions)
         owner_type: str = json_string(owner["type"]["name"])
@@ -916,6 +934,7 @@ def compile_sources(sources: list[Json], entry: str) -> Json:
                     "parameters": parameters,
                     "result": result,
                     "body": body["body"],
+                    "defaults": [],
                     "source": source_node(function["syntax"], json_string(module["path"])),
                 }
             )

@@ -39,9 +39,22 @@ def emit_heap_operation(compiler: ServiceCompiler, node: ast.Call, name: str) ->
             item.name in {"list", "tuple", "tuple_var"} and all(ordered(child) for child in item.args)
         )
 
-    if typ.name != "list" or not ordered(typ.args[0]):
-        compiler.error("heapq requires ordered non-float elements without custom comparisons", target)
+    float_priority = (
+        typ.name == "list"
+        and typ.args[0].name == "tuple"
+        and len(typ.args[0].args) == 3
+        and typ.args[0].args[0].name == "float"
+        and typ.args[0].args[1].name == "int"
+        and operation in {"heappush", "heappop"}
+    )
+    if typ.name != "list" or not ordered(typ.args[0]) and not float_priority:
+        compiler.error("heapq requires ordered elements without custom comparisons", target)
     result = Type("None") if operation in {"heapify", "heappush"} else typ.args[0]
+    if float_priority:
+        if len(node.args) == 2:
+            value = compiler.expr(node.args[1], typ.args[0])
+            return Expr(f"{{ let __item = {value.code}; rt::heap_float_push(&mut {target.id}, __item) }}", result)
+        return Expr(f"rt::heap_float_pop(&mut {target.id})?", result)
     fallible = "?" if operation in {"heappop", "heapreplace"} else ""
     # Evaluate the item before borrowing the heap: it can itself pop
     # from this list, and a failing item expression must not push.

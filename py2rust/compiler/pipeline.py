@@ -54,6 +54,8 @@ def prepare_typed(
     *,
     entry: str = "main",
     native_sources: dict[str, Path] | None = None,
+    search_paths: tuple[Path, ...] = (),
+    python_scope: bool = False,
 ) -> PreparedProgram:
     """Resolve and type-check Python, lower to IR, then compute memory policy."""
     with TemporaryDirectory(prefix="py2rust-stubs-") as directory:
@@ -72,10 +74,10 @@ def prepare_typed(
             stubs.pop(name, None)
         native_stubs, native_functions = declarations(native_sources, Path(directory))
         stubs.update(native_stubs)
-        program = analyze(sources, stubs=stubs)
+        program = analyze(sources, stubs=stubs, search_paths=search_paths, python_scope=python_scope)
     from .frontend.lowering import lower
 
-    modules = lower(program, native_functions=frozenset(native_functions))
+    modules = lower(program, native_functions=frozenset(native_functions), python_scope=python_scope)
     memory = memory_plan(modules)
     return PreparedProgram(
         modules,
@@ -97,7 +99,11 @@ class RustEmission:
 
 
 def emit_program(
-    program: PreparedProgram, *, native_module_paths: dict[str, str] | None = None, explain: bool = False
+    program: PreparedProgram,
+    *,
+    native_module_paths: dict[str, str] | None = None,
+    explain: bool = False,
+    python_scope: bool = False,
 ) -> RustEmission:
     """Render prepared IR and optionally collect the decisions used by emission."""
     native_sources = dict(program.native_sources)
@@ -122,6 +128,7 @@ def emit_program(
         entry_bindings=program.readability.entry_bindings,
     )
     compiler = ServiceCompiler({function.binding: function.signature for function in program.native_functions})
+    compiler.python_scope = python_scope
     compiler.collect_costs = explain
     code = compiler.compile_tree(tree)
     for module, path in native_sources.items():
@@ -157,9 +164,10 @@ def compile_typed(
     entry: str = "main",
     native_sources: dict[str, Path] | None = None,
     native_module_paths: dict[str, str] | None = None,
+    python_scope: bool = False,
 ) -> str:
     """Compile through the typed preparation and Rust emission stages."""
-    program = prepare_typed(sources, entry=entry, native_sources=native_sources)
+    program = prepare_typed(sources, entry=entry, native_sources=native_sources, python_scope=python_scope)
     return emit_rust(program, native_module_paths=native_module_paths)
 
 
@@ -170,7 +178,9 @@ def compile_project(root: Path, *, entry: str = "main.py") -> str:
     return compile_loaded_project(Project(root, entry))
 
 
-def compile_loaded_project(project: Project, *, packaged: bool = False, explain: bool = False) -> str:
+def compile_loaded_project(
+    project: Project, *, packaged: bool = False, explain: bool = False, python_scope: bool = False
+) -> str:
     """Use the shared discovery and packaging inventory without legacy emission."""
     from .rust_imports import ProjectError
 
@@ -198,13 +208,19 @@ def compile_loaded_project(project: Project, *, packaged: bool = False, explain:
             for name, path in natives.items()
         }
     try:
-        prepared = prepare_typed(sources, entry=module_name, native_sources=natives)
+        prepared = prepare_typed(
+            sources,
+            entry=module_name,
+            native_sources=natives,
+            search_paths=(project.root,),
+            python_scope=python_scope,
+        )
     except (FrontendError, ExceptionPolicyError) as error:
         if error.filename is None:
             raise
         location = ast.Pass(lineno=error.lineno, col_offset=0)
         location.source_path = error.filename
         raise ServiceError(str(error), location) from error
-    emitted = emit_program(prepared, native_module_paths=paths, explain=explain)
+    emitted = emit_program(prepared, native_module_paths=paths, explain=explain, python_scope=python_scope)
     project.optimization_report = emitted.optimization_report
     return emitted.code

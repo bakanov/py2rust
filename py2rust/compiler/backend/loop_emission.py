@@ -31,7 +31,13 @@ def emit_for(compiler: ServiceCompiler, node: ast.For) -> str:
     scan_caches_before = compiler.scan_caches.copy()
     map_positions_before = compiler.map_positions.copy()
     growing_sets_before = compiler.growing_sets.copy()
-    compiler.check_name(node.target.id, node)
+    if isinstance(node.target, ast.Tuple):
+        for element in node.target.elts:
+            if not isinstance(element, ast.Name):
+                compiler.error("loop tuple targets must be simple names", element)
+            compiler.check_name(element.id, element)
+    else:
+        compiler.check_name(node.target.id, node)
     before = compiler.locals.copy()
     borrowed_map_loops_before = compiler.borrowed_map_loops.copy()
     borrowed_maps = begin_borrowed_maps(compiler, node)
@@ -86,12 +92,29 @@ def emit_for(compiler: ServiceCompiler, node: ast.For) -> str:
         if place is not None and place.type.name == "tuple":
             place = None
         value = place if place is not None else compiler.expr(node.iter)
+        if value.type.name == "Json" or value.type.name == "optional" and value.type.args[0].name == "Json":
+            value = compiler.convert(value, Type("list", (Type("Json"),)), node)
+        if value.type.name == "optional" and value.type.args[0].name in {
+            "list",
+            "set",
+            "dict",
+            "tuple",
+            "tuple_var",
+            "bytes",
+            "bytearray",
+            "str",
+        }:
+            value = compiler.convert(value, value.type.args[0], node)
         if value.type.name not in {"list", "set", "dict", "tuple", "tuple_var", "bytes", "bytearray", "str"}:
             compiler.error("for requires range, string, bytes, list, set, typed dictionary or homogeneous tuple", node)
         if value.type.name == "tuple" and (
             not value.type.args or any(item != value.type.args[0] for item in value.type.args)
         ):
-            compiler.error("tuple iteration requires a nonempty tuple with homogeneous element types", node)
+            compiler.error(
+                f"tuple iteration requires a nonempty tuple with homogeneous element types at "
+                f"{getattr(node, 'source_path', '<unknown>')}:{node.lineno}",
+                node,
+            )
         if place is not None:
             mode, reason = "borrow", plan.reason
         elif plan.mode == "consume":
@@ -116,14 +139,19 @@ def emit_for(compiler: ServiceCompiler, node: ast.For) -> str:
             compiler.error("unsupported iteration representation", node)
         item_borrowed = rule.borrowed_item
         iterator = render_iteration(rule, value.type.name, value.code, len(value.type.args))
-    compiler.borrowed_str_parameters.discard(node.target.id)
-    if split is not None and item_borrowed:
-        compiler.borrowed_str_parameters.add(node.target.id)
-    compiler.locals[node.target.id] = typ
-    if item_borrowed:
-        compiler.borrowed_parameters.add(node.target.id)
-    else:
-        compiler.borrowed_parameters.discard(node.target.id)
+    targets = node.target.elts if isinstance(node.target, ast.Tuple) else [node.target]
+    target_types = typ.args if isinstance(node.target, ast.Tuple) and typ.name == "tuple" else [typ]
+    if len(targets) != len(target_types):
+        compiler.error("loop tuple target does not match the item type", node.target)
+    for target, target_type in zip(targets, target_types):
+        compiler.borrowed_str_parameters.discard(target.id)
+        if split is not None and item_borrowed:
+            compiler.borrowed_str_parameters.add(target.id)
+        compiler.locals[target.id] = target_type
+        if item_borrowed:
+            compiler.borrowed_parameters.add(target.id)
+        else:
+            compiler.borrowed_parameters.discard(target.id)
     if compiler.optimize and byte_iteration:
         from .lookup_views import integer_lookup_views
 
@@ -133,7 +161,15 @@ def emit_for(compiler: ServiceCompiler, node: ast.For) -> str:
     compiler.borrowed_parameters = borrowed_before
     compiler.integer_views = integer_views_before
     compiler.borrowed_str_parameters = borrowed_str_before
-    binding = node.target.id if item_borrowed else compiler.binding(node.target.id)
+    binding = (
+        ("(" + ", ".join("_" if item.id == "_" else "mut " + item.id for item in node.target.elts) + ",)")
+        if isinstance(node.target, ast.Tuple) and all(isinstance(item, ast.Name) for item in node.target.elts)
+        else (
+            ast.unparse(node.target)
+            if isinstance(node.target, ast.Tuple)
+            else ("_" if node.target.id == "_" else f"mut {node.target.id}")
+        )
+    )
     scan = compiler.scan_caches.get(id(node))
     if scan is not None and item_borrowed:
         index, caches = scan

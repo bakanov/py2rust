@@ -41,10 +41,14 @@ def emit_unary(compiler: ServiceCompiler, node: ast.UnaryOp) -> Expr:
     ):
         return Expr("i64::MIN", Type("int"))
     value = compiler.expr(node.operand)
+    if value.type.name == "optional" and value.type.args[0].name in {"int", "float"}:
+        value = compiler.convert(value, value.type.args[0], node)
+    if isinstance(node.op, ast.UAdd) and value.type.name in {"int", "float"}:
+        return value
     operators = {ast.Not: "not", ast.Invert: "~", ast.USub: "-"}
     rule = select_unary_rule(operators.get(type(node.op), ""), value.type.name)
     if not rule.key:
-        compiler.error("unsupported unary operator", node)
+        compiler.error(f"unsupported unary operator {type(node.op).__name__} on {value.type}", node)
     return Expr(render_unary(rule, value.code), Type(rule.result))
 
 
@@ -85,6 +89,13 @@ def emit_binary(compiler: ServiceCompiler, node: ast.BinOp, expected: Type | Non
         else:
             left = compiler.expr(node.left, hint)
             right = compiler.expr(node.right, left.type if left.type.name == "list" else None)
+        if (
+            left.type.name == "list"
+            and left.type.args[0].name == "optional"
+            and right.type.name == "list"
+            and right.type.args[0] == left.type.args[0].args[0]
+        ):
+            right = compiler.convert(right, left.type, node)
         if left.type.name == "list" and right.type == left.type:
             return Expr(
                 f"{{ let mut __left: {left.type.rust()} = {left.code}; "
@@ -94,12 +105,97 @@ def emit_binary(compiler: ServiceCompiler, node: ast.BinOp, expected: Type | Non
             )
     else:
         left, right = compiler.expr(node.left), compiler.expr(node.right)
+    if left.type.name == "union" and right.type.name in {"int", "float"}:
+        left = compiler.convert(left, right.type, node)
+    elif right.type.name == "union" and left.type.name in {"int", "float"}:
+        right = compiler.convert(right, left.type, node)
+    if left.type.name == "int" and right.type.name == "float":
+        left = compiler.convert(left, Type("float"), node)
+    elif right.type.name == "int" and left.type.name == "float":
+        right = compiler.convert(right, Type("float"), node)
+    if (
+        left.type.name == "optional"
+        and left.type.args[0].name in {"int", "float"}
+        and right.type.name in {"int", "float"}
+    ):
+        target = Type("float") if left.type.args[0].name == "float" or right.type.name == "float" else right.type
+        left = compiler.convert(left, target, node)
+        right = compiler.convert(right, target, node)
+    elif (
+        right.type.name == "optional"
+        and right.type.args[0].name in {"int", "float"}
+        and left.type.name in {"int", "float"}
+    ):
+        target = Type("float") if right.type.args[0].name == "float" or left.type.name == "float" else left.type
+        left = compiler.convert(left, target, node)
+        right = compiler.convert(right, target, node)
+    if left.type.name == "Json" and right.type.name in {"int", "float"}:
+        left = compiler.convert(left, right.type, node)
+    elif right.type.name == "Json" and left.type.name in {"int", "float"}:
+        right = compiler.convert(right, left.type, node)
+    if left.type.name == "bool" and right.type.name in {"int", "float"}:
+        left = compiler.convert(left, right.type, node)
+    elif right.type.name == "bool" and left.type.name in {"int", "float"}:
+        right = compiler.convert(right, left.type, node)
+    if (
+        isinstance(node.op, ast.Add)
+        and left.type.name in {"list", "tuple_var"}
+        and right.type.name
+        in {
+            "list",
+            "tuple",
+            "tuple_var",
+        }
+    ):
+        if (
+            right.type.name == "tuple"
+            and right.type.args
+            and all(item == right.type.args[0] for item in right.type.args)
+        ):
+            right = compiler.convert(right, Type("tuple_var", (right.type.args[0],)), node)
+        if right.type.name in {"list", "tuple_var"}:
+            right = compiler.convert(right, left.type, node)
+            return Expr(
+                f"{{ let mut __left: {left.type.rust()} = {left.code}; "
+                f"let __right: {right.type.rust()} = {right.code}; "
+                "__left.extend(__right); __left }",
+                left.type,
+            )
+    if (
+        isinstance(node.op, ast.BitOr)
+        and left.type.name == "dict"
+        and left.type == right.type
+        and left.type.args[1].name == "int"
+    ):
+        return Expr(
+            f"{{ let mut __result = {left.code}; for (__key, __value) in {right.code} {{ "
+            "*__result.entry(__key).or_insert(0) += __value; } __result }",
+            left.type,
+        )
+    if (
+        left.type.name == "list"
+        and right.type.name == "set"
+        and type(node.op)
+        in {
+            ast.Sub,
+            ast.BitAnd,
+            ast.BitOr,
+            ast.BitXor,
+        }
+    ):
+        left = Expr(
+            f"({left.code}).into_iter().collect::<std::collections::BTreeSet<_>>()",
+            right.type,
+        )
     set_methods = {
         ast.BitAnd: "intersection",
         ast.BitOr: "union",
         ast.Sub: "difference",
         ast.BitXor: "symmetric_difference",
     }
+    if left.type == right.type == Type("bool") and type(node.op) in {ast.BitAnd, ast.BitOr, ast.BitXor}:
+        operator = {ast.BitAnd: "&", ast.BitOr: "|", ast.BitXor: "^"}[type(node.op)]
+        return Expr(f"({left.code}) {operator} ({right.code})", Type("bool"))
     if left.type == right.type and left.type.name == "set" and type(node.op) in set_methods:
         return compiler.set_operation(left, right, set_methods[type(node.op)])
     if isinstance(node.op, ast.Add) and left.type == right.type == Type("str"):
@@ -107,8 +203,51 @@ def emit_binary(compiler: ServiceCompiler, node: ast.BinOp, expected: Type | Non
         if concatenated is not None:
             return concatenated
         return Expr(f'format!("{{}}{{}}", {left.code}, {right.code})', left.type)
-    if isinstance(node.op, ast.Add) and left.type == right.type == Type("bytes"):
+    if (
+        isinstance(node.op, ast.Add)
+        and left.type.name in {"bytes", "bytearray"}
+        and right.type.name in {"bytes", "bytearray"}
+    ):
         return Expr(f"[{left.code}, {right.code}].concat()", left.type)
+    if (
+        isinstance(node.op, ast.Mult)
+        and left.type.name == "tuple"
+        and right.type.name == "int"
+        and left.type.args
+        and all(item == left.type.args[0] for item in left.type.args)
+    ):
+        return Expr(
+            f"vec![({left.code}).0; std::cmp::max({right.code}, 0) as usize]",
+            Type("tuple_var", left.type.args[:1]),
+        )
+    if (
+        isinstance(node.op, ast.Mult)
+        and right.type.name == "tuple"
+        and left.type.name == "int"
+        and right.type.args
+        and all(item == right.type.args[0] for item in right.type.args)
+    ):
+        return Expr(
+            f"vec![({right.code}).0; std::cmp::max({left.code}, 0) as usize]",
+            Type("tuple_var", right.type.args[:1]),
+        )
+    if isinstance(node.op, ast.Mult) and left.type.name in {"list", "tuple_var"} and right.type.name == "int":
+        return Expr(f"({left.code}).repeat(std::cmp::max({right.code}, 0) as usize)", left.type)
+    if isinstance(node.op, ast.Mult) and right.type.name in {"list", "tuple_var"} and left.type.name == "int":
+        return Expr(f"({right.code}).repeat(std::cmp::max({left.code}, 0) as usize)", right.type)
+    if isinstance(node.op, ast.Mult) and left.type.name in {"bytes", "bytearray"} and right.type.name == "int":
+        return Expr(f"({left.code}).repeat(std::cmp::max({right.code}, 0) as usize)", left.type)
+    if isinstance(node.op, ast.Mult) and right.type.name in {"bytes", "bytearray"} and left.type.name == "int":
+        return Expr(f"({right.code}).repeat(std::cmp::max({left.code}, 0) as usize)", right.type)
+    if isinstance(node.op, ast.Pow) and left.type.name == "int" and right.type.name == "int":
+        return Expr(
+            f'{{ let __exponent = {right.code}; if __exponent < 0 {{ return Err("negative integer exponent".into()); }} '
+            f'({left.code}).checked_pow(__exponent as u32).ok_or("integer power overflow")? }}',
+            Type("int"),
+        )
+    if isinstance(node.op, ast.Pow) and left.type.name == "float" and right.type.name in {"int", "float"}:
+        exponent = compiler.convert(right, Type("float"), node)
+        return Expr(f"({left.code}).powf({exponent.code})", Type("float"))
     operators = {
         ast.Add: "+",
         ast.Sub: "-",
@@ -124,7 +263,11 @@ def emit_binary(compiler: ServiceCompiler, node: ast.BinOp, expected: Type | Non
     }
     rule = select_numeric_rule(operators.get(type(node.op), ""), left.type.name, right.type.name)
     if not rule.key:
-        compiler.error("unsupported arithmetic combination", node)
+        compiler.error(
+            f"unsupported arithmetic combination: {left.type} {type(node.op).__name__} {right.type} "
+            f"in {ast.unparse(node)}",
+            node,
+        )
     return Expr(render_numeric(rule, left.code, right.code), Type(rule.result))
 
 
@@ -134,6 +277,19 @@ def emit_comparison(compiler: ServiceCompiler, node: ast.Compare) -> Expr:
         return fused
     operands = [node.left, *node.comparators]
     if len(node.ops) == 1:
+        if isinstance(node.ops[0], (ast.Is, ast.IsNot)) and any(
+            isinstance(operand, ast.Constant) and operand.value is None for operand in operands
+        ):
+            first_is_none = isinstance(operands[0], ast.Constant) and operands[0].value is None
+            other = compiler.read_value(operands[1] if first_is_none else operands[0])
+            from .union_emission import identity
+
+            union_identity = identity(compiler, other, node.ops[0])
+            if union_identity is not None:
+                return union_identity
+            if other.type.name == "optional":
+                method = "is_none" if isinstance(node.ops[0], ast.Is) else "is_some"
+                return Expr(f"({other.code}).{method}()", Type("bool"))
         null_identity = (
             compiler.optimize
             and isinstance(node.ops[0], (ast.Is, ast.IsNot))
@@ -197,7 +353,50 @@ def emit_comparison(compiler: ServiceCompiler, node: ast.Compare) -> Expr:
 
 
 def emit_boolean(compiler: ServiceCompiler, node: ast.BoolOp) -> Expr:
-    values = [compiler.expr(v, Type("bool")).code for v in node.values]
+    first = compiler.expr(node.values[0])
+    if first.type.name != "bool":
+        value = first
+        for operand in node.values[1:]:
+            right = compiler.expr(operand)
+            if isinstance(node.op, ast.Or) and value.type.name == "optional" and right.type == value.type.args[0]:
+                return Expr(
+                    f"match ({value.code}) {{ Some(__value) => __value, None => {right.code} }}",
+                    right.type,
+                )
+            if right.type != value.type:
+                remaining = [value, right]
+                remaining.extend(compiler.expr(item) for item in node.values[node.values.index(operand) + 1 :])
+                tests = [compiler.convert(item, Type("bool"), node).code for item in remaining]
+                return Expr(
+                    "("
+                    + (" " + boolean_operator("and" if isinstance(node.op, ast.And) else "or") + " ").join(tests)
+                    + ")",
+                    Type("bool"),
+                )
+            truth = {
+                "int": f"({value.code}) != 0",
+                "float": f"({value.code}) != 0.0",
+                "str": f"!({value.code}).is_empty()",
+                "bytes": f"!({value.code}).is_empty()",
+                "bytearray": f"!({value.code}).is_empty()",
+                "list": f"!({value.code}).is_empty()",
+                "set": f"!({value.code}).is_empty()",
+                "dict": f"!({value.code}).is_empty()",
+                "tuple_var": f"!({value.code}).is_empty()",
+                "optional": f"({value.code}).is_some()",
+            }.get(value.type.name)
+            if truth is None:
+                compiler.error(f"short-circuit operand does not support truthiness: {value.type}", node)
+            temporary = f"__boolean_{id(operand)}"
+            truth = truth.replace(value.code, temporary)
+            if isinstance(node.op, ast.Or):
+                code = f"if {truth} {{ {temporary} }} else {{ {right.code} }}"
+            else:
+                code = f"if {truth} {{ {right.code} }} else {{ {temporary} }}"
+            value = Expr(f"{{ let {temporary} = {value.code}; {code} }}", value.type)
+        return value
+    values = [first.code]
+    values.extend(compiler.expr(v, Type("bool")).code for v in node.values[1:])
     return Expr(
         "(" + (" " + boolean_operator("and" if isinstance(node.op, ast.And) else "or") + " ").join(values) + ")",
         Type("bool"),

@@ -109,6 +109,42 @@ if __name__ == "__main__":
     assert result.stdout == "local math\n"
 
 
+def test_standard_library_imports_are_not_resolved_as_local_modules(tmp_path):
+    root = sources(
+        tmp_path,
+        {
+            "main.py": """import argparse
+from collections.abc import Iterable
+import helper
+
+def total(values: Iterable[int]) -> int:
+    return sum(values)
+""",
+            "helper.py": """from dataclasses import field
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+__all__ = ["value"]
+left, right = 1, 2
+def value() -> int:
+    return 1
+""",
+        },
+    )
+    project = Project(root)
+    project.load("main")
+    assert set(project.modules) == {"main", "helper"}
+    assert project.stdlib == {"argparse", "collections.abc", "dataclasses", "typing"}
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 type aliases require Python 3.12")
+def test_type_alias_discovery(tmp_path):
+    root = sources(tmp_path, {"main.py": "import helper\n", "helper.py": "type Identifier = int\n"})
+    project = Project(root)
+    project.load("main")
+    assert project.modules["helper"].bindings["Identifier"].kind == "constant"
+
+
 def test_python_packages_aliases_scopes_and_enums(tmp_path):
     root = sources(
         tmp_path,
@@ -335,7 +371,7 @@ def test_rejected_projects(tmp_path, files, message):
     "helper",
     [
         "def broken() -> int:\n    value: int = 'wrong'\n    return value\n",
-        "def broken() -> int:\n    return identity(value=1)\ndef identity(value: int) -> int:\n    return value\n",
+        "def broken() -> int:\n    return identity(unknown=1)\ndef identity(value: int) -> int:\n    return value\n",
     ],
 )
 def test_diagnostics_preserve_source_path_and_line(tmp_path, helper):

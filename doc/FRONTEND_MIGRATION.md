@@ -71,8 +71,8 @@ Library contracts describe fixed runtime signatures, callable parameters,
 severity arguments and trailing integer defaults. CRC32 supports its default seed
 and bytes/bytearray input through runtime, zlib and binascii spellings. Generic
 heap operations remain typed intrinsics. Sorting preserves key/reverse keywords
-and module-qualified callbacks. Generic user-function keyword arguments remain
-outside current call lowering.
+and module-qualified callbacks. Direct user-function and method keyword arguments preserve source evaluation order;
+argument unpacking and defaulted user-function signatures remain outside current lowering.
 
 ## Functional boundaries
 

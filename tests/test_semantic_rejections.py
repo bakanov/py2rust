@@ -9,12 +9,11 @@ from py2rust.compiler.pipeline import compile_typed, prepare_typed
 from py2rust.compiler.service import ServiceError
 
 
-@pytest.mark.parametrize("default", ["[]", "[1]", "None"])
-def test_function_defaults_rejected_at_source(tmp_path: Path, default: str) -> None:
-    annotation = "list[int] | None" if default == "None" else "list[int]"
-    source = f"def value(items: {annotation} = {default}) -> int:\n    return 1\n"
+@pytest.mark.parametrize("default", ["[]", "[1]"])
+def test_nonliteral_function_defaults_rejected_at_source(tmp_path: Path, default: str) -> None:
+    source = f"def value(items: list[int] = {default}) -> int:\n    return 1\n"
     path = tmp_path / "defaults.py"
-    with pytest.raises(FrontendError, match="without defaults") as error:
+    with pytest.raises(FrontendError, match="literal values") as error:
         prepare_typed({"main": (path, source)})
     assert str(path) + ":1:" in str(error.value)
     return

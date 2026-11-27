@@ -60,6 +60,28 @@ BUILTIN_STATIC = frozenset({"builtins.bytes.fromhex", "builtins.bytearray.fromhe
 
 METHODS = {
     ("builtins.int", "to_bytes"): _replacement("builtins.int.to_bytes", "int_to_bytes", "standard"),
+    ("builtins.str", "resolve"): _replacement("pathlib.Path.resolve", "path_resolve", "standard"),
+    ("builtins.str", "read_text"): _replacement("pathlib.Path.read_text", "read_text", "standard"),
+    ("builtins.str", "read_bytes"): _replacement("pathlib.Path.read_bytes", "read_bytes", "standard"),
+    ("builtins.str", "write_text"): _replacement("pathlib.Path.write_text", "write_text", "standard"),
+    ("builtins.str", "write_bytes"): _replacement("pathlib.Path.write_bytes", "write_bytes", "standard"),
+    ("builtins.str", "exists"): _replacement("pathlib.Path.exists", "path_exists", "standard"),
+    ("builtins.str", "is_dir"): _replacement("pathlib.Path.is_dir", "path_is_dir", "standard"),
+    ("builtins.str", "is_file"): _replacement("pathlib.Path.is_file", "path_is_file", "standard"),
+    ("builtins.str", "iterdir"): _replacement("pathlib.Path.iterdir", "path_iterdir", "standard"),
+    ("builtins.int", "write"): _replacement("typing.TextIO.write", "stream_write", "standard"),
+    ("builtins.int", "flush"): _replacement("typing.TextIO.flush", "stream_flush", "standard"),
+    ("builtins.int", "readline"): _replacement("typing.TextIO.readline", "stream_readline", "standard"),
+    ("py2rust.stdlib.Random", "random"): _replacement("random.Random.random", "random_random", "standard"),
+    ("py2rust.stdlib.Random", "randrange"): Replacement(
+        "random.Random.randrange",
+        "random_randrange",
+        "int",
+        ("Random", "int", "int"),
+        True,
+        "standard",
+        trailing_defaults=(0,),
+    ),
 }
 
 STANDARD.update(
@@ -79,6 +101,8 @@ def resolve(name: str) -> Replacement | None:
 
 
 CONSTANTS = {f"logging.{name}": value for name, value in LOG_LEVELS.items()}
+CONSTANTS["math.pi"] = 3.141592653589793
+CONSTANTS.update({"sys.stdin": 0, "sys.stdout": 1, "sys.stderr": 2})
 
 # Generic mutation intrinsics keep argument types inferred by mypy. They cannot
 # use the fixed scalar runtime signature table (heap elements are polymorphic).

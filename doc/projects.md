@@ -117,8 +117,10 @@ does not gain an `.rs` import hook.
 - Main guards in imported modules are omitted from the application entry.
 
 Imports resolve statically without executing Python source. Imported modules may
-contain imports, declarations and docstrings; arbitrary import-time effects are
-rejected. Module constants need explicit scalar types and literal values, e.g.
+contain imports, declarations, type-checking blocks, constant/type-alias assignments
+and docstrings; arbitrary import-time effects are rejected. Discovery recognizes
+standard-library modules, but their runtime APIs still need explicit compiler support.
+Module constants need explicit scalar types and literal values, e.g.
 `PORT: int = 8080` or `PREFIX: str = "/api"`. They cannot be reassigned. Mutable
 globals, circular imports/re-exports, star imports, dynamic/nested imports,
 `sys.path` mutation and package installation are unsupported.

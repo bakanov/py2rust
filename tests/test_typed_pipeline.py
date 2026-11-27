@@ -440,12 +440,761 @@ if __name__ == "__main__":
 def test_typed_project_discovers_namespace_packages(tmp_path: Path) -> None:
     package = tmp_path / "app"
     package.mkdir()
-    (package / "values.py").write_text("def answer() -> int:\n    return 42\n")
+    (package / "values.py").write_text(
+        "def __getattr__(name: str) -> object:\n    return globals()[name]\n\n" "def answer() -> int:\n    return 42\n"
+    )
     (tmp_path / "main.py").write_text(
         'from app.values import answer\nif __name__ == "__main__":\n    print(answer())\n'
     )
     assert "py__app__values__answer" in compile_project(tmp_path)
     assert not (package / "__init__.py").exists()
+
+
+def test_typed_record_methods_and_properties_run(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from dataclasses import dataclass, field, replace
+
+@dataclass
+class Item:
+    count: int
+    label: str
+
+    def total(self, extra: int) -> int:
+        return self.count + extra
+
+    def formatted(self) -> str:
+        return f"{self.count:04d}:{self.label!r}"
+
+    @classmethod
+    def make(cls, count: int) -> "Item":
+        return cls(count, "made")
+
+    @classmethod
+    def build(cls, count: int = 2) -> "Item":
+        return cls.make(count=count)
+
+    @property
+    def title(self) -> str:
+        return self.label.upper()
+
+@dataclass
+class Other:
+    value: int = 0
+
+@dataclass
+class Holder:
+    item: Other = field(default_factory=Other)
+
+Choice = Item | Other
+
+@dataclass
+class Container:
+    items: list[int] = field(default_factory=list)
+    other: Other | None = field(default=None, init=False, repr=False)
+
+@dataclass
+class Pair:
+    left: int
+    right: int = 0
+
+def selected(flag: bool) -> Choice:
+    if flag:
+        return Item(1, "one")
+    return Other(2)
+
+if __name__ == "__main__":
+    item = Item(4, "ready")
+    print(item.total(3))
+    print(item.title)
+    print(item.formatted())
+    print(replace(item, count=6, label="new").total(1))
+    print(Item.make(5).total(0))
+    print(Item.build().total(0))
+    print(type(item).__name__)
+    print(type(selected(False)).__name__)
+    print(len(Container().items))
+    print(Container().other is None)
+    print(Holder().item.value)
+    print(Pair(*(value for value in [4, 5])).left)
+    print(Pair(*[4]).right)
+    optional: Item | None = Item(1, "optional")
+    assert optional is not None
+    optional.count += 2
+    optional.count = 8
+    print(optional.total(1))
+    optional.count, optional.label = 10, "changed"
+    print(str(optional.total(0)) + optional.title)
+    optional.count = item.count = 12
+    print(optional.total(0))
+    left = right = 3
+    print(left + right)
+    records = [Item(0, "indexed")]
+    records[0].count += 2
+    print(records[0].total(0))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "7\nREADY\n0004:'ready'\n7\n5\n2\nItem\nOther\n0\nTrue\n0\n4\n0\n9\n10CHANGED\n12\n6\n2\n"
+
+
+def test_typed_keyword_calls_preserve_evaluation_order(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from dataclasses import dataclass
+
+def label() -> str:
+    print("label")
+    return "value"
+
+def number() -> int:
+    print("number")
+    return 3
+
+def annotate(text: str, *, suffix: str = "!") -> str:
+    return text + suffix
+
+def count(items: tuple[int, ...] = (), flags: frozenset[int] = frozenset()) -> int:
+    return len(items) + len(flags)
+
+def render(text: str, count: int, enabled: bool) -> str:
+    if enabled:
+        return text.upper() + ":" + str(count)
+    return text.lower() + ":" + str(count)
+
+@dataclass(frozen=True)
+class Default:
+    value: int = 3
+
+def default_value(value: Default = Default()) -> int:
+    return value.value
+
+@dataclass
+class Item:
+    value: int
+
+    def render(self, enabled: bool) -> str:
+        return "yes" if enabled else "no"
+
+    def coordinates(self, left: int = 0, right: int = 0) -> str:
+        return str(left) + ":" + str(right)
+
+if __name__ == "__main__":
+    print(render(count=number(), text=label(), enabled=True))
+    print(annotate("done") + annotate("yes", suffix="?") + str(count()) + str(len(frozenset([1, 1, 2]))) + str(default_value()))
+    print(Item(0).render(enabled=False))
+    values = [4, 5]
+    print(Item(0).coordinates(*(value for value in values)))
+    empty: list[int] = []
+    print(Item(0).coordinates(*empty))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "number\nlabel\nVALUE:3\ndone!yes?023\nno\n4:5\n0:0\n"
+
+
+def test_typed_explicit_raises_are_recoverable(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """def validate(value: int) -> int:
+    if value <= 0:
+        raise ValueError("positive required")
+    return value
+
+if __name__ == "__main__":
+    try:
+        validate(0)
+    except (ValueError, OSError) as error:
+        print("caught: " + str(error))
+    try:
+        raise RuntimeError()
+    except Exception as error:
+        print("empty: " + str(error))
+    print("continued")
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "caught: positive required\nempty: \ncontinued\n"
+
+
+def test_typed_starred_list_construction_runs_in_source_order(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from py2rust.stdlib import json_canonical
+
+def values() -> list[int]:
+    print("expanded")
+    return [1, 2]
+
+if __name__ == "__main__":
+    result = [0, *values(), 3]
+    print(json_canonical(result))
+    labels = []
+    labels.append("done")
+    print(json_canonical(labels))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == 'expanded\n[0,1,2,3]\n["done"]\n'
+
+
+def test_filtered_next_uses_default_without_temporary_list(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from py2rust.stdlib import json_canonical
+
+def search(values: list[int], minimum: int) -> int:
+    return next((value * 10 for value in values if value > minimum), 0)
+
+if __name__ == "__main__":
+    print(search([1, 4, 6], 3))
+    print(search([1, 2], 3))
+    print(next((left for left, right in [(1, 0), (2, 3)] if right > 0), 0))
+    print(sum(left for (left, right), flag in [((1, 2), True), ((3, 4), False)] if flag))
+    print(next((left for (left, right), flag in [((1, 2), False), ((3, 4), True)] if flag), 0))
+    print(json_canonical([value * 2 for value in [1, 2, 3, 4] if value % 2 == 0]))
+    print("|".join(str(value) for value in [1, 2, 3] if value > 1))
+    print(["a", "b"].index("b"))
+    print(json_canonical([index * 10 + value for index, value in [(0, 4), (1, 5)]]))
+    print(json_canonical([left * right for left in [1, 2] if left > 1 for right in [3, 4] if right < 4]))
+    print(sum(value % 2 == 0 for pair in [[1, 2], [3, 4, 6]] for value in pair))
+    print(len({value % 3 for pair in [[1, 2], [3, 4, 6]] for value in pair}))
+    print(len(set().union([1, 2], [2, 3])))
+    print(len(set().union(*[[1, 2], [2, 3]])))
+    print(len({1, *[2, 3]}))
+    print({str(value): value for value in [1, 2, 3] if value > 1}["2"])
+    print(json_canonical([doubled for value in [1, 2, 3] if (doubled := value * 2) > 2]))
+    print(min([(2, "b"), (1, "a"), (1, "c")], key=lambda pair: pair[0])[1])
+    print(max([(2, "b"), (1, "a")], key=lambda pair: pair[0])[1])
+    print(sorted([(2, "b"), (1, "a"), (1, "c")], key=lambda pair: pair[0])[0][1])
+    print(sorted([(2, "b"), (1, "a"), (1, "c")], key=lambda pair: pair[0], reverse=True)[0][1])
+    empty: list[tuple[int, str]] = []
+    best = max(empty, key=lambda pair: pair[0], default=None)
+    print(best is None)
+    numbers: list[int] = []
+    print(max((value for value in numbers), default=-1))
+    print(max((value for value in [3, 2]), default=-1))
+    print(sum(float(value) for value in [1, 2, 3]))
+    print(sum(value for value in (1, *[2, 3])))
+    print(sum(left * right for left, right in zip([1, 2], [3, 4], strict=True)))
+    print(sum(left * right for left, right in zip([1, 2], [3])))
+    total = 0
+    for index, value in [(0, 4), (1, 5)]:
+        total += index + value
+    for (left, right), flag in [((1, 2), True), ((3, 4), False)]:
+        if flag:
+            total += left + right
+    print(total)
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert (
+        result.stdout
+        == "40\n0\n2\n1\n3\n[4,8]\n2|3\n1\n[4,15]\n[6]\n3\n3\n3\n3\n3\n2\n[4,6]\na\nb\na\nb\nTrue\n-1\n3\n6.0\n6\n11\n3\n13\n"
+    )
+    assert ".collect" not in (tmp_path / "app" / "src" / "main.rs").read_text()
+
+
+def test_nested_functions_capture_read_only_values(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from dataclasses import dataclass
+
+@dataclass
+class Item:
+    value: int
+
+    def labels(self, count: int) -> str:
+        def process(line: str) -> str:
+            try:
+                return line + ":" + str(self.value)
+            except (ValueError, OSError) as error:
+                return str(error)
+
+        result = []
+        for index in range(count):
+            result.append(process(str(index)))
+        return ",".join(result)
+
+if __name__ == "__main__":
+    print(Item(7).labels(3))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "0:7,1:7,2:7\n"
+
+
+def test_pathlib_construction_and_file_io_run(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    text = tmp_path / "typed-path.txt"
+    data = tmp_path / "typed-path.bin"
+    source = f"""from pathlib import Path
+
+if __name__ == "__main__":
+    text = Path({str(text)!r})
+    text.write_text("hello")
+    print(text.read_text())
+    print(text.read_text(encoding="utf-8-sig"))
+    print(text.exists())
+    print(text.suffix)
+    print(text.name)
+    print((Path("folder") / "file.txt").suffix)
+    data = Path({str(data)!r})
+    data.write_bytes(b"bytes")
+    print(data.read_bytes().decode())
+    print(text.parent == Path({str(tmp_path)!r}))
+    print(text.parent.is_dir())
+    print(text.is_file())
+    print(len(list(text.parent.iterdir())))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "hello\nhello\nTrue\n.txt\ntyped-path.txt\n.txt\nbytes\nTrue\nTrue\nTrue\n4\n"
+
+
+def test_shlex_split_matches_python_quoting(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """import re
+import shlex
+import sys
+from py2rust.stdlib import json_canonical, json_loads
+
+if __name__ == "__main__":
+    sys.stdout.write("stream\\n")
+    sys.stdout.flush()
+    print(json_canonical(shlex.split("load 'two words' \\"three words\\" plain")))
+    print(json_canonical(shlex.split("say a\\ b '' \\"x\\\\\\"y\\" #literal")))
+    print(type(json_loads("1")) is int)
+    print(type(json_loads("1")) is str)
+    print(type(json_loads("1")) in (str, int))
+    print(type(json_loads("1")) not in (str, bool))
+    print(re.sub("_", " ", "HELLO_WORLD"))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert (
+        result.stdout
+        == 'stream\n["load","two words","three words","plain"]\n["say","a b","","x\\"y","#literal"]\nTrue\nFalse\nTrue\nTrue\nHELLO WORLD\n'
+    )
+
+
+def test_signed_int_from_bytes_matches_python(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """import struct
+
+if __name__ == "__main__":
+    print(int.from_bytes(b"\\xff\\xff\\xff\\xff", "little", signed=True))
+    print(int.from_bytes(b"\\x80\\x00", "big", signed=True))
+    print(int.from_bytes(b"\\x00\\x80", "little", signed=True))
+    print(int.from_bytes(b"\\xff", "big", signed=False))
+    print(b"\\x80".decode("cp1252", errors="replace"))
+    print(b"a\\xffb".decode("utf-8", errors="replace"))
+    print(struct.unpack("<f", struct.pack("<f", 1.0))[0])
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "-1\n-32768\n-32768\n255\n€\na�b\n1.0\n"
+
+
+def test_counter_construction_counts_typed_items(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from collections import Counter, defaultdict, deque
+
+if __name__ == "__main__":
+    counts = Counter([1, 2, 1])
+    print(counts[1])
+    counts[1] += 2
+    print(counts[1])
+    print(counts.get(3, 0))
+    empty: Counter[int] = Counter()
+    print(len(empty))
+    print(len(deque(dict.fromkeys([1, 1, 2]))))
+    groups: defaultdict[int, list[int]] = defaultdict(list)
+    groups[1].append(3)
+    groups[1].append(4)
+    print(len(groups[1]))
+    print(len(groups))
+    owners: defaultdict[int, set[int]] = defaultdict(set)
+    owners[1].add(3)
+    owners[1].add(3)
+    print(len(owners[1]))
+    merged = {**{"a": 1}, "b": 2, **{"a": 3}}
+    print(merged["a"])
+    print(len(merged))
+    values = [1, 2]
+    values[0], values[1] = values[1], values[0]
+    print(values[0])
+    values[:] = [3, 4, 5]
+    print(len(values))
+    del values[-2:]
+    print(len(values))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "2\n4\n0\n0\n2\n2\n1\n1\n3\n2\n2\n3\n1\n"
+
+
+def test_typed_callable_parameters_run(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from collections.abc import Callable
+
+def apply(callback: Callable[[int], int], value: int) -> int:
+    return callback(value)
+
+def double(value: int) -> int:
+    return value * 2
+
+if __name__ == "__main__":
+    print(apply(double, 4))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "8\n"
+
+
+def test_protocol_field_layouts_support_structural_reads(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from dataclasses import dataclass
+from typing import Protocol
+
+class Point(Protocol):
+    x: int
+    y: int
+
+@dataclass
+class GridPoint:
+    x: int
+    y: int
+
+def sum_point(point: Point) -> int:
+    return point.x + point.y
+
+if __name__ == "__main__":
+    print(sum_point(GridPoint(3, 4)))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "7\n"
+
+
+def test_generator_functions_iterate_as_typed_sequences(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from collections.abc import Iterator
+from itertools import accumulate, count
+from py2rust.stdlib import json_canonical
+
+def values(limit: int) -> Iterator[int]:
+    yield 1
+    for value in range(limit):
+        if value % 2 == 0:
+            yield value * 10
+
+if __name__ == "__main__":
+    print(sum(values(5)))
+    print(sum(values(0)))
+    serial = count()
+    print(next(serial))
+    print(next(serial))
+    print(json_canonical(accumulate([1, 2, 3], initial=0)))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "61\n1\n0\n1\n[0,1,3,6]\n"
+
+
+def test_random_seed_and_randrange_match_python(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler, "compile", lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)})
+    )
+    source = """from dataclasses import dataclass, field
+from random import Random
+from py2rust.stdlib import json_canonical
+
+@dataclass
+class Generator:
+    random: Random = field(default_factory=Random)
+
+if __name__ == "__main__":
+    random = Random(7)
+    print(random.randrange(100))
+    print(random.random())
+    print(random.randrange(90, 110))
+    print(0 <= Generator().random.randrange(10) < 10)
+    values = [1, 2, 3, 4]
+    Random(7).shuffle(values)
+    print(json_canonical(values))
+    print(Random(7).choice([1, 2, 3]))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "41\n0.9478653606090632\n102\nTrue\n[4,2,1,3]\n2\n"
+
+
+def test_int_flag_bitwise_conditions_run(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler,
+        "compile",
+        lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)}, python_scope=True),
+    )
+    source = """from enum import Enum, IntEnum, IntFlag
+
+class EntryIntent(Enum):
+    MOVE = 1
+    FIGHT = 2
+
+    @property
+    def peaceful(self) -> bool:
+        return self == self.MOVE
+
+    @classmethod
+    def default(cls) -> "EntryIntent":
+        return cls.MOVE
+
+from enum import auto
+
+class CitizenMood(IntEnum):
+    HAPPY = 0
+    CONTENT = 1
+    UNHAPPY = auto()
+    INVALID = -1
+
+class UnitOrder(IntFlag):
+    MOVE = 1 << 0
+    BOMB = 1 << 1
+
+def selected(orders: UnitOrder) -> str:
+    if orders & UnitOrder.BOMB:
+        return "bomb"
+    if not orders & UnitOrder.MOVE:
+        return "none"
+    return "move"
+
+def mood(mood: CitizenMood) -> str:
+    return "content" if mood else "happy"
+
+def present(value: EntryIntent | None) -> bool:
+    return True if value else False
+
+if __name__ == "__main__":
+    print(selected(UnitOrder.MOVE))
+    print(selected(UnitOrder.BOMB))
+    print(mood(CitizenMood.HAPPY))
+    print(mood(CitizenMood.CONTENT))
+    print(mood(CitizenMood.UNHAPPY))
+    print(mood(CitizenMood.INVALID))
+    print(mood(CitizenMood(0)))
+    print(EntryIntent.MOVE.peaceful)
+    print(EntryIntent.default().peaceful)
+    print(EntryIntent(1).peaceful)
+    print(UnitOrder.MOVE.name)
+    print(CitizenMood.UNHAPPY.name)
+    print(present(EntryIntent.MOVE))
+    print(present(None))
+    print({"a": 1}.get("b") is None)
+    print(EntryIntent.__members__["MOVE"].peaceful)
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert (
+        result.stdout
+        == "move\nbomb\nhappy\ncontent\ncontent\ncontent\nhappy\nTrue\nTrue\nTrue\nMOVE\nUNHAPPY\nTrue\nFalse\nTrue\nTrue\n"
+    )
+
+
+def test_python_scope_enables_checked_truthiness(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler,
+        "compile",
+        lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)}, python_scope=True),
+    )
+    source = """def select(values: list[int], count: int) -> str:
+    result = "nonempty" if values else "empty"
+    if count:
+        return result
+    return "zero"
+
+def optional_length(values: list[int] | None) -> int:
+    return 1 if values else 0
+
+def optional_number(value: int | None) -> int:
+    return 1 if value else 0
+
+if __name__ == "__main__":
+    print(select([], 0))
+    print(select([1], 1))
+    empty: list[int] | None = []
+    some: list[int] | None = [2]
+    print(optional_length(None))
+    print(optional_length(empty))
+    print(optional_length(some))
+    print(optional_number(None))
+    print(optional_number(0))
+    print(optional_number(2))
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "zero\nnonempty\n0\n0\n1\n0\n0\n1\n"
+
+
+def test_optional_values_and_narrowed_record_fields_run(tmp_path: Path, monkeypatch) -> None:
+    from py2rust.compiler.service import ServiceCompiler
+
+    from .test_services import run
+
+    monkeypatch.setattr(
+        ServiceCompiler,
+        "compile",
+        lambda self, source: compile_typed({"main": (tmp_path / "main.py", source)}, python_scope=True),
+    )
+    source = """from dataclasses import dataclass
+
+@dataclass
+class Item:
+    count: int
+
+@dataclass
+class Other:
+    count: int
+
+def union_field(item: Item | Other | None) -> int:
+    if item is None:
+        return -1
+    return item.count
+
+def select(value: int | None) -> int | None:
+    if value is not None:
+        return value
+    return None
+
+def field(item: Item | None) -> int:
+    if item is None:
+        return -1
+    return item.count
+
+def wrap(value: int) -> int | None:
+    return value
+
+def present_union(item: Item | Other) -> bool:
+    return True if item else False
+
+def present(item: Item | None) -> bool:
+    if item is not None:
+        return True if item else False
+    return False
+
+def choose(value: int | None = None, fallback: int = 7) -> int:
+    if value is None:
+        return fallback
+    return value
+
+if __name__ == "__main__":
+    print(choose())
+    print(choose(2))
+    print(choose(fallback=9))
+    print(choose(value=3, fallback=8))
+    print(union_field(Item(5)))
+    print(union_field(Other(6)))
+    print(union_field(None))
+    print(select(None) is None)
+    print(select(2) is not None)
+    print(field(Item(4)))
+    print(field(None))
+    print(present(Item(1)))
+    print(present(None))
+    print(present_union(Other(2)))
+    print(wrap(3) is not None)
+    left, right = (3, 4)
+    print(left * 10 + right)
+    left += 1
+    print(left)
+"""
+    result = run(tmp_path, source, "rust")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "7\n2\n9\n3\n5\n6\n-1\nTrue\nTrue\n4\n-1\nTrue\nFalse\nTrue\nTrue\n34\n4\n"
 
 
 def test_block_local_redeclarations_and_generated_name_collisions(tmp_path: Path) -> None:

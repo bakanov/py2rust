@@ -43,7 +43,7 @@ from .rules.comparisons import (
     render_set_order,
     set_order_rule,
 )
-from .rules.control_flow import render_assert, render_if, render_reraise, render_while
+from .rules.control_flow import render_assert, render_if, render_raise, render_reraise, render_while
 from .rules.ordering import orderable_shape, render_sorting, sorting_rule
 from .rules.records import (
     borrowed_runtime_field,
@@ -68,6 +68,11 @@ class ServiceCompiler:
         self.optimization_report: dict = {}
         self.runtime_effect_selections: dict = {}
         self.current_function: str | None = None
+        self.comprehension_depth = 0
+        self.mutable_parameters: set[str] = set()
+        self.mutable_parameter_functions: dict[str, set[str]] = {}
+        self.stateful_methods: set[str] = set()
+        self.python_scope = False
         self.optimize = optimize
         self.optimize_text = optimize
         self.optimize_json_views = optimize
@@ -99,13 +104,21 @@ class ServiceCompiler:
         self.json_text_views: dict[str, str] = {}
         self.integer_views: set[str] = set()
         self.sequence_views: dict[str, str] = {}
+        self.defaultdicts: set[str] = set()
+        self.defaultdict_sets: set[str] = set()
+        self.counters: set[str] = set()
         self.imports: set[str] = set()
         self.modules: set[str] = set()
         self.enums: dict[str, dict[str, str | int]] = {}
         self.records: dict[str, dict[str, tuple[Type, Expr | None]]] = {}
         self.shared_records: dict[str, str] = {}
         self.functions: dict[str, tuple] = dict(external_functions or {})
+        self.function_parameters: dict[str, list[str]] = {}
+        self.function_defaults: dict[str, tuple[ast.expr, ...]] = {}
+        self.call_counter = 0
         self.constants: dict[str, Expr] = {}
+        self.constant_nodes: dict[str, tuple[ast.expr, Type]] = {}
+        self.evaluating_constants: set[str] = set()
         self.locals: dict[str, Type] = {}
         self.result = Type("None")
         self.try_depth = 0
@@ -114,6 +127,26 @@ class ServiceCompiler:
 
     def error(self, message: str, node: ast.AST) -> None:
         raise ServiceError(message, node)
+
+    def materialize_constant(self, name: str) -> Expr:
+        if name in self.constants:
+            return self.constants[name]
+        if name in self.evaluating_constants:
+            self.error(f"cyclic module constant: {name}", self.constant_nodes[name][0])
+        self.evaluating_constants.add(name)
+        node, typ = self.constant_nodes[name]
+        value = self.expr(node, typ)
+        self.evaluating_constants.remove(name)
+        if typ.name in {"dict", "list", "set", "tuple", "tuple_var"}:
+            value = Expr(
+                f"{{ static __CONSTANT_{name}: std::sync::OnceLock<{typ.rust()}> = std::sync::OnceLock::new(); "
+                f"if __CONSTANT_{name}.get().is_none() {{ let __constant_value = {value.code}; "
+                f"let _ = __CONSTANT_{name}.set(__constant_value); }} "
+                f'__CONSTANT_{name}.get().ok_or("missing module constant")?.clone() }}',
+                typ,
+            )
+        self.constants[name] = value
+        return value
 
     def typ(self, node: ast.AST, self_type: str | None = None) -> Type:
         if isinstance(node, ast.Constant) and node.value is None:
@@ -155,6 +188,7 @@ class ServiceCompiler:
             "UdpSocket",
             "ProcessPool",
             "Sha256",
+            "Random",
             *self.enums,
             *self.records,
             self_type,
@@ -163,11 +197,22 @@ class ServiceCompiler:
         if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name):
             args = node.slice.elts if isinstance(node.slice, ast.Tuple) else [node.slice]
             name = node.value.id
+            if name in self.records:
+                return Type(name)
             if name == "tuple" and len(args) == 2 and isinstance(args[1], ast.Constant) and args[1].value is Ellipsis:
                 element = self.typ(args[0], self_type)
                 if element.name in {"None", "HttpServer"}:
                     self.error("unsupported collection element type", node)
                 return Type("tuple_var", (element,))
+            if name == "Callable" and len(args) == 2 and isinstance(args[0], ast.List):
+                return Type(
+                    "callable",
+                    tuple(self.typ(item, self_type) for item in args[0].elts) + (self.typ(args[1], self_type),),
+                )
+            if name == "Optional" and len(args) == 1:
+                return Type("optional", (self.typ(args[0], self_type),))
+            if name == "Union" and len(args) > 1:
+                return Type("union", tuple(self.typ(arg, self_type) for arg in args))
             if (
                 (name in {"list", "set"} and len(args) == 1)
                 or (name == "dict" and len(args) == 2)
@@ -175,15 +220,27 @@ class ServiceCompiler:
             ):
                 types = tuple(self.typ(arg, self_type) for arg in args)
                 if name in {"set", "dict"} and not self.hashable(types[0]):
-                    self.error("collection keys must be str, int, bool, enums or immutable tuples of those types", node)
+                    self.error(
+                        f"collection keys must be str, int, bool, enums or immutable tuples of those types; "
+                        f"got {types[0]} in {ast.unparse(node)}",
+                        node,
+                    )
                 if any(t.name in {"None", "HttpServer"} for t in types):
                     self.error("unsupported collection element type", node)
                 return Type(name, types)
-        self.error("unsupported or missing type annotation", node)
+        self.error(
+            f"unsupported or missing type annotation: {ast.unparse(node)} at "
+            f"{getattr(node, 'source_path', '<unknown>')}:{getattr(node, 'lineno', 0)}",
+            node,
+        )
 
     def hashable(self, typ: Type) -> bool:
-        if typ.name in {"str", "int", "bool", *self.enums}:
+        if typ.name in {"str", "int", "bool", "Json", *self.enums}:
             return True
+        if typ.name in self.records:
+            return all(self.hashable(field[0]) for field in self.records[typ.name].values())
+        if typ.name == "optional":
+            return self.hashable(typ.args[0])
         return (
             typ.name in {"tuple", "tuple_var"}
             and (typ.name != "tuple" or len(typ.args) <= 12)
@@ -201,7 +258,7 @@ class ServiceCompiler:
             *self.enums,
             *self.records,
             *self.functions,
-            *self.constants,
+            *self.constant_nodes,
             "rt",
             "main",
             "print",
@@ -264,6 +321,7 @@ class ServiceCompiler:
             "unsafe",
             "const",
             "static",
+            "trait",
         }:
             self.error(f"Rust keyword cannot be a binding: {name}", node)
 
@@ -275,8 +333,76 @@ class ServiceCompiler:
             return Expr(self.reference(place), expected)
         if expression.type == expected:
             return expression
+        from .backend.union_emission import convert_union
+
+        converted_union = convert_union(self, expression, expected, node)
+        if converted_union is not None:
+            return converted_union
         if (
-            expected.name == "tuple_var"
+            expected.name == "list"
+            and expected.args[0].name == "optional"
+            and expression.type.name == "list"
+            and expression.type.args[0] == expected.args[0].args[0]
+        ):
+            return Expr(f"({expression.code}).into_iter().map(Some).collect::<Vec<_>>()", expected)
+        if expected.name == "optional" and expression.type == Type("None"):
+            return Expr("None", expected)
+        if expected.name == "optional" and expression.type == expected.args[0]:
+            return Expr(f"Some({expression.code})", expected)
+        if (
+            expected.name == "optional"
+            and expression.type.name == "Json"
+            and expected.args[0].name
+            in {
+                "str",
+                "int",
+                "float",
+                "bool",
+                "list",
+                "dict",
+            }
+        ):
+            value = self.convert(expression, expected.args[0], node)
+            return Expr(f"Some({value.code})", expected)
+        if expression.type.name == "optional" and expected.name == "bool":
+            return Expr(f"({expression.code}).is_some()", expected)
+        if expression.type.name == "optional" and expected.name != "optional":
+            unwrapped = Expr(
+                f'(*({expression.code}).as_ref().ok_or("expected a value")?).clone()', expression.type.args[0]
+            )
+            return self.convert(unwrapped, expected, node)
+        if (
+            expected.name == "tuple"
+            and expression.type.name in {"list", "tuple_var"}
+            and expression.type.args
+            and all(item == expression.type.args[0] for item in expected.args)
+        ):
+            values = ", ".join(f"rt::at(&__tuple_values, {index}i64)?" for index in range(len(expected.args)))
+            return Expr(
+                f"{{ let __tuple_values = {expression.code}; "
+                f'if __tuple_values.len() != {len(expected.args)} {{ return Err("tuple length mismatch".into()); }} '
+                f"({values},) }}",
+                expected,
+            )
+        if (
+            expected.name in {"list", "tuple_var"}
+            and expression.type.name in {"list", "tuple_var"}
+            and expression.type.args[0].name == "optional"
+            and expression.type.args[0].args[0] == expected.args[0]
+        ):
+            return Expr(
+                f'({expression.code}).into_iter().map(|__value| __value.ok_or("expected a value".into()))'
+                f".collect::<rt::Result<Vec<_>>>()?",
+                expected,
+            )
+        if (
+            expected.name in {"list", "tuple_var"}
+            and expression.type.name in {"list", "tuple_var"}
+            and expression.type.args == expected.args
+        ):
+            return Expr(expression.code, expected)
+        if (
+            expected.name in {"list", "tuple_var"}
             and expression.type.name == "tuple"
             and all(item == expected.args[0] for item in expression.type.args)
         ):
@@ -300,9 +426,79 @@ class ServiceCompiler:
                     self.record_decision(node, "json_conversion", "borrow", "serialization_returns_owned_tree")
                     return Expr(f"rt::to_json({self.reference(place)})?", expected)
             return Expr(f"rt::to_json(&({expression.code}))?", expected)
-        if expected.name == "float" and expression.type.name == "int":
-            return Expr(f"({expression.code} as f64)", expected)
-        self.error(f"expected {expected}, got {expression.type}", node)
+        if expression.type.name == "Json" and expected.name in {"str", "int", "float", "bool", "list", "dict"}:
+            helpers = {
+                "str": "json_string",
+                "int": "json_int",
+                "float": "json_float",
+                "bool": "json_bool",
+                "list": "json_array",
+                "dict": "json_object",
+            }
+            return Expr(f"rt::{helpers[expected.name]}(&({expression.code}))?", expected)
+        if expected.name == "bool" and expression.type.name in {
+            "int",
+            "float",
+            "str",
+            "bytes",
+            "bytearray",
+            "list",
+            "set",
+            "dict",
+            "tuple_var",
+            "optional",
+        }:
+            if expression.type.name == "int":
+                code = f"({expression.code}) != 0"
+            elif expression.type.name == "float":
+                code = f"({expression.code}) != 0.0"
+            elif expression.type.name == "optional":
+                code = f"({expression.code}).is_some()"
+            else:
+                code = f"!({expression.code}).is_empty()"
+            return Expr(code, expected)
+        if expected.name == "float" and expression.type.name in {"int", "bool"}:
+            cast = "i64" if expression.type.name == "bool" else "f64"
+            return Expr(
+                f"(({expression.code}) as {cast} as f64)" if cast == "i64" else f"(({expression.code}) as f64)",
+                expected,
+            )
+        if expected.name == "int" and expression.type.name == "bool":
+            return Expr(f"(({expression.code}) as i64)", expected)
+        if (
+            expected.name in {"list", "tuple_var"}
+            and expression.type.name in {"list", "tuple_var"}
+            and expected.args[0].name in self.records
+            and expression.type.args[0].name in self.records
+        ):
+            source_fields = self.records[expression.type.args[0].name]
+            expected_fields = self.records[expected.args[0].name]
+            if all(
+                field in source_fields and source_fields[field][0] == typ for field, (typ, _) in expected_fields.items()
+            ):
+                fields = ", ".join(f"{field}: __item.{field}.clone()" for field in expected_fields)
+                return Expr(
+                    f"({expression.code}).into_iter().map(|__item| {expected.args[0].name} {{ {fields} }})"
+                    ".collect::<Vec<_>>()",
+                    expected,
+                )
+        if expected.name in self.records and expression.type.name in self.records:
+            source_fields = self.records[expression.type.name]
+            expected_fields = self.records[expected.name]
+            if all(
+                field in source_fields and source_fields[field][0] == typ for field, (typ, _) in expected_fields.items()
+            ):
+                value = "__structural_value"
+                fields = ", ".join(f"{field}: ({value}).{field}.clone()" for field in expected_fields)
+                return Expr(
+                    f"{{ let {value} = {expression.code}; {expected.name} {{ {fields} }} }}",
+                    expected,
+                )
+        self.error(
+            f"expected {expected}, got {expression.type} at "
+            f"{getattr(node, 'source_path', '<unknown>')}:{getattr(node, 'lineno', 0)}",
+            node,
+        )
 
     def move_context(self, node: ast.Name, typ: Type) -> MoveContext:
         use = self.ownership_uses.get(id(node))
@@ -392,6 +588,8 @@ class ServiceCompiler:
         return ("mut " if not self.optimize_idioms or name in self.mutable_bindings else "") + name
 
     def reference(self, value: Expr) -> str:
+        if value.code in self.mutable_parameters:
+            return f"&*{value.code}"
         style = reference_style(
             borrowed=value.borrowed, simple_name=value.code.isidentifier(), optimize=self.optimize_idioms
         )
@@ -544,11 +742,37 @@ class ServiceCompiler:
         """Compare already-evaluated operands using the same rules in simple and chained expressions."""
         membership = isinstance(operation, (ast.In, ast.NotIn))
         if isinstance(operation, (ast.Is, ast.IsNot)):
-            literal_left = isinstance(left_node, ast.Constant) and left_node.value is None
-            literal_right = isinstance(right_node, ast.Constant) and right_node.value is None
+            if left.type.name == "optional" and left.type.args[0] == right.type and right.type.name in self.enums:
+                left = self.convert(left, right.type, node)
+            elif right.type.name == "optional" and right.type.args[0] == left.type and left.type.name in self.enums:
+                right = self.convert(right, left.type, node)
+            if left.type == right.type and left.type.name in self.enums:
+                operator = "!=" if isinstance(operation, ast.IsNot) else "=="
+                return Expr(f"({left.code}) {operator} ({right.code})", Type("bool"))
+            literal_left = (
+                isinstance(left_node, ast.Constant)
+                and left_node.value is None
+                or isinstance(left_node, ast.Name)
+                and left_node.id == "None"
+            )
+            literal_right = (
+                isinstance(right_node, ast.Constant)
+                and right_node.value is None
+                or isinstance(right_node, ast.Name)
+                and right_node.id == "None"
+            )
+            literal_left = literal_left or left.type.name == "None"
+            literal_right = literal_right or right.type.name == "None"
             value = right if literal_left else left
-            if not (literal_left or literal_right) or value.type.name not in {"Json", "None"}:
-                self.error("identity comparison requires literal None and a JSON or None value", node)
+            if not (literal_left or literal_right) or value.type.name not in {"Json", "None", "optional"}:
+                self.error(
+                    f"identity comparison requires literal None and a JSON, optional or None value; "
+                    f"got {value.type} in {ast.unparse(node)}",
+                    node,
+                )
+            if value.type.name == "optional":
+                method = "is_some" if isinstance(operation, ast.IsNot) else "is_none"
+                return Expr(f"({value.code}).{method}()", Type("bool"))
             return Expr(
                 render_null_identity(value.code, value.type.name == "Json", isinstance(operation, ast.IsNot)),
                 Type("bool"),
@@ -556,14 +780,50 @@ class ServiceCompiler:
         compared_type = right.type
         if isinstance(operation, (ast.In, ast.NotIn)) and right.type.name in {"dict", "list", "set", "tuple_var"}:
             compared_type = right.type.args[0]
-        if self.contains_record(left.type) or self.contains_record(compared_type):
-            self.error("compare dataclass fields explicitly; record comparison and membership are unsupported", node)
+        if (
+            not membership
+            and not isinstance(operation, (ast.Eq, ast.NotEq))
+            and (self.contains_record(left.type) or self.contains_record(compared_type))
+            and not self.hashable(left.type)
+        ):
+            self.error(f"record type is not ordered: {left.type} in {ast.unparse(node)}", node)
+        if (
+            membership
+            and right.type.name == "optional"
+            and right.type.args[0].name
+            in {
+                "list",
+                "set",
+                "dict",
+                "tuple",
+                "tuple_var",
+            }
+        ):
+            right = self.convert(right, right.type.args[0], node)
+        if membership and right.type.name == "tuple" and any(item != right.type.args[0] for item in right.type.args):
+            tests = []
+            for index, item_type in enumerate(right.type.args):
+                item = Expr(f"({right.code}).{index}", item_type)
+                if item_type.name == "None" and left.type.name == "optional":
+                    tests.append(f"({left.code}).is_none()")
+                else:
+                    needle = self.convert(left, item_type, node)
+                    tests.append(f"({needle.code}) == ({item.code})")
+            combined = " || ".join(tests)
+            return Expr(f"!({combined})" if isinstance(operation, ast.NotIn) else f"({combined})", Type("bool"))
+        if (
+            membership
+            and right.type.name == "tuple"
+            and right.type.args
+            and all(item == right.type.args[0] for item in right.type.args)
+        ):
+            right = self.convert(right, Type("tuple_var", (right.type.args[0],)), node)
         if membership:
             rule = membership_rule(left.type.name, right.type.name)
             if not rule:
                 if right.type.name in {"bytes", "bytearray"}:
                     self.error("byte membership requires an integer or byte buffer", node)
-                self.error("unsupported membership test", node)
+                self.error(f"unsupported membership test: {left.type} in {right.type}", node)
             if right.type.name in {"dict", "list", "set", "tuple_var"}:
                 left = self.convert(left, right.type.args[0], node)
             return Expr(
@@ -574,8 +834,99 @@ class ServiceCompiler:
             right = self.convert(right, left.type, node)
         elif right.type.name == "tuple_var" and left.type.name == "tuple":
             left = self.convert(left, right.type, node)
-        if left.type != right.type and not {left.type.name, right.type.name} <= {"bytes", "bytearray"}:
-            self.error("comparison needs equal types", node)
+        if left.type.name == "union" and right.type in left.type.args:
+            left = self.convert(left, right.type, node)
+        elif right.type.name == "union" and left.type in right.type.args:
+            right = self.convert(right, left.type, node)
+        if (
+            left.type.name == "union"
+            and right.type.name in {"int", "float"}
+            and any(item.name == "float" for item in left.type.args)
+        ):
+            left = self.convert(left, Type("float"), node)
+            right = self.convert(right, Type("float"), node)
+        elif (
+            right.type.name == "union"
+            and left.type.name in {"int", "float"}
+            and any(item.name == "float" for item in right.type.args)
+        ):
+            left = self.convert(left, Type("float"), node)
+            right = self.convert(right, Type("float"), node)
+        if left.type.name == "int" and right.type.name == "float":
+            left = self.convert(left, Type("float"), node)
+        elif right.type.name == "int" and left.type.name == "float":
+            right = self.convert(right, Type("float"), node)
+        if (
+            not isinstance(operation, (ast.Lt, ast.LtE, ast.Gt, ast.GtE))
+            and left.type.name == "optional"
+            and left.type.args[0].name == "Json"
+            and right.type.name
+            in {
+                "str",
+                "int",
+                "float",
+                "bool",
+            }
+        ):
+            left = self.convert(left, right.type, node)
+        elif (
+            not isinstance(operation, (ast.Lt, ast.LtE, ast.Gt, ast.GtE))
+            and right.type.name == "optional"
+            and right.type.args[0].name == "Json"
+            and left.type.name
+            in {
+                "str",
+                "int",
+                "float",
+                "bool",
+            }
+        ):
+            right = self.convert(right, left.type, node)
+        ordered_json = isinstance(operation, (ast.Lt, ast.LtE, ast.Gt, ast.GtE))
+        if left.type.name == "optional" and left.type.args[0].name == "Json" and ordered_json:
+            left = self.convert(left, Type("Json"), node)
+        if right.type.name == "optional" and right.type.args[0].name == "Json" and ordered_json:
+            right = self.convert(right, Type("Json"), node)
+        if ordered_json and left.type.name == "Json" and right.type.name in {"int", "float"}:
+            left = self.convert(left, Type("float"), node)
+            right = self.convert(right, Type("float"), node)
+        elif ordered_json and right.type.name == "Json" and left.type.name in {"int", "float"}:
+            right = self.convert(right, Type("float"), node)
+            left = self.convert(left, Type("float"), node)
+        if left.type.name == "Json" and right.type.name in {"str", "int", "float", "bool"}:
+            left = self.convert(left, right.type, node)
+        elif right.type.name == "Json" and left.type.name in {"str", "int", "float", "bool"}:
+            right = self.convert(right, left.type, node)
+        if (
+            isinstance(operation, (ast.Eq, ast.NotEq))
+            and left.type.name == "optional"
+            and right.type == left.type.args[0]
+        ):
+            right = self.convert(right, left.type, node)
+        elif (
+            isinstance(operation, (ast.Eq, ast.NotEq))
+            and right.type.name == "optional"
+            and left.type == right.type.args[0]
+        ):
+            left = self.convert(left, right.type, node)
+        if left.type.name == "optional" and left.type.args[0].name == "float" and right.type.name in {"int", "float"}:
+            left = self.convert(left, Type("float"), node)
+        elif (
+            right.type.name == "optional" and right.type.args[0].name == "float" and left.type.name in {"int", "float"}
+        ):
+            right = self.convert(right, Type("float"), node)
+        if left.type.name == "optional" and right.type == left.type.args[0]:
+            left = self.convert(left, right.type, node)
+        elif right.type.name == "optional" and left.type == right.type.args[0]:
+            right = self.convert(right, left.type, node)
+        if (
+            isinstance(operation, (ast.Eq, ast.NotEq))
+            and {left.type.name, right.type.name} <= {"set", "list", "tuple", "tuple_var"}
+            and left.type.name != right.type.name
+        ):
+            return Expr(str(isinstance(operation, ast.NotEq)).lower(), Type("bool"))
+        if left.type != right.type and not {left.type.name, right.type.name} <= {"bytes", "bytearray", "int", "float"}:
+            self.error(f"comparison needs equal types: {left.type} {type(operation).__name__} {right.type}", node)
         if self.optimize_idioms and left.type.name == "str" and isinstance(operation, (ast.Eq, ast.NotEq)):
             empty_left = isinstance(left_node, ast.Constant) and left_node.value == ""
             empty_right = isinstance(right_node, ast.Constant) and right_node.value == ""
@@ -688,11 +1039,21 @@ class ServiceCompiler:
                 self.error("sort key must be a named annotated function or None", key)
             callback = key.id
             params, result = self.functions[callback]
-            if len(params) != 1 or not self.orderable(result):
-                self.error("sort key requires one argument and an ordered non-float result", key)
+
+            def comparable(typ: Type) -> bool:
+                return (
+                    typ.name in {"float", "bool", "int", "str", *self.enums}
+                    or self.orderable(typ)
+                    or (typ.name == "tuple" and all(comparable(item) for item in typ.args))
+                )
+
+            if not params or not comparable(result):
+                self.error(
+                    f"sort key {callback} requires one argument and an ordered result, got {params} -> {result}", key
+                )
         hint = expected if expected is not None and expected.name == "list" else None
         if hint is None and callback is not None:
-            hint = Type("list", self.functions[callback][0])
+            hint = Type("list", self.functions[callback][0][-1:])
         argument = node.args[0]
         # Context is needed to infer an empty list, but a typed dictionary expression
         # must retain its key type until its keys have been materialized below.
@@ -705,18 +1066,58 @@ class ServiceCompiler:
         values = self.expr(argument, hint if infer_list else None)
         if values.type.name == "dict":
             values = Expr(f"({values.code}).keys().cloned().collect::<Vec<_>>()", Type("list", (values.type.args[0],)))
+        if (
+            values.type.name in {"set", "tuple"}
+            and values.type.args
+            and all(item == values.type.args[0] for item in values.type.args)
+        ):
+            values = Expr(f"({values.code}).into_iter().collect::<Vec<_>>()", Type("list", (values.type.args[0],)))
+        if values.type.name == "tuple_var":
+            values = self.convert(values, Type("list", values.type.args), node)
         if values.type.name != "list":
             self.error("sorted requires a typed list or dictionary", node.args[0])
         if hint is not None:
             values = self.convert(values, hint, node.args[0])
+        callback_expression = callback
         if callback is not None:
-            if self.functions[callback][0] != (values.type.args[0],):
+            if self.functions[callback][0][-1:] != (values.type.args[0],):
                 self.error("sort key argument must match the list element type", key)
+            captures = self.function_parameters[callback][:-1]
+            if any(capture not in self.locals for capture in captures):
+                self.error("sort key requires one argument and an ordered result", key)
+            if captures:
+                arguments = ", ".join([*(f"{capture}.clone()" for capture in captures), "__item"])
+                callback_expression = f"|__item| {callback}({arguments})"
         elif not self.orderable(values.type.args[0]):
             self.error("sorted requires a list of ordered non-float values without a key", node)
         reverse = self.expr(keywords["reverse"], Type("bool")).code if "reverse" in keywords else "false"
+        if callback is not None and not self.orderable(self.functions[callback][1]):
+
+            def compare(typ: Type, left: str, right: str) -> str:
+                if typ.name == "float":
+                    return f"{left}.total_cmp(&{right})"
+                if typ.name == "tuple":
+                    comparisons = [
+                        compare(item, f"{left}.{index}", f"{right}.{index}") for index, item in enumerate(typ.args)
+                    ]
+                    return comparisons[0] + "".join(f".then({item})" for item in comparisons[1:])
+                return f"{left}.cmp(&{right})"
+
+            result_type = self.functions[callback][1]
+            comparator = compare(result_type, "left", "right")
+            return Expr(
+                f"{{ let __values = {values.code}; let __reverse = {reverse}; "
+                f"rt::sorted_by_comparable_key(__values, {callback_expression}, __reverse, |left, right| {comparator})? }}",
+                values.type,
+            )
+        if callback is not None and self.functions[callback][1].name == "float":
+            return Expr(
+                f"{{ let __values = {values.code}; let __reverse = {reverse}; "
+                f"rt::sorted_by_float_key(__values, {callback_expression}, __reverse)? }}",
+                values.type,
+            )
         rule = sorting_rule(callback is not None, "reverse" in keywords)
-        return Expr(render_sorting(rule, values.code, callback or "", reverse), values.type)
+        return Expr(render_sorting(rule, values.code, callback_expression or "", reverse), values.type)
 
     def contains_record(self, typ: Type) -> bool:
         return typ.name in self.records or any(self.contains_record(item) for item in typ.args)
@@ -725,32 +1126,75 @@ class ServiceCompiler:
         """Evaluate both owned operands once, then construct an independent set."""
         return Expr(
             f"{{ let __set_left = {left.code}; let __set_right = {right.code}; "
-            f"__set_left.{operation}(&__set_right).cloned().collect::<std::collections::BTreeSet<_>>() }}",
+            f"let mut __result = std::collections::BTreeSet::new(); "
+            f"for __item in __set_left.{operation}(&__set_right) {{ __result.insert(__item.clone()); }} __result }}",
             left.type,
         )
 
+    def finish_record(self, name: str, value: str) -> str:
+        initializer = name + "__escaped_5f5f706f73745f696e69745f5f"
+        if initializer not in self.functions:
+            return value
+        borrow = self.parameter_uses.get(initializer, {}).get("self_")
+        if "self_" in self.mutable_parameter_functions.get(initializer, set()):
+            argument = f"&mut ({value})"
+        else:
+            argument = f"&({value})" if borrow is not None and borrow.mode == "borrow" else value
+        return f"{initializer}({argument})?"
+
     def record_constructor(self, name: str, node: ast.Call) -> Expr:
         fields = self.records[name]
-        if len(node.args) > len(fields) or any(isinstance(arg, ast.Starred) for arg in node.args):
+        starred = [index for index, argument in enumerate(node.args) if isinstance(argument, ast.Starred)]
+        if starred:
+            if len(starred) != 1 or starred[0] != len(node.args) - 1 or node.keywords:
+                self.error("one trailing positional list unpack is supported", node)
+            start = starred[0]
+            tail = list(fields.items())[start:]
+            if not tail or any(field[0] != tail[0][1][0] for _, field in tail):
+                self.error("unpacked dataclass fields must have one common type", node)
+            required = sum(default is None for _, default in tail)
+            item_type = tail[0][1][0]
+            sequence = self.expr(node.args[start].value, Type("list", (item_type,)))
+            values = {
+                field: self.expr(expression, fields[field][0]).code
+                for field, expression in zip(fields, node.args[:start])
+            }
+            temporary = "__record_args"
+            setup = [
+                f"let {temporary}: {Type('list', (item_type,)).rust()} = {sequence.code};",
+                f"if !({required}..={len(tail)}).contains(&{temporary}.len()) "
+                '{ return Err("wrong dataclass argument count".into()); }',
+            ]
+            for offset, (field, (_, default)) in enumerate(tail):
+                expanded = f"rt::at(&{temporary}, {offset} as i64)?"
+                if default is not None:
+                    expanded = f"if {offset} < {temporary}.len() {{ {expanded} }} else {{ {default.code} }}"
+                values[field] = expanded
+            storage = self.shared_records.get(name, name)
+            value = storage + " { " + ", ".join(field + ": " + value for field, value in values.items()) + " }"
+            if storage != name:
+                value = f"{name}(std::sync::Arc::new({value}))"
+            return Expr("{ " + " ".join(setup) + " " + self.finish_record(name, value) + " }", Type(name))
+        if len(node.args) > len(fields):
             self.error("invalid positional dataclass arguments", node)
         supplied = list(zip(fields, node.args))
         supplied.extend((keyword.arg, keyword.value) for keyword in node.keywords)
         values = {}
         for field, expression in supplied:
             if field is None or field not in fields or field in values:
-                self.error("unknown, expanded or duplicate dataclass argument", node)
+                self.error(f"unknown, expanded or duplicate dataclass argument in {name}", node)
             values[field] = self.expr(expression, fields[field][0]).code
         for field, (_, default) in fields.items():
             if field not in values:
                 if default is None:
-                    self.error("missing required dataclass argument: " + field, node)
+                    self.error(f"missing required dataclass argument: {name}.{field}", node)
                 values[field] = default.code
         # Rust evaluates field initializers in this supplied order, including reordered keywords.
         storage = self.shared_records.get(name, name)
         value = storage + " { " + ", ".join(field + ": " + value for field, value in values.items()) + " }"
         if storage != name:
             value = f"{name}(std::sync::Arc::new({value}))"
-        return Expr(value, Type(name))
+        return Expr(self.finish_record(name, value), Type(name))
 
     def record_definition(self, node: ast.ClassDef) -> None:
         if (
@@ -780,27 +1224,85 @@ class ServiceCompiler:
             self.check_name(field, member)
             if field in fields:
                 self.error("duplicate dataclass field: " + field, member)
-            typ = self.typ(member.annotation, node.name)
+            try:
+                typ = self.typ(member.annotation, node.name)
+            except ServiceError as error:
+                self.error(f"{error} in {node.name}.{field}", member)
             if self.inline_self_reference(typ, node.name):
                 self.error("recursive record fields require list, dict or variadic tuple indirection", member)
             if typ.name in {"None", "HttpServer"}:
                 self.error("unsupported dataclass field type", member)
             default = None
             if member.value is not None:
-                if typ.name not in {"int", "float", "bool", "str", "bytes"} or not (
+                empty_collection = False
+                if isinstance(member.value, (ast.List, ast.Set)):
+                    empty_collection = not member.value.elts and typ.name in {"list", "set"}
+                elif isinstance(member.value, ast.Tuple):
+                    empty_collection = not member.value.elts and typ.name in {"tuple", "tuple_var"}
+                elif isinstance(member.value, ast.Dict):
+                    empty_collection = not member.value.keys and typ.name == "dict"
+                scalar = typ.name in {"int", "float", "bool", "str", "bytes"} and (
                     isinstance(member.value, ast.Constant)
                     or isinstance(member.value, ast.UnaryOp)
                     and isinstance(member.value.op, ast.USub)
                     and isinstance(member.value.operand, ast.Constant)
+                    or isinstance(member.value, ast.BinOp)
+                    and isinstance(member.value.op, ast.Div)
+                    and isinstance(member.value.left, ast.Constant)
+                    and isinstance(member.value.right, ast.Constant)
+                )
+                none_default = (
+                    typ.name == "optional" and isinstance(member.value, ast.Constant) and member.value.value is None
+                )
+                runtime_default = (
+                    isinstance(member.value, ast.Call)
+                    and isinstance(member.value.func, ast.Name)
+                    and (member.value.func.id in self.records or not member.value.args)
+                    and all(isinstance(argument, ast.Constant) for argument in member.value.args)
+                )
+                frozen_default = (
+                    isinstance(member.value, ast.Call)
+                    and isinstance(member.value.func, ast.Name)
+                    and member.value.func.id in {"frozenset", "__set_union"}
+                    and typ.name == "set"
+                )
+                tuple_default = isinstance(member.value, ast.Tuple) and typ.name in {"tuple", "tuple_var"}
+                enum_default = typ.name in self.enums and isinstance(member.value, ast.Attribute)
+                named_default = isinstance(member.value, ast.Name) and typ.name in {
+                    "tuple",
+                    "tuple_var",
+                    "set",
+                    *self.enums,
+                }
+                if (
+                    not scalar
+                    and not empty_collection
+                    and not runtime_default
+                    and not none_default
+                    and not frozen_default
+                    and not enum_default
+                    and not named_default
+                    and not tuple_default
                 ):
-                    self.error("dataclass defaults require scalar literals", member)
-                default = self.expr(member.value, typ)
+                    self.error(
+                        f"dataclass defaults require scalar literals or empty collections: {node.name}.{field} "
+                        f"= {ast.unparse(member.value)}",
+                        member,
+                    )
+                if (
+                    isinstance(member.value, ast.Call)
+                    and isinstance(member.value.func, ast.Name)
+                    and member.value.func.id not in self.records
+                    and member.value.func.id not in {"random_default", "frozenset", "set", "list", "dict", "tuple"}
+                    and not member.value.func.id.startswith("__")
+                ):
+                    default = Expr(f"{member.value.func.id}()?", typ)
+                else:
+                    default = self.expr(member.value, typ)
                 saw_default = True
             elif saw_default:
                 self.error("required dataclass fields must precede defaulted fields", member)
             fields[field] = (typ, default)
-        if not fields:
-            self.error("dataclasses require at least one typed field", node)
         self.records[node.name] = fields
         return  # noqa: PLR1711 - explicit return required by repository guidelines
 
@@ -880,7 +1382,7 @@ class ServiceCompiler:
         typ = self.locals[root.id]
         for index in indices:
             if typ.name != "list":
-                self.error("nested list assignment requires lists at every index", index)
+                self.error(f"nested list assignment requires lists at every index: {ast.unparse(target)}", index)
             typ = typ.args[0]
         # After resolving a parent, an inner index must not detach/reorder it.
         # Keeping references to removed objects requires Python alias identity,
@@ -932,7 +1434,59 @@ class ServiceCompiler:
         )
 
     def method(self, node: ast.Call) -> Expr:
-        obj = self.expr(node.func.value)
+        if (
+            node.func.attr == "add"
+            and len(node.args) == 1
+            and isinstance(node.func.value, ast.Subscript)
+            and isinstance(node.func.value.value, ast.Name)
+            and node.func.value.value.id in self.defaultdict_sets
+        ):
+            mapping = self.expr(node.func.value.value)
+            key = self.expr(node.func.value.slice, mapping.type.args[0])
+            item_type = mapping.type.args[1].args[0]
+            item = self.expr(node.args[0], item_type)
+            return Expr(
+                f"{{ {node.func.value.value.id}.entry({key.code}).or_insert_with(std::collections::BTreeSet::new).insert({item.code}); () }}",
+                Type("None"),
+            )
+        if (
+            node.func.attr == "append"
+            and len(node.args) == 1
+            and isinstance(node.func.value, ast.Subscript)
+            and isinstance(node.func.value.value, ast.Name)
+            and node.func.value.value.id in self.defaultdicts
+        ):
+            mapping = self.expr(node.func.value.value)
+            key = self.expr(node.func.value.slice, mapping.type.args[0])
+            item_type = mapping.type.args[1].args[0]
+            item = self.expr(node.args[0], item_type)
+            return Expr(
+                f"{node.func.value.value.id}.entry({key.code}).or_insert_with(Vec::new).push({item.code})",
+                Type("None"),
+            )
+        mutating_methods = {
+            "append",
+            "extend",
+            "insert",
+            "remove",
+            "pop",
+            "popleft",
+            "clear",
+            "add",
+            "discard",
+            "update",
+            "difference_update",
+            "intersection_update",
+            "setdefault",
+            "sort",
+            "reverse",
+        }
+        place = (
+            self.local_read(node.func.value)
+            if node.func.attr in mutating_methods and isinstance(node.func.value, ast.Name)
+            else None
+        )
+        obj = place if place is not None else self.expr(node.func.value)
         if self.optimize_text and obj.type.name == "str":
             use = runtime_argument_use(RuntimeParameter("str", "shared"), [node.func.value, *node.args], 0)
             place = self.local_read(node.func.value) if use.mode == "borrow" else None
@@ -956,8 +1510,18 @@ class ServiceCompiler:
             return self.indexed_list_mutation(node, obj)
         if obj.type.name == "int" and name == "to_bytes":
             return self.library_call("int_to_bytes", [node.func.value, *node.args], node)
+        if obj.type.name == "str" and name == "capitalize" and not node.args:
+            return self.library_call("string_capitalize", [node.func.value], node)
+        if obj.type.name == "str" and name in {"removeprefix", "removesuffix"} and len(node.args) == 1:
+            helper = "string_remove_prefix" if name == "removeprefix" else "string_remove_suffix"
+            return self.library_call(helper, [node.func.value, *node.args], node)
         if obj.type.name == "str":
             return self.string_method(node, obj)
+        if obj.type.name in {"bytes", "bytearray"} and name == "split" and len(node.args) in {1, 2}:
+            arguments = [node.func.value, *node.args]
+            if len(arguments) == 2:
+                arguments.append(ast.Constant(value=-1))
+            return self.library_call("bytes_split", arguments, node)
         if obj.type.name in {"bytes", "bytearray"} and name == "decode":
             encoding = "utf-8"
             if node.args:
@@ -979,6 +1543,142 @@ class ServiceCompiler:
         collection = self.collection_method(node, obj)
         if collection is not None:
             return collection
+        if obj.type.name == "list" and name == "remove" and len(node.args) == 1:
+            item = self.expr(node.args[0], obj.type.args[0])
+            return Expr(
+                f"{{ let __removed = {item.code}; let __index = ({obj.code}).iter().position(|__item| (*__item).clone() == __removed)"
+                f'.ok_or("list.remove: value not found")?; ({obj.code}).remove(__index); }}',
+                Type("None"),
+            )
+        if obj.type.name == "list" and name == "count" and len(node.args) == 1:
+            item = self.expr(node.args[0], obj.type.args[0])
+            return Expr(
+                f"({obj.code}).iter().filter(|__item| (*__item).clone() == {item.code}).count() as i64",
+                Type("int"),
+            )
+        if obj.type.name == "list" and name in {"append", "extend"} and len(node.args) == 1:
+            item = self.expr(node.args[0], obj.type.args[0] if name == "append" else obj.type)
+            method = "push" if name == "append" else "extend"
+            return Expr(f"({obj.code}).{method}({item.code});", Type("None"))
+        if obj.type.name in {"set", "list", "dict"} and name == "clear" and not node.args:
+            return Expr(f"({obj.code}).clear();", Type("None"))
+        if obj.type.name == "list" and name == "pop" and len(node.args) in {0, 1}:
+            index = self.expr(node.args[0], Type("int")) if node.args else Expr("-1i64", Type("int"))
+            return Expr(
+                f"{{ let __index = rt::index(({obj.code}).len(), {index.code})?; " f"({obj.code}).remove(__index) }}",
+                obj.type.args[0],
+            )
+        if obj.type.name == "list" and name == "popleft" and not node.args:
+            return Expr(
+                f'if ({obj.code}).is_empty() {{ return Err("popleft from an empty deque".into()); }} '
+                f"else {{ ({obj.code}).remove(0) }}",
+                obj.type.args[0],
+            )
+        if (
+            obj.type.name == "set"
+            and name in {"issubset", "issuperset", "isdisjoint", "update", "difference_update", "intersection_update"}
+            and len(node.args) == 1
+        ):
+            other = self.expr(node.args[0])
+            if other.type.name == "dict":
+                other = Expr(
+                    f"({other.code}).into_keys().collect::<std::collections::BTreeSet<_>>()",
+                    obj.type,
+                )
+            if name in {"issubset", "issuperset", "isdisjoint"}:
+                other = self.convert(other, obj.type, node)
+                method = {"issubset": "is_subset", "issuperset": "is_superset", "isdisjoint": "is_disjoint"}[name]
+                return Expr(f"({obj.code}).{method}(&({other.code}))", Type("bool"))
+            if name == "update":
+                if (
+                    other.type.args
+                    and other.type.args[0].name == "optional"
+                    and other.type.args[0].args[0] == obj.type.args[0]
+                ):
+                    other = Expr(
+                        f'({other.code}).into_iter().map(|__value| __value.ok_or("expected a value".into()))'
+                        ".collect::<rt::Result<Vec<_>>>()?",
+                        Type("list", obj.type.args),
+                    )
+                return Expr(f"({obj.code}).extend({other.code});", Type("None"))
+            negation = "!" if name == "difference_update" else ""
+            return Expr(
+                f"{{ let __other = {other.code}; ({obj.code}).retain(|__item| {negation}(__other).contains(__item)); }}",
+                Type("None"),
+            )
+        if obj.type.name == "set" and name == "isdisjoint" and len(node.args) == 1:
+            other = self.expr(node.args[0], obj.type)
+            return Expr(f"({obj.code}).is_disjoint(&({other.code}))", Type("bool"))
+        if obj.type.name == "set" and name == "add" and len(node.args) == 1:
+            item = self.expr(node.args[0], obj.type.args[0])
+            return Expr(f"({obj.code}).insert({item.code});", Type("None"))
+        if obj.type.name == "set" and name in {"remove", "discard"} and len(node.args) == 1:
+            item = self.expr(node.args[0], obj.type.args[0])
+            if name == "discard":
+                return Expr(f"({obj.code}).remove(&({item.code}));", Type("None"))
+            return Expr(
+                f'if !({obj.code}).remove(&({item.code})) {{ return Err("set.remove: missing item".into()); }}',
+                Type("None"),
+            )
+        if obj.type.name == "set" and name in {"difference_update", "intersection_update"} and len(node.args) == 1:
+            other = self.expr(node.args[0], obj.type)
+            negation = "!" if name == "difference_update" else ""
+            return Expr(
+                f"{{ let __other = {other.code}; ({obj.code}).retain(|__item| {negation}(__other).contains(__item)); }}",
+                Type("None"),
+            )
+        if obj.type.name == "set" and name == "update" and len(node.args) == 1:
+            other = self.expr(node.args[0])
+            if other.type.name not in {"list", "set", "tuple_var"} or other.type.args[0] != obj.type.args[0]:
+                self.error("set.update requires a matching typed collection", node)
+            return Expr(f"({obj.code}).extend({other.code});", Type("None"))
+        if obj.type.name == "set" and name == "pop" and not node.args:
+            return Expr(f'({obj.code}).pop_first().ok_or("pop from an empty set")?', obj.type.args[0])
+        if obj.type.name == "optional" and obj.type.args[0].name == "Json" and name == "get":
+            obj = self.convert(obj, Type("Json"), node)
+        if obj.type.name == "Json" and name == "get" and len(node.args) in {1, 2}:
+            default = node.args[1] if len(node.args) == 2 else ast.Constant(value=None)
+            return self.library_call("json_get", [node.func.value, node.args[0], default], node)
+        if obj.type.name == "dict" and name == "pop" and len(node.args) in {1, 2}:
+            key = self.expr(node.args[0], obj.type.args[0])
+            removed = f"({obj.code}).remove(&({key.code}))"
+            if len(node.args) == 1:
+                return Expr(f'{removed}.ok_or("missing dict key")?', obj.type.args[1])
+            if isinstance(node.args[1], ast.Constant) and node.args[1].value is None:
+                return Expr(removed, Type("optional", (obj.type.args[1],)))
+            default = self.expr(node.args[1], obj.type.args[1])
+            return Expr(f"{removed}.unwrap_or({default.code})", obj.type.args[1])
+        if obj.type.name == "dict" and name == "setdefault" and len(node.args) == 2:
+            key = self.expr(node.args[0], obj.type.args[0])
+            default = self.expr(node.args[1], obj.type.args[1])
+            return Expr(
+                f"({obj.code}).entry({key.code}).or_insert({default.code}).clone()",
+                obj.type.args[1],
+            )
+        if obj.type.name == "dict" and name in {"values", "keys", "items"} and not node.args:
+            item_type = obj.type.args[1] if name == "values" else obj.type.args[0]
+            method = "iter" if name == "items" else name
+            if name == "items":
+                item_type = Type("tuple", obj.type.args)
+                from .backend.union_emission import clone_dynamic
+
+                value = clone_dynamic(Expr("__value", obj.type.args[1]))
+                value_code = value.code if value is not None else "__value.clone()"
+                return Expr(
+                    f"({obj.code}).iter().map(|(__key, __value)| (__key.clone(), {value_code})).collect::<Vec<_>>()",
+                    Type("list", (item_type,)),
+                )
+            return Expr(
+                f"({obj.code}).{method}().cloned().collect::<Vec<_>>()",
+                Type("list", (item_type,)),
+            )
+        if obj.type.name == "dict" and name == "get" and len(node.args) == 1:
+            key = self.expr(node.args[0], obj.type.args[0])
+            from .backend.union_emission import clone_dynamic
+
+            dynamic = clone_dynamic(Expr("__value", obj.type.args[1]))
+            projection = f".map(|__value| {dynamic.code})" if dynamic is not None else ".cloned()"
+            return Expr(f"({obj.code}).get(&({key.code})){projection}", Type("optional", (obj.type.args[1],)))
         if obj.type.name == "dict" and name == "get" and len(node.args) == 2:
             return self.dictionary_get(node, obj)
         self.error(f"unsupported method {obj.type.name}.{name}", node)
@@ -1035,12 +1735,17 @@ class ServiceCompiler:
             )
         # Defaults stay eager, including calls that fail even when the key exists.
         # Named dictionaries retain identity if an argument mutates them.
-        receiver = node.func.value.id if isinstance(node.func.value, ast.Name) else "__mapping"
+        named_receiver = isinstance(node.func.value, ast.Name) and node.func.value.id not in self.constant_nodes
+        receiver = node.func.value.id if named_receiver else "__mapping"
         value = place if style == "borrow" else obj
-        binding = "" if isinstance(node.func.value, ast.Name) else f"let __mapping = {value.code}; "
+        binding = "" if named_receiver else f"let __mapping = {value.code}; "
+        from .backend.union_emission import clone_dynamic
+
+        dynamic = clone_dynamic(Expr("__value", obj.type.args[1]))
+        projection = f".map(|__value| {dynamic.code})" if dynamic is not None else ".cloned()"
         return Expr(
             f"{{ {binding}let __key = {key.code}; let __default = {default.code}; "
-            f"{receiver}.get(&__key).cloned().unwrap_or(__default) }}",
+            f"{receiver}.get(&__key){projection}.unwrap_or(__default) }}",
             obj.type.args[1],
         )
 
@@ -1132,8 +1837,12 @@ class ServiceCompiler:
             )
             return render_return(value, call, style)
         if isinstance(node, ast.Raise):
-            if node.exc is not None or node.cause is not None or not self.active_errors:
-                self.error("raise supports only bare re-raising inside an except Exception handler", node)
+            if node.cause is not None:
+                self.error("exception chaining is unsupported", node)
+            if node.exc is not None:
+                return render_raise(self.expr(node.exc, Type("str")).code)
+            if not self.active_errors:
+                self.error("bare re-raising requires an except Exception handler", node)
             # Exceptions in this profile expose their message, not object identity
             # or traceback. Borrow the active error so a nested catch can re-raise
             # it again later without moving the original out of its handler.
@@ -1141,6 +1850,8 @@ class ServiceCompiler:
         if isinstance(node, ast.Assert):
             message = self.expr(node.msg, Type("str")).code if node.msg else '"".to_string()'
             return render_assert(self.expr(node.test, Type("bool")).code, message)
+        if isinstance(node, ast.If) and getattr(node, "py2rust_group", False):
+            return "\n".join(self.block(node.body, scoped=False))
         if isinstance(node, ast.If):
             return str(
                 render_if(
@@ -1155,7 +1866,11 @@ class ServiceCompiler:
             return emit_for(self, node)
         if isinstance(node, (ast.Break, ast.Continue, ast.Pass)):
             return {ast.Break: "break;", ast.Continue: "continue;", ast.Pass: ""}[type(node)]
-        self.error(f"unsupported statement: {type(node).__name__}", node)
+        self.error(
+            f"unsupported statement: {type(node).__name__} at "
+            f"{getattr(node, 'source_path', '<unknown>')}:{getattr(node, 'lineno', 0)}: {ast.unparse(node)[:200]}",
+            node,
+        )
 
     def compile(self, source: str) -> str:
         return self.compile_tree(ast.parse(source))

@@ -54,6 +54,7 @@ def node_schema(kind: str) -> dict[str, str]:
             "result": "ref:ValueType",
             "body": "list:Statement",
             "source": "ref:Source",
+            "defaults": "list:Expression",
         }
     if kind == "Field":
         return {"name": "text", "type": "ref:ValueType", "source": "ref:Source", "default": "optional:Expression"}

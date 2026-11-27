@@ -26,6 +26,8 @@ def render_owned_type(name: str, arguments: list[str]) -> str:
         return "rt::DateTime"
     if name == "Rational":
         return "rt::Rational"
+    if name == "Random":
+        return "rt::Random"
     if name == "HttpServer":
         return "rt::HttpServer"
     if name == "HttpResponse":
@@ -63,6 +65,13 @@ def render_owned_type(name: str, arguments: list[str]) -> str:
     if name == "Exception":
         return "String"
     contents = ", ".join(arguments)
+    if name == "callable":
+        return f"fn({', '.join(arguments[:-1])}) -> rt::Result<{arguments[-1]}>"
+    if name == "optional":
+        return "Option<" + contents + ">"
+    if name == "union":
+        boxed = "Box<dyn std::any::Any>"
+        return "Option<" + boxed + ">" if "()" in arguments else boxed
     if name == "tuple":
         return "(" + contents + ",)"
     if name == "list" or name == "tuple_var":

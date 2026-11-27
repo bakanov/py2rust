@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from . import ir
 
 SCALARS = frozenset({"str", "bytes", "bytearray", "Json", "int", "float", "bool", "None"})
-CONTAINERS = frozenset({"list", "dict", "set", "tuple", "tuple_var"})
+CONTAINERS = frozenset({"list", "dict", "set", "tuple", "tuple_var", "optional", "union"})
 
 
 @dataclass(frozen=True)

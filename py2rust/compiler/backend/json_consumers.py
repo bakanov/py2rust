@@ -37,6 +37,8 @@ def collection_length(compiler: ServiceCompiler, node: ast.AST) -> Expr | None:
     name, source = selected
     kind = "object" if name == "json_keys" else "array"
     compiler.record_decision(node, "json_consumer", "length", "temporary_collection_does_not_escape")
+    if name == "json_array":
+        return Expr(f"(rt::json_array_ref({compiler.reference(source)})?.len() as i64)", Type("int"))
     return Expr(
         f'(({compiler.reference(source)}).as_{kind}().ok_or("expected JSON {kind}")?.len() as i64)',
         Type("int"),

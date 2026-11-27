@@ -173,6 +173,20 @@ def emit_expression(nodes: list[Json], index: int, definitions: dict[str, int], 
     values: list[str] = []
     for operand in operands:
         values.append(emit_expression(nodes, json_int(operand), definitions, entry))
+    if operation == "format_value":
+        value_type: str = expression_type(nodes, nodes[json_int(operands[0])])
+        spec: str = literal_text(node)
+        if spec == "!r" and value_type == "str":
+            return "rt::repr_text(&(" + values[0] + "))"
+        if value_type == "str":
+            return values[0]
+        if value_type == "int":
+            return "(" + values[0] + ").to_string()"
+        if value_type == "float":
+            return "rt::float_to_string(" + values[0] + ")?"
+        if value_type == "bool":
+            return "if " + values[0] + ' { "True".to_string() } else { "False".to_string() }'
+        assert False, location(nodes, node) + ": unsupported native format value: " + value_type
     if operation == "json_coerce":
         if expression_type(nodes, nodes[json_int(operands[0])]) == "Json":
             return values[0]
@@ -562,7 +576,7 @@ def local_types(nodes: list[Json], body: list[Json], definitions: dict[str, int]
             if name in types:
                 assert rust_type(nodes, types[name], definitions) == rust_type(
                     nodes, type_index, definitions
-                ), "native local changes type"
+                ), f"native local changes type: {name}: {rust_type(nodes, types[name], definitions)} != {rust_type(nodes, type_index, definitions)}"
             types[name] = type_index
         for block in json_array(node["blocks"]):
             nested: dict[str, int] = local_types(nodes, json_array(block), definitions)
@@ -570,7 +584,7 @@ def local_types(nodes: list[Json], body: list[Json], definitions: dict[str, int]
                 if nested_name in types:
                     assert rust_type(nodes, types[nested_name], definitions) == rust_type(
                         nodes, nested[nested_name], definitions
-                    ), "native local changes type"
+                    ), f"native local changes type: {nested_name}: {rust_type(nodes, types[nested_name], definitions)} != {rust_type(nodes, nested[nested_name], definitions)}"
                 types[nested_name] = nested[nested_name]
     return types
 

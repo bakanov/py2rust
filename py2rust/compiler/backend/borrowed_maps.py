@@ -24,6 +24,10 @@ def prepare_borrowed_maps(compiler: ServiceCompiler, function: ast.FunctionDef) 
     if any(isinstance(node, (ast.Try, ast.With)) for node in ast.walk(function)):
         return
     for position, declaration in enumerate(function.body):
+        if isinstance(declaration, ast.AnnAssign):
+            for item in ast.walk(declaration.annotation):
+                if getattr(item, "source_path", "<unknown>") == "<unknown>":
+                    item.source_path = getattr(declaration, "source_path", function.name)
         if not (
             isinstance(declaration, ast.AnnAssign)
             and isinstance(declaration.target, ast.Name)

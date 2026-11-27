@@ -67,7 +67,7 @@ def module_layout(module: ir.Module, entry: str) -> tuple[tuple[ir.Statement, ..
                 )
             if module.name == entry:
                 executable.extend(statement.blocks[0])
-        elif statement.operation == "assign" and (statement.declaration or module.name != entry):
+        elif statement.operation in {"assign", "unpack_assign"} and (statement.declaration or module.name != entry):
             declarations.append(statement)
         elif module.name == entry:
             executable.append(statement)

@@ -24,6 +24,18 @@ def test_frontend_preserves_narrowed_expression_types(tmp_path: Path) -> None:
     assert program.modules["main"].tree.defs
 
 
+def test_frontend_optional_python_scope_preserves_branch_locals(tmp_path: Path) -> None:
+    source = """def choose(flag: bool) -> str:
+    if flag:
+        local = 'inside'
+    else:
+        local = 'outside'
+    return local
+"""
+    program = analyze({"main": (tmp_path / "main.py", source)}, python_scope=True)
+    assert program.modules["main"].tree.defs
+
+
 def test_frontend_resolves_cross_module_alias(tmp_path: Path) -> None:
     from mypy.nodes import CallExpr
     from mypy.types import Instance
@@ -37,6 +49,43 @@ def test_frontend_resolves_cross_module_alias(tmp_path: Path) -> None:
     calls = [typ for expression, typ in program.expression_types.items() if isinstance(expression, CallExpr)]
     assert any(isinstance(typ, Instance) and typ.type.fullname == "builtins.int" for typ in calls)
     assert set(program.modules) == {"main", "helper"}
+
+
+def test_frontend_discovers_function_local_project_imports(tmp_path: Path) -> None:
+    source = """def answer() -> int:
+    from helper import value
+    return value()
+"""
+    (tmp_path / "helper.py").write_text("def value() -> int:\n    return 42\n")
+    program = analyze({"main": (tmp_path / "main.py", source)}, search_paths=(tmp_path,))
+    assert set(program.modules) == {"main", "helper"}
+    assert program.modules["helper"].path == str(tmp_path / "helper.py")
+
+
+def test_standard_library_contracts_cover_extended_math_json_and_streams(tmp_path: Path) -> None:
+    from py2rust.compiler.libraries.stubs import sources
+
+    source = """import json
+import math
+import sys
+
+def convert(raw: bytes) -> str:
+    document = json.loads(raw, object_pairs_hook=dict)
+    sys.stdout.write(str(math.pi))
+    return json.dumps(
+        document,
+        ensure_ascii=False,
+        allow_nan=False,
+        separators=(',', ':'),
+        sort_keys=True,
+    )
+
+def calculate(value: float) -> float:
+    assert math.isfinite(value)
+    return math.ldexp(math.sin(value) + math.cos(value) + math.atan2(value, 1.0), 2)
+"""
+    program = analyze({"main": (tmp_path / "main.py", source)}, stubs=sources(tmp_path / "stubs"))
+    assert set(program.modules) == {"main"}
 
 
 def test_frontend_rejects_invalid_return(tmp_path: Path) -> None:
@@ -163,7 +212,7 @@ def test_ir_preserves_all_byte_literal_values(tmp_path: Path) -> None:
     assert module.functions[0].body[0].expressions[0].value == payload
 
 
-def test_ir_does_not_skip_user_defined_dataclass_methods(tmp_path: Path) -> None:
+def test_ir_lowers_user_defined_dataclass_methods(tmp_path: Path) -> None:
     from py2rust.compiler.frontend.lowering import lower
 
     source = """from dataclasses import dataclass
@@ -174,8 +223,9 @@ class Item:
         return self.count
 """
     program = analyze({"main": (tmp_path / "main.py", source)})
-    with pytest.raises(FrontendError, match="annotated fields only"):
-        lower(program)
+    module = lower(program)[0]
+    assert [function.name for function in module.functions] == ["main.Item.size"]
+    assert module.functions[0].parameters[0].type.name == "main.Item"
 
 
 def test_json_index_retains_nominal_type(tmp_path: Path) -> None:

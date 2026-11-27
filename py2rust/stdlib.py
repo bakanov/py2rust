@@ -202,6 +202,18 @@ def crc32(data: bytes | bytearray, value: int = 0) -> int:
     return binascii.crc32(data, value)
 
 
+def wrapping_add(left: int, right: int) -> int:
+    return (left + right + 2**63) % 2**64 - 2**63
+
+
+def wrapping_sub(left: int, right: int) -> int:
+    return (left - right + 2**63) % 2**64 - 2**63
+
+
+def wrapping_mul(left: int, right: int) -> int:
+    return (left * right + 2**63) % 2**64 - 2**63
+
+
 def int_lshift(value: int, count: int) -> int:
     if type(value) is not int or type(count) is not int or not -(2**63) <= value < 2**63 or count >= 2**63:
         raise ValueError("shift operands must be signed 64-bit integers")
@@ -753,6 +765,37 @@ def math_sqrt(value: float) -> float:
     if not math.isfinite(value) or value < 0.0:
         raise ValueError("square root requires a nonnegative finite number")
     return math.sqrt(value)
+
+
+def math_isfinite(value: float) -> bool:
+    return math.isfinite(value)
+
+
+def math_sin(value: float) -> float:
+    if not math.isfinite(value):
+        raise ValueError("sine requires a finite number")
+    return math.sin(value)
+
+
+def math_cos(value: float) -> float:
+    if not math.isfinite(value):
+        raise ValueError("cosine requires a finite number")
+    return math.cos(value)
+
+
+def math_atan2(y: float, x: float) -> float:
+    if not math.isfinite(y) or not math.isfinite(x):
+        raise ValueError("arc tangent requires finite numbers")
+    return math.atan2(y, x)
+
+
+def math_ldexp(value: float, exponent: int) -> float:
+    if not math.isfinite(value):
+        raise ValueError("scaled value must be finite")
+    result = math.ldexp(value, exponent)
+    if not math.isfinite(result):
+        raise ValueError("scaled value is nonfinite")
+    return result
 
 
 def limit_address_space(maximum: int) -> int:

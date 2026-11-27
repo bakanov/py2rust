@@ -51,6 +51,8 @@ BORROWABLE_TYPES = frozenset(
         "builtins.dict",
         "builtins.set",
         "py2rust.stdlib.Json",
+        "optional",
+        "union",
     }
 )
 
@@ -76,6 +78,14 @@ def place_root(expression: ir.Expression) -> str | None:
     return str(expression.value) if expression.operation == "name" else None
 
 
+def statement_targets(statement: ir.Statement) -> tuple[str, ...]:
+    if statement.target is None:
+        return ()
+    if statement.operation == "unpack_assign":
+        return tuple(statement.target.removeprefix("(").removesuffix(")").split(", "))
+    return (statement.target,)
+
+
 def write_reasons(
     function: ir.Function, candidates: set[str], initializations: frozenset[ir.Statement] = frozenset()
 ) -> dict[str, str]:
@@ -91,14 +101,22 @@ def write_reasons(
             write(place_root(value.operands[0]), "receiver_effects_not_readonly")
         elif value.operation == "intrinsic_call" and str(value.value).startswith("heapq.") and value.operands:
             write(place_root(value.operands[0]), "heap_operation_mutates_parameter")
+        elif value.operation == "shuffle" and len(value.operands) == 2:
+            write(place_root(value.operands[1]), "shuffle_mutates_parameter")
+        elif value.operation == "next_counter":
+            write(str(value.value), "counter_mutates_parameter")
         for operand in value.operands:
             expression(operand)
         return  # noqa: PLR1711 - explicit return required by repository guidelines
 
     def block(statements: tuple[ir.Statement, ...]) -> None:
         for statement in statements:
-            if statement.operation in {"assign", "for", "resource_scope"} and statement not in initializations:
-                write(statement.target, "parameter_or_reachable_value_written")
+            if (
+                statement.operation in {"assign", "unpack_assign", "for", "resource_scope"}
+                and statement not in initializations
+            ):
+                for target in statement_targets(statement):
+                    write(target, "parameter_or_reachable_value_written")
             elif statement.operation in {"store_field", "store_index", "delete_index"}:
                 receiver = statement.expressions[0 if statement.operation == "delete_index" else 1]
                 write(place_root(receiver), "parameter_or_reachable_value_written")

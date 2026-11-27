@@ -136,9 +136,10 @@ class JsonAssignments(TraverserVisitor):
 
 
 class SubsetCoercions(Plugin):
-    def __init__(self, options, modules: set[str]) -> None:
+    def __init__(self, options, modules: set[str], *, python_scope: bool = False) -> None:
         super().__init__(options)
         self.modules = modules
+        self.python_scope = python_scope
         self.inserted: set[n.Expression] = set()
         self.visited: set[str] = set()
         self.attribute_comparisons: dict[n.MemberExpr, list[tuple[n.ComparisonExpr, int]]] = {}
@@ -198,7 +199,32 @@ class SubsetCoercions(Plugin):
             )
         return context.default_signature.copy_modified(arg_types=parameters)
 
+    def struct_signature(self, context: FunctionSigContext) -> t.CallableType:
+        format_node = context.args[0][0]
+        if not isinstance(format_node, n.StrExpr):
+            return context.default_signature
+        codes = format_node.value.lstrip("@=<>!")
+        fields = []
+        index = 0
+        while index < len(codes):
+            if codes[index].isdigit():
+                index += 1
+                continue
+            code = codes[index]
+            if code not in "bBhHiIqQ":
+                return context.default_signature
+            count_start = index
+            while count_start > 0 and codes[count_start - 1].isdigit():
+                count_start -= 1
+            count = int(codes[count_start:index] or "1") if code != "x" else 0
+            fields.extend([context.api.named_type("builtins.int")] * count)
+            index += 1
+        result = t.TupleType(fields, context.api.named_type("builtins.tuple"))
+        return context.default_signature.copy_modified(ret_type=result)
+
     def get_function_signature_hook(self, fullname: str):
+        if fullname in {"struct.unpack", "struct.unpack_from", "_struct.unpack", "_struct.unpack_from"}:
+            return self.struct_signature
         if resolve(fullname) is not None or any(fullname.startswith(module + ".") for module in self.modules):
             return self.json_call_signature
         return None
@@ -237,7 +263,8 @@ class SubsetCoercions(Plugin):
         self.visited.add(file.fullname)
         names = SourceNames()
         file.accept(names)
-        file.accept(BlockBindings(names.names))
+        if not self.python_scope:
+            file.accept(BlockBindings(names.names))
         file.accept(AttributeNullComparisons(self.attribute_comparisons))
         aliases = set()
         for item in file.imports:

@@ -37,6 +37,19 @@ def runtime_contract(name: str) -> RuntimeContract:
             True,
             False,
         )
+    if name == 'bytes_split':
+        return RuntimeContract(
+            'bytes_split',
+            'list[bytes]',
+            [
+                'bytes',
+                'bytes',
+                'int',
+            ],
+            [True, True, False],
+            False,
+            False,
+        )
     if name == 'bytes_xor':
         return RuntimeContract(
             'bytes_xor',
@@ -164,6 +177,19 @@ def runtime_contract(name: str) -> RuntimeContract:
             False,
             False,
         )
+    if name == 'decode_bytes':
+        return RuntimeContract(
+            'decode_bytes',
+            'str',
+            [
+                'bytes',
+                'str',
+                'str',
+            ],
+            [True, True, True],
+            True,
+            False,
+        )
     if name == 'deflate_decompress':
         return RuntimeContract(
             'deflate_decompress',
@@ -185,6 +211,18 @@ def runtime_contract(name: str) -> RuntimeContract:
                 'int',
             ],
             [True, False],
+            True,
+            False,
+        )
+    if name == 'divmod_int':
+        return RuntimeContract(
+            'divmod_int',
+            'tuple[int, int]',
+            [
+                'int',
+                'int',
+            ],
+            [False, False],
             True,
             False,
         )
@@ -492,6 +530,17 @@ def runtime_contract(name: str) -> RuntimeContract:
             True,
             False,
         )
+    if name == 'int_float':
+        return RuntimeContract(
+            'int_float',
+            'int',
+            [
+                'float',
+            ],
+            [False],
+            True,
+            False,
+        )
     if name == 'int_from_bytes':
         return RuntimeContract(
             'int_from_bytes',
@@ -501,6 +550,19 @@ def runtime_contract(name: str) -> RuntimeContract:
                 'str',
             ],
             [True, True],
+            True,
+            False,
+        )
+    if name == 'int_from_bytes_signed':
+        return RuntimeContract(
+            'int_from_bytes_signed',
+            'int',
+            [
+                'bytes',
+                'str',
+                'bool',
+            ],
+            [True, True, False],
             True,
             False,
         )
@@ -848,9 +910,66 @@ def runtime_contract(name: str) -> RuntimeContract:
             True,
             False,
         )
+    if name == 'math_atan2':
+        return RuntimeContract(
+            'math_atan2',
+            'float',
+            [
+                'float',
+                'float',
+            ],
+            [False, False],
+            True,
+            False,
+        )
+    if name == 'math_cos':
+        return RuntimeContract(
+            'math_cos',
+            'float',
+            [
+                'float',
+            ],
+            [False],
+            True,
+            False,
+        )
+    if name == 'math_isfinite':
+        return RuntimeContract(
+            'math_isfinite',
+            'bool',
+            [
+                'float',
+            ],
+            [False],
+            False,
+            False,
+        )
+    if name == 'math_ldexp':
+        return RuntimeContract(
+            'math_ldexp',
+            'float',
+            [
+                'float',
+                'int',
+            ],
+            [False, False],
+            True,
+            False,
+        )
     if name == 'math_log':
         return RuntimeContract(
             'math_log',
+            'float',
+            [
+                'float',
+            ],
+            [False],
+            True,
+            False,
+        )
+    if name == 'math_sin':
+        return RuntimeContract(
+            'math_sin',
             'float',
             [
                 'float',
@@ -913,10 +1032,43 @@ def runtime_contract(name: str) -> RuntimeContract:
             False,
             False,
         )
+    if name == 'path_is_dir':
+        return RuntimeContract(
+            'path_is_dir',
+            'bool',
+            [
+                'str',
+            ],
+            [True],
+            True,
+            False,
+        )
+    if name == 'path_is_file':
+        return RuntimeContract(
+            'path_is_file',
+            'bool',
+            [
+                'str',
+            ],
+            [True],
+            True,
+            False,
+        )
     if name == 'path_is_symlink':
         return RuntimeContract(
             'path_is_symlink',
             'bool',
+            [
+                'str',
+            ],
+            [True],
+            True,
+            False,
+        )
+    if name == 'path_iterdir':
+        return RuntimeContract(
+            'path_iterdir',
+            'list[str]',
             [
                 'str',
             ],
@@ -1004,6 +1156,17 @@ def runtime_contract(name: str) -> RuntimeContract:
             ],
             [True, False],
             True,
+            False,
+        )
+    if name == 'path_suffix':
+        return RuntimeContract(
+            'path_suffix',
+            'str',
+            [
+                'str',
+            ],
+            [True],
+            False,
             False,
         )
     if name == 'pretty':
@@ -1154,6 +1317,51 @@ def runtime_contract(name: str) -> RuntimeContract:
             True,
             False,
         )
+    if name == 'random_default':
+        return RuntimeContract(
+            'random_default',
+            'Random',
+            [
+            ],
+            [],
+            True,
+            False,
+        )
+    if name == 'random_new':
+        return RuntimeContract(
+            'random_new',
+            'Random',
+            [
+                'int',
+            ],
+            [False],
+            False,
+            False,
+        )
+    if name == 'random_random':
+        return RuntimeContract(
+            'random_random',
+            'float',
+            [
+                'Random',
+            ],
+            [True],
+            False,
+            False,
+        )
+    if name == 'random_randrange':
+        return RuntimeContract(
+            'random_randrange',
+            'int',
+            [
+                'Random',
+                'int',
+                'int',
+            ],
+            [True, False, False],
+            True,
+            False,
+        )
     if name == 'random_token':
         return RuntimeContract(
             'random_token',
@@ -1161,6 +1369,19 @@ def runtime_contract(name: str) -> RuntimeContract:
             [
             ],
             [],
+            True,
+            False,
+        )
+    if name == 'range_values':
+        return RuntimeContract(
+            'range_values',
+            'list[int]',
+            [
+                'int',
+                'int',
+                'int',
+            ],
+            [False, False, False],
             True,
             False,
         )
@@ -1314,6 +1535,18 @@ def runtime_contract(name: str) -> RuntimeContract:
             True,
             False,
         )
+    if name == 'read_text_encoding':
+        return RuntimeContract(
+            'read_text_encoding',
+            'str',
+            [
+                'str',
+                'str',
+            ],
+            [True, True],
+            True,
+            False,
+        )
     if name == 'regex_capture':
         return RuntimeContract(
             'regex_capture',
@@ -1422,6 +1655,17 @@ def runtime_contract(name: str) -> RuntimeContract:
             True,
             False,
         )
+    if name == 'round_float':
+        return RuntimeContract(
+            'round_float',
+            'int',
+            [
+                'float',
+            ],
+            [False],
+            True,
+            False,
+        )
     if name == 'sha1_digest':
         return RuntimeContract(
             'sha1_digest',
@@ -1466,6 +1710,17 @@ def runtime_contract(name: str) -> RuntimeContract:
             False,
             False,
         )
+    if name == 'shlex_split':
+        return RuntimeContract(
+            'shlex_split',
+            'list[str]',
+            [
+                'str',
+            ],
+            [True],
+            True,
+            False,
+        )
     if name == 'sleep':
         return RuntimeContract(
             'sleep',
@@ -1485,6 +1740,122 @@ def runtime_contract(name: str) -> RuntimeContract:
                 'bytes',
                 'Json',
                 'bool',
+            ],
+            [True, True, False],
+            True,
+            False,
+        )
+    if name == 'stream_flush':
+        return RuntimeContract(
+            'stream_flush',
+            'None',
+            [
+                'int',
+            ],
+            [False],
+            True,
+            False,
+        )
+    if name == 'stream_readline':
+        return RuntimeContract(
+            'stream_readline',
+            'str',
+            [
+                'int',
+            ],
+            [False],
+            True,
+            False,
+        )
+    if name == 'stream_write':
+        return RuntimeContract(
+            'stream_write',
+            'None',
+            [
+                'int',
+                'str',
+            ],
+            [False, True],
+            True,
+            False,
+        )
+    if name == 'string_capitalize':
+        return RuntimeContract(
+            'string_capitalize',
+            'str',
+            [
+                'str',
+            ],
+            [True],
+            False,
+            False,
+        )
+    if name == 'string_remove_prefix':
+        return RuntimeContract(
+            'string_remove_prefix',
+            'str',
+            [
+                'str',
+                'str',
+            ],
+            [True, True],
+            False,
+            False,
+        )
+    if name == 'string_remove_suffix':
+        return RuntimeContract(
+            'string_remove_suffix',
+            'str',
+            [
+                'str',
+                'str',
+            ],
+            [True, True],
+            False,
+            False,
+        )
+    if name == 'struct_pack_float':
+        return RuntimeContract(
+            'struct_pack_float',
+            'bytes',
+            [
+                'float',
+            ],
+            [False],
+            True,
+            False,
+        )
+    if name == 'struct_pack_ints':
+        return RuntimeContract(
+            'struct_pack_ints',
+            'bytes',
+            [
+                'str',
+                'list[int]',
+            ],
+            [True, True],
+            True,
+            False,
+        )
+    if name == 'struct_unpack_float':
+        return RuntimeContract(
+            'struct_unpack_float',
+            'float',
+            [
+                'bytes',
+            ],
+            [True],
+            True,
+            False,
+        )
+    if name == 'struct_unpack_ints':
+        return RuntimeContract(
+            'struct_unpack_ints',
+            'list[int]',
+            [
+                'str',
+                'bytes',
+                'int',
             ],
             [True, True, False],
             True,
@@ -2144,6 +2515,42 @@ def runtime_contract(name: str) -> RuntimeContract:
             ],
             [True, True, False],
             True,
+            False,
+        )
+    if name == 'wrapping_add':
+        return RuntimeContract(
+            'wrapping_add',
+            'int',
+            [
+                'int',
+                'int',
+            ],
+            [False, False],
+            False,
+            False,
+        )
+    if name == 'wrapping_mul':
+        return RuntimeContract(
+            'wrapping_mul',
+            'int',
+            [
+                'int',
+                'int',
+            ],
+            [False, False],
+            False,
+            False,
+        )
+    if name == 'wrapping_sub':
+        return RuntimeContract(
+            'wrapping_sub',
+            'int',
+            [
+                'int',
+                'int',
+            ],
+            [False, False],
+            False,
             False,
         )
     if name == 'write_bytes':

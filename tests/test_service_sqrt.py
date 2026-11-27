@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from py2rust.stdlib import math_sqrt
+from py2rust.stdlib import json_canonical, math_sqrt
 
 from .test_services import parity, run
 
@@ -43,6 +43,31 @@ if __name__ == "__main__":
     for value, row in zip(values, rows):
         assert [item.hex() for item in row] == [math.sqrt(value).hex()] * 2
     return  # noqa: PLR1711
+
+
+def test_extended_math_functions_and_pi_match_python(tmp_path: Path) -> None:
+    output = parity(
+        tmp_path,
+        """
+import math
+from py2rust.stdlib import json_canonical
+def check() -> None:
+    print(json_canonical([
+        math.pi,
+        math.sin(0.5),
+        math.cos(0.5),
+        math.atan2(1.0, 2.0),
+        math.ldexp(1.5, -3),
+        math.isfinite(1.0),
+        math.isfinite(0.0),
+    ]))
+    return
+if __name__ == "__main__":
+    check()
+""",
+    )
+    expected = [math.pi, math.sin(0.5), math.cos(0.5), math.atan2(1.0, 2.0), math.ldexp(1.5, -3), True, True]
+    assert output == json_canonical(expected) + "\n"
 
 
 def test_square_root_domain_single_evaluation_and_integer_conversion(tmp_path: Path) -> None:

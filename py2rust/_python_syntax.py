@@ -18,6 +18,8 @@ def python_syntax_tree(source: str) -> Any:
         "BoolOp": ("op", "values"),
         "Compare": ("left", "ops", "comparators"),
         "IfExp": ("test", "body", "orelse"),
+        "JoinedStr": ("values",),
+        "FormattedValue": ("value", "format_spec", "conversion"),
         "Call": ("func", "args", "keywords"),
         "Attribute": ("value", "attr"),
         "Subscript": ("value", "slice"),

@@ -90,7 +90,7 @@ def analyze(modules: tuple[ir.Module, ...]) -> ExceptionPlan:
             return facts[statement]
         blocks = tuple(block_terminates(block) for block in statement.blocks)
         handlers = tuple(block_terminates(handler.body) for handler in statement.handlers)
-        terminates = statement.operation in {"return", "reraise"}
+        terminates = statement.operation in {"return", "raise", "reraise"}
         protected = None
         if statement.operation == "resource_scope":
             terminates = blocks[0]

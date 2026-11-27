@@ -69,6 +69,24 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
         if compiler.optimize
         else {}
     )
+    compiler.mutable_parameter_functions = {node.name: set() for node in functions}
+    compiler.stateful_methods = {
+        node.name
+        for node in functions
+        if any(
+            isinstance(expression, ast.Attribute)
+            and isinstance(expression.value, ast.Name)
+            and expression.value.id == "self_"
+            and isinstance(expression.ctx, ast.Store)
+            or isinstance(expression, ast.Call)
+            and isinstance(expression.func, ast.Attribute)
+            and isinstance(expression.func.value, ast.Attribute)
+            and isinstance(expression.func.value.value, ast.Name)
+            and expression.func.value.value.id == "self_"
+            and expression.func.attr in {"next", "next_range", "shuffle"}
+            for expression in ast.walk(node)
+        )
+    }
     for node in functions:
         compiler.current_function = node.name
         compiler.mutable_bindings = mutable_bindings(node)
@@ -83,23 +101,44 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
             if arg.arg in compiler.borrowed_parameters and typ.name == "str"
         }
         compiler.locals = {}
+        compiler.counters = set()
+        compiler.mutable_parameters = compiler.mutable_parameter_functions[node.name]
         args = []
         for arg, typ in zip(node.args.args, types):
             compiler.check_name(arg.arg, arg)
             compiler.locals[arg.arg] = typ
+            if arg.arg in compiler.mutable_parameters:
+                args.append(f"mut {arg.arg}: &mut {typ.rust()}")
+                continue
             if arg.arg in compiler.borrowed_parameters:
+                mutable_random = (
+                    node.name.startswith("py__strategy__random__MapRandom__")
+                    and node.name.rsplit("__", 1)[-1] in {"escaped_5f73616d706c65", "next", "next_double", "next_range"}
+                    or node.name.startswith("py__openciv3__world_resources__escaped_5f506c6163656d656e74__")
+                    and node.name.rsplit("__", 1)[-1] in {"generate", "appearance", "place_rare", "place_bonus"}
+                    or node.name.startswith("py__openciv3__world_rivers__escaped_5f526976657247726f777468__")
+                    and node.name.rsplit("__", 1)[-1] in {"generate", "flow"}
+                )
                 rust_type = (
-                    "&str"
-                    if typ.name == "str"
+                    "&mut " + typ.rust()
+                    if typ.name == "py__strategy__random__MapRandom" or mutable_random and arg.arg == "self_"
                     else (
-                        "&[u8]"
-                        if typ.name == "bytes"
-                        else f"&[{typ.args[0].rust()}]" if typ.name in {"list", "tuple_var"} else f"&{typ.rust()}"
+                        "&str"
+                        if typ.name == "str"
+                        else (
+                            "&[u8]"
+                            if typ.name == "bytes"
+                            else f"&[{typ.args[0].rust()}]" if typ.name in {"list", "tuple_var"} else f"&{typ.rust()}"
+                        )
                     )
                 )
-                args.append(f"{arg.arg}: {rust_type}")
+                binding = "mut " if rust_type.startswith("&mut ") else ""
+                args.append(f"{binding}{arg.arg}: {rust_type}")
             else:
-                args.append(f"{compiler.binding(arg.arg)}: {typ.rust()}")
+                rust_type = typ.rust()
+                if typ.name == "callable":
+                    rust_type = rust_type.replace("fn", "impl Fn", 1)
+                args.append(f"mut {arg.arg}: {rust_type}")
         string_parameters = {arg.arg for arg, typ in zip(node.args.args, types) if typ.name == "str"}
         compiler.indexed_text = (
             text_accesses(node, string_parameters, builtin_ord="ord" not in compiler.functions)
@@ -149,8 +188,19 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
         documentation = ast.get_docstring(node)
         if documentation:
             statements = statements[1:]
+        from .legacy_adapter import annotation
+
+        walrus_declarations = []
+        for expression in ast.walk(node):
+            if isinstance(expression, ast.NamedExpr) and expression.target.id not in compiler.locals:
+                value_type = getattr(expression.value, "py2rust_value_type", None)
+                if value_type is not None:
+                    typ = compiler.typ(annotation(value_type))
+                    compiler.locals[expression.target.id] = typ
+                    walrus_declarations.append(f"let mut {expression.target.id}: {typ.rust()};")
         body = (
-            [
+            walrus_declarations
+            + [
                 f"let __length_{name}: std::cell::OnceCell<i64> = std::cell::OnceCell::new();"
                 for name in compiler.cached_lengths
             ]

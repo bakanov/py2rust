@@ -116,7 +116,7 @@ These short-lived certificates are only for local development.
 | Pretty printing | `pretty(value)` produces readable, sorted, two-space-indented JSON | JSON-compatible values; no arbitrary Python object repr |
 | Regular expressions | Unicode pattern/input, search/fullmatch, whole-match findall, literal replacement | ASCII shorthand classes and common Python/Rust regex syntax; no lookaround, backreferences or `(?...)` extensions; findall/replace reject zero-width matches |
 | Enums | `class Name(Enum)` with explicit homogeneous nonnegative integer or string literals, equality, `.name`, `.value` | Integers through i64 max; unique names/values; no aliases, auto, flags, methods or construction from a value |
-| Typed records | Plain `@dataclass`, typed fields, scalar defaults, positional/keyword construction, field reads and named-local field assignment | Owned values; no methods, inheritance, factories, comparison, automatic JSON conversion or shared mutable aliases |
+| Typed records | Plain `@dataclass`, typed fields, scalar defaults, positional/keyword construction, field reads and named-local field assignment; user methods and properties lower through explicit receiver passing | Owned values; no inheritance, factories, comparison, automatic JSON conversion or shared mutable aliases; general class constructors and mutable-receiver methods remain unsupported |
 | Data structures | Typed lists, insertion-ordered dictionaries, sets, fixed and variadic tuples; list slices, dictionary-key snapshots, membership/length, list append, set add, dict get/update, sequence indexing and min-heaps | Value semantics, homogeneous list/set elements and dict key/value types; no shared mutable aliases, comprehensions or collection inheritance; heaps require totally ordered non-float values |
 | HTML/URLs | HTML5 static-link extraction, HTTP(S) relative resolution, normalized origins | UTF-8 input, explicit bounds, static attributes only; no JavaScript, CSS URLs or general DOM API |
 | Foreground processes | Concurrent direct-argv pipelines, binary stdin/stdout/stderr, complete environments, deadlines and signal cleanup | Linux main thread, default SIGCHLD, 1–8 stages; no shell parser in the runtime, job control or process-tree sandbox |
@@ -151,6 +151,7 @@ reference for the library contract.
 | `ceil(value)`, `floor(value)` | Round a finite float upward/downward to a signed 64-bit integer; integer arguments remain exact; out-of-range results are recoverable errors |
 | `math_log(value)` | Natural logarithm of one positive finite number; domain errors are recoverable |
 | `math_sqrt(value)` / `math.sqrt(value)` | Square root of one nonnegative finite number, preserving signed zero; negative inputs raise recoverable errors |
+| `math_sin`, `math_cos`, `math_atan2`, `math_ldexp`, `math_isfinite` | Finite-checked trigonometry, binary scaling and finite tests; also available as `math.sin`, `math.cos`, `math.atan2`, `math.ldexp` and `math.isfinite`; `math.pi` is supported |
 | `parallel_map(callback, items, workers)` | Run a named `(Json) -> Json` callback over at most 10,000 JSON values, using 1–64 workers; return results in input order after all workers finish |
 | `unix_time()`, `monotonic()`, `sleep(seconds)` | Float seconds; sleep must be finite and between 0 and 86400 |
 | `DateTime`, `utc_now()` | UTC timestamp |

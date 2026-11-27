@@ -364,6 +364,35 @@ pub fn int_from_bytes(data: &[u8], byteorder: &str) -> Result<i64> {
     };
     Ok(i64::try_from(value).map_err(|_| "decoded integer exceeds signed 64-bit range")?)
 }
+pub fn int_from_bytes_signed(data: &[u8], byteorder: &str, signed: bool) -> Result<i64> {
+    if data.len() > 8 || !matches!(byteorder, "big" | "little") {
+        return Err("integer byte conversion requires 0..8 bytes and big/little byte order".into());
+    }
+    if !signed {
+        return int_from_bytes(data, byteorder);
+    }
+    let mut buffer = [0u8; 8];
+    if byteorder == "big" {
+        buffer[8 - data.len()..].copy_from_slice(data);
+    } else {
+        buffer[..data.len()].copy_from_slice(data);
+    }
+    let mut value = if byteorder == "big" {
+        u64::from_be_bytes(buffer)
+    } else {
+        u64::from_le_bytes(buffer)
+    };
+    let bits = data.len() * 8;
+    let negative = match byteorder {
+        "big" => data.first().is_some_and(|byte| byte & 0x80 != 0),
+        _ => data.last().is_some_and(|byte| byte & 0x80 != 0),
+    };
+    if negative && bits < 64 {
+        value |= u64::MAX << bits;
+    }
+    Ok(value as i64)
+}
+
 pub fn int_to_bytes(value: i64, length: i64, byteorder: &str) -> Result<Vec<u8>> {
     if !(0..=8).contains(&length) || !matches!(byteorder, "big" | "little") || value < 0 {
         return Err("integer byte conversion requires nonnegative value, 0..8 bytes and big/little byte order".into());

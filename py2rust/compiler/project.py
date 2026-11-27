@@ -31,6 +31,12 @@ STDLIB_MODULES = {
     "zlib",
     "binascii",
 }
+
+
+def standard_library_module(name: str) -> bool:
+    return bool(name) and name.partition(".")[0] in sys.stdlib_module_names
+
+
 LIBRARY_NAMES = {
     *LIBRARY,
     "Json",
@@ -60,6 +66,9 @@ LIBRARY_NAMES = {
     "http_serve_json_timeout",
 }
 MARKER = ".py2rust-project.json"
+MODULE_DEFINITIONS = (ast.FunctionDef, ast.ClassDef, ast.AnnAssign, ast.Assign)
+if hasattr(ast, "TypeAlias"):
+    MODULE_DEFINITIONS += (ast.TypeAlias,)
 
 
 @dataclass(frozen=True)
@@ -80,6 +89,24 @@ class Module:
 
 def main_guard(node: ast.AST) -> bool:
     return isinstance(node, ast.If) and not node.orelse and ast.unparse(node.test) == "__name__ == '__main__'"
+
+
+def type_checking_guard(node: ast.AST) -> bool:
+    return isinstance(node, ast.If) and not node.orelse and ast.unparse(node.test) == "TYPE_CHECKING"
+
+
+def assignment_names(target: ast.AST) -> list[str] | None:
+    if isinstance(target, ast.Name):
+        return [target.id]
+    if isinstance(target, (ast.Tuple, ast.List)):
+        names = []
+        for element in target.elts:
+            child = assignment_names(element)
+            if child is None:
+                return None
+            names.extend(child)
+        return names
+    return None
 
 
 class Project:
@@ -172,30 +199,41 @@ class Project:
         self.loading.append(name)
         # Collect definitions first; import resolution never executes source code.
         for node in tree.body:
-            if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.AnnAssign)):
-                if isinstance(node, ast.AnnAssign):
-                    if not isinstance(node.target, ast.Name):
-                        self.error("module constants need a simple name", module, node)
-                    original, kind = node.target.id, "constant"
+            if isinstance(node, MODULE_DEFINITIONS):
+                if hasattr(ast, "TypeAlias") and isinstance(node, ast.TypeAlias):
+                    definitions = [(node.name.id, "constant")]
                 else:
-                    original = node.name
-                    kind = "enum" if isinstance(node, ast.ClassDef) else "function"
-                if original in module.bindings:
-                    self.error(f"duplicate definition: {original}", module, node)
-                renamed = symbol_name(name, original)
-                module.bindings[original] = Binding(kind, renamed)
-                self.source_map[renamed] = {
-                    "file": str(path.relative_to(self.root)),
-                    "line": node.lineno,
-                    "name": original,
-                }
+                    targets = node.targets if isinstance(node, ast.Assign) else []
+                    if isinstance(node, ast.AnnAssign):
+                        targets = [node.target]
+                    if targets:
+                        names = []
+                        for target in targets:
+                            target_names = assignment_names(target)
+                            if target_names is None:
+                                self.error("module constants need simple names", module, node)
+                            names.extend(target_names)
+                        definitions = [(original, "constant") for original in names]
+                    else:
+                        definitions = [(node.name, "enum" if isinstance(node, ast.ClassDef) else "function")]
+                for original, kind in definitions:
+                    if original in module.bindings:
+                        self.error(f"duplicate definition: {original}", module, node)
+                    renamed = symbol_name(name, original)
+                    module.bindings[original] = Binding(kind, renamed)
+                    self.source_map[renamed] = {
+                        "file": str(path.relative_to(self.root)),
+                        "line": node.lineno,
+                        "name": original,
+                    }
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 self.imports(module, node)
             elif (
                 module.path.resolve() != self.entry
-                and not isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.AnnAssign))
+                and not isinstance(node, MODULE_DEFINITIONS)
                 and not main_guard(node)
+                and not type_checking_guard(node)
                 and not (
                     isinstance(node, ast.Expr)
                     and isinstance(node.value, ast.Constant)
@@ -218,7 +256,7 @@ class Project:
                 local = base.is_dir() or any(
                     path.is_file() or path.is_symlink() for path in [base.with_suffix(".py"), base.with_suffix(".rs")]
                 )
-                if alias.name in STDLIB_MODULES and (not local or alias.name in {"sys", "time"}):
+                if standard_library_module(alias.name) and (not local or alias.name in {"sys", "time"}):
                     binding = Binding("stdlib", alias.name)
                     self.stdlib.add(alias.name)
                 else:
@@ -243,20 +281,34 @@ class Project:
         )
         if not node.level and base in {"py2rust.stdlib", "enum", "dataclasses"} and not local_dataclasses:
             for alias in node.names:
+                kind = "library"
                 if base == "enum" and alias.name == "Enum":
                     self.enum_import = True
                 elif base == "dataclasses" and alias.name == "dataclass":
                     self.dataclass_import = True
                 elif base == "py2rust.stdlib" and alias.name in LIBRARY_NAMES:
                     self.library.add(alias.name)
-                else:
+                elif base == "py2rust.stdlib":
                     self.error(f"unsupported import {base}.{alias.name}", module, node)
+                else:
+                    kind = "stdlib"
+                    self.stdlib.add(base)
                 self.bind(
                     module,
                     alias.asname or alias.name,
-                    Binding("library", alias.name),
+                    Binding(kind, alias.name),
                     node,
                 )
+            return
+        local_base = self.root.joinpath(*base.split(".")) if base else self.root
+        local = local_base.is_dir() or any(
+            path.is_file() or path.is_symlink()
+            for path in [local_base.with_suffix(".py"), local_base.with_suffix(".rs")]
+        )
+        if not node.level and standard_library_module(base) and not local:
+            self.stdlib.add(base)
+            for alias in node.names:
+                self.bind(module, alias.asname or alias.name, Binding("stdlib", alias.name), node)
             return
         target = module if base == module.name else self.load(base)
         for alias in node.names:

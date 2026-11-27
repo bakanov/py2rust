@@ -51,6 +51,7 @@ def analyze(
     *,
     search_paths: tuple[Path, ...] = (),
     stubs: dict[str, tuple[Path, str]] | None = None,
+    python_scope: bool = False,
 ) -> TypedProgram:
     """Analyze explicit module sources without importing or executing application code.
 
@@ -76,7 +77,9 @@ def analyze(
     options.mypy_path = [str(path) for path in search_paths]
     from .coercions import SubsetCoercions
 
-    coercions = SubsetCoercions(options, set(sources) if stubs and "py2rust.stdlib" in stubs else set())
+    coercions = SubsetCoercions(
+        options, set(sources) if stubs and "py2rust.stdlib" in stubs else set(), python_scope=python_scope
+    )
     try:
         result = build(
             sources=[
@@ -89,8 +92,14 @@ def analyze(
         raise FrontendError(error.messages) from error
     if result.errors:
         raise FrontendError(result.errors)
+    modules = {name: TypedModule(name, str(path), result.files[name]) for name, (path, _) in sources.items()}
+    roots = tuple(path.resolve() for path in search_paths)
+    for name, tree in result.files.items():
+        path = Path(tree.path).resolve()
+        if name not in modules and any(path.is_relative_to(root) for root in roots):
+            modules[name] = TypedModule(name, str(path), tree)
     return TypedProgram(
-        modules={name: TypedModule(name, str(path), result.files[name]) for name, (path, _) in sources.items()},
+        modules=modules,
         expression_types=dict(result.types),
         json_coercions=frozenset(coercions.inserted),
     )

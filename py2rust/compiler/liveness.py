@@ -106,7 +106,7 @@ def analyze_function(function: ir.Function) -> FunctionLiveness:
             else:
                 protected = operation in {"try", "resource_scope"} or bool(statement.blocks or statement.handlers)
                 writes = {statement.target} if operation == "assign" and statement.target is not None else set()
-                successors = set() if operation in {"return", "reraise"} else entry
+                successors = set() if operation in {"return", "raise", "reraise"} else entry
                 entry = {add(statement_reads(statement), set() if protected else writes, successors, protected)}
         return entry
 

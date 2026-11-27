@@ -2,6 +2,7 @@
 use chrono::{Datelike, SecondsFormat, TimeDelta, Timelike, Utc};
 use serde::Serialize;
 use serde_json::Value;
+use std::io::Write;
 use std::sync::{
     atomic::{AtomicI64, Ordering},
     OnceLock,
@@ -29,6 +30,8 @@ pub fn ord_bytes(value: &[u8]) -> Result<i64> {
 }
 mod float_text;
 pub use float_text::float_to_string;
+mod random;
+pub use random::{random_default, random_new, random_random, random_randrange, Random};
 mod rational;
 pub use rational::{
     rational_add, rational_compare, rational_decimal, rational_denominator, rational_div,
@@ -53,7 +56,7 @@ pub use casefold::casefold;
 mod heaps;
 pub use heaps::{heapify, heappop, heappush, heappushpop, heapreplace};
 mod sorting;
-pub use sorting::sorted_by_key;
+pub use sorting::{sorted_by_comparable_key, sorted_by_float_key, sorted_by_key};
 pub fn unicode_normalize(form: &str, text: &str) -> Result<String> {
     use unicode_normalization::UnicodeNormalization;
     // CPython returns empty input before checking the normalization form.
@@ -118,6 +121,220 @@ pub fn crc32(data: &[u8], value: i64) -> i64 {
     (!checksum) as i64
 }
 
+pub fn struct_pack_float(value: f64) -> Result<Vec<u8>> {
+    if !value.is_finite() || value.abs() > f32::MAX as f64 {
+        return Err("float does not fit <f".into());
+    }
+    Ok((value as f32).to_le_bytes().to_vec())
+}
+
+pub fn struct_unpack_float(data: &[u8]) -> Result<f64> {
+    let bytes: [u8; 4] = data
+        .try_into()
+        .map_err(|_| "<f requires exactly four bytes")?;
+    Ok(f32::from_le_bytes(bytes) as f64)
+}
+
+fn struct_integer_fields(format: &str) -> Result<(bool, Vec<(char, usize)>)> {
+    let (little, codes) = match format.as_bytes().first() {
+        Some(b'<') => (true, &format[1..]),
+        Some(b'>') | Some(b'!') => (false, &format[1..]),
+        Some(b'@') | Some(b'=') => (cfg!(target_endian = "little"), &format[1..]),
+        _ => (cfg!(target_endian = "little"), format),
+    };
+    let mut fields = Vec::new();
+    let mut count = String::new();
+    for code in codes.chars() {
+        if code.is_ascii_digit() {
+            count.push(code);
+            continue;
+        }
+        if !matches!(code, 'b' | 'B' | 'h' | 'H' | 'i' | 'I' | 'q' | 'Q') {
+            return Err("unsupported integer struct format".into());
+        }
+        let repeat = if count.is_empty() {
+            1
+        } else {
+            count.parse::<usize>()?
+        };
+        fields.extend(std::iter::repeat_n((code, 1), repeat));
+        count.clear();
+    }
+    if !count.is_empty() {
+        return Err("incomplete integer struct format".into());
+    }
+    Ok((little, fields))
+}
+
+fn struct_integer_width(code: char) -> usize {
+    match code {
+        'b' | 'B' => 1,
+        'h' | 'H' => 2,
+        'i' | 'I' => 4,
+        _ => 8,
+    }
+}
+
+pub fn struct_pack_ints(format: &str, values: &[i64]) -> Result<Vec<u8>> {
+    let (little, fields) = struct_integer_fields(format)?;
+    if fields.len() != values.len() {
+        return Err("integer struct field count does not match arguments".into());
+    }
+    let mut result = Vec::new();
+    for (&value, &(code, _)) in values.iter().zip(&fields) {
+        let signed = code.is_ascii_lowercase();
+        let width = struct_integer_width(code);
+        let valid = if signed {
+            let bits = width * 8;
+            bits == 64 || value >= -(1_i64 << (bits - 1)) && value < (1_i64 << (bits - 1))
+        } else {
+            value >= 0 && (width == 8 || (value as u64) < (1_u64 << (width * 8)))
+        };
+        if !valid {
+            return Err("integer does not fit struct field".into());
+        }
+        let bytes = value.to_le_bytes();
+        result.extend_from_slice(if little {
+            &bytes[..width]
+        } else {
+            &bytes[8 - width..]
+        });
+    }
+    Ok(result)
+}
+
+pub fn struct_unpack_ints(format: &str, data: &[u8], offset: i64) -> Result<Vec<i64>> {
+    let (little, fields) = struct_integer_fields(format)?;
+    let mut position = usize::try_from(offset).map_err(|_| "negative struct offset")?;
+    let mut result = Vec::new();
+    for &(code, _) in &fields {
+        let width = struct_integer_width(code);
+        let end = position
+            .checked_add(width)
+            .ok_or("struct offset overflow")?;
+        let source = data.get(position..end).ok_or("struct data is too short")?;
+        let mut bytes = [0_u8; 8];
+        if little {
+            bytes[..width].copy_from_slice(source);
+        } else {
+            bytes[8 - width..].copy_from_slice(source);
+        }
+        let unsigned = u64::from_le_bytes(bytes);
+        let value = if code.is_ascii_lowercase()
+            && width < 8
+            && source[if little { width - 1 } else { 0 }] & 0x80 != 0
+        {
+            (unsigned | (!0_u64 << (width * 8))) as i64
+        } else {
+            unsigned as i64
+        };
+        result.push(value);
+        position = end;
+    }
+    Ok(result)
+}
+
+pub fn heap_float_push<T>(heap: &mut Vec<(f64, i64, T)>, item: (f64, i64, T)) {
+    heap.push(item);
+    heap.sort_by(|left, right| left.0.total_cmp(&right.0).then(left.1.cmp(&right.1)));
+}
+
+pub fn heap_float_pop<T>(heap: &mut Vec<(f64, i64, T)>) -> Result<(f64, i64, T)> {
+    if heap.is_empty() {
+        return Err("index out of range".into());
+    }
+    Ok(heap.remove(0))
+}
+
+pub fn int_float(value: f64) -> Result<i64> {
+    if !value.is_finite() || value < i64::MIN as f64 || value > i64::MAX as f64 {
+        return Err("float is outside the integer range".into());
+    }
+    Ok(value.trunc() as i64)
+}
+
+pub fn round_float(value: f64) -> Result<i64> {
+    if !value.is_finite() || value < i64::MIN as f64 || value > i64::MAX as f64 {
+        return Err("rounded float is outside the integer range".into());
+    }
+    Ok(value.round_ties_even() as i64)
+}
+
+pub fn divmod_int(value: i64, divisor: i64) -> Result<(i64, i64)> {
+    if divisor == 0 {
+        return Err("integer division or modulo by zero".into());
+    }
+    let mut quotient = value
+        .checked_div(divisor)
+        .ok_or("integer division overflow")?;
+    let mut remainder = value
+        .checked_rem(divisor)
+        .ok_or("integer remainder overflow")?;
+    if remainder != 0 && (remainder < 0) != (divisor < 0) {
+        quotient -= 1;
+        remainder += divisor;
+    }
+    Ok((quotient, remainder))
+}
+
+pub fn string_capitalize(value: &str) -> String {
+    let mut characters = value.chars();
+    let Some(first) = characters.next() else {
+        return String::new();
+    };
+    first
+        .to_uppercase()
+        .chain(characters.flat_map(char::to_lowercase))
+        .collect()
+}
+
+pub fn string_remove_prefix(value: &str, prefix: &str) -> String {
+    value.strip_prefix(prefix).unwrap_or(value).to_string()
+}
+
+pub fn string_remove_suffix(value: &str, suffix: &str) -> String {
+    value.strip_suffix(suffix).unwrap_or(value).to_string()
+}
+
+pub fn range_values(start: i64, stop: i64, step: i64) -> Result<Vec<i64>> {
+    if step == 0 {
+        return Err("range() arg 3 must not be zero".into());
+    }
+    let mut result = Vec::new();
+    let mut value = start;
+    while step > 0 && value < stop || step < 0 && value > stop {
+        result.push(value);
+        value = value.checked_add(step).ok_or("range overflow")?;
+    }
+    Ok(result)
+}
+
+pub fn bytes_split(data: &[u8], separator: &[u8], maxsplit: i64) -> Vec<Vec<u8>> {
+    if separator.is_empty() || maxsplit == 0 {
+        return vec![data.to_vec()];
+    }
+    let limit = if maxsplit < 0 {
+        usize::MAX
+    } else {
+        maxsplit as usize
+    };
+    let mut result = Vec::new();
+    let mut start = 0;
+    while result.len() < limit {
+        let Some(relative) = data[start..]
+            .windows(separator.len())
+            .position(|window| window == separator)
+        else {
+            break;
+        };
+        let end = start + relative;
+        result.push(data[start..end].to_vec());
+        start = end + separator.len();
+    }
+    result.push(data[start..].to_vec());
+    result
+}
+
 pub fn decode_latin1(data: &[u8]) -> String {
     data.iter().map(|&byte| char::from(byte)).collect()
 }
@@ -127,6 +344,59 @@ pub fn decode_ascii(data: &[u8]) -> Result<String> {
         return Err("invalid ASCII input".into());
     }
     Ok(String::from_utf8(data.to_vec())?)
+}
+
+pub fn decode_bytes(data: &[u8], encoding: &str, errors: &str) -> Result<String> {
+    if !matches!(errors, "strict" | "replace") {
+        return Err("decode errors must be strict or replace".into());
+    }
+    match encoding {
+        "utf-8" | "utf8" => Ok(if errors == "replace" {
+            String::from_utf8_lossy(data).into_owned()
+        } else {
+            String::from_utf8(data.to_vec())?
+        }),
+        "latin-1" | "latin1" | "iso-8859-1" | "iso8859-1" => Ok(decode_latin1(data)),
+        "cp437" | "437" | "ibm437" => Ok(decode_cp437(data)),
+        "ascii" => {
+            if errors == "replace" {
+                Ok(data
+                    .iter()
+                    .map(|&byte| {
+                        if byte < 128 {
+                            char::from(byte)
+                        } else {
+                            '\u{fffd}'
+                        }
+                    })
+                    .collect())
+            } else {
+                decode_ascii(data)
+            }
+        }
+        "cp1252" | "windows-1252" => {
+            const EXTENDED: [char; 32] = [
+                '\u{20ac}', '\u{fffd}', '\u{201a}', '\u{192}', '\u{201e}', '\u{2026}', '\u{2020}',
+                '\u{2021}', '\u{2c6}', '\u{2030}', '\u{160}', '\u{2039}', '\u{152}', '\u{fffd}',
+                '\u{17d}', '\u{fffd}', '\u{fffd}', '\u{2018}', '\u{2019}', '\u{201c}', '\u{201d}',
+                '\u{2022}', '\u{2013}', '\u{2014}', '\u{2dc}', '\u{2122}', '\u{161}', '\u{203a}',
+                '\u{153}', '\u{fffd}', '\u{17e}', '\u{178}',
+            ];
+            let mut output = String::new();
+            for &byte in data {
+                let character = match byte {
+                    0x80..=0x9f => EXTENDED[(byte - 0x80) as usize],
+                    _ => char::from(byte),
+                };
+                if character == '\u{fffd}' && errors == "strict" {
+                    return Err("invalid CP1252 input".into());
+                }
+                output.push(character);
+            }
+            Ok(output)
+        }
+        _ => Err("unsupported text encoding".into()),
+    }
 }
 
 pub fn sha1_digest(data: &[u8]) -> Result<Vec<u8>> {
@@ -151,7 +421,21 @@ pub fn bytes_xor(data: &[u8], key: &[u8]) -> Result<Vec<u8>> {
         .collect())
 }
 #[inline]
+pub fn wrapping_add(left: i64, right: i64) -> i64 {
+    left.wrapping_add(right)
+}
+#[inline]
+pub fn wrapping_sub(left: i64, right: i64) -> i64 {
+    left.wrapping_sub(right)
+}
+#[inline]
+pub fn wrapping_mul(left: i64, right: i64) -> i64 {
+    left.wrapping_mul(right)
+}
+#[inline]
+#[track_caller]
 pub fn int_lshift(value: i64, count: i64) -> Result<i64> {
+    let location = std::panic::Location::caller();
     if count < 0 {
         return Err("negative shift count".into());
     }
@@ -159,9 +443,10 @@ pub fn int_lshift(value: i64, count: i64) -> Result<i64> {
         return Ok(0);
     }
     if count >= 64 {
-        return Err("integer overflow".into());
+        return Err(format!("integer overflow: {value} << {count} at {location}").into());
     }
-    Ok(i64::try_from((value as i128) << count).map_err(|_| "integer overflow")?)
+    Ok(i64::try_from((value as i128) << count)
+        .map_err(|_| format!("integer overflow: {value} << {count} at {location}"))?)
 }
 #[inline]
 pub fn int_rshift(value: i64, count: i64) -> Result<i64> {
@@ -226,6 +511,28 @@ pub fn math_sqrt(value: f64) -> Result<f64> {
         return Err("square root requires a nonnegative finite number".into());
     }
     finite(value.sqrt())
+}
+
+pub fn math_isfinite(value: f64) -> bool {
+    value.is_finite()
+}
+
+pub fn math_sin(value: f64) -> Result<f64> {
+    finite(finite(value)?.sin())
+}
+
+pub fn math_cos(value: f64) -> Result<f64> {
+    finite(finite(value)?.cos())
+}
+
+pub fn math_atan2(y: f64, x: f64) -> Result<f64> {
+    finite(finite(y)?.atan2(finite(x)?))
+}
+
+pub fn math_ldexp(value: f64, exponent: i64) -> Result<f64> {
+    let exponent = i32::try_from(exponent)
+        .map_err(|_| "floating-point exponent is outside supported range")?;
+    finite(finite(value)? * 2.0_f64.powi(exponent))
 }
 pub fn int_floor_div(left: i64, right: i64) -> Result<i64> {
     if right == 0 {
@@ -506,9 +813,9 @@ pub use resources::{
     FileHandle, LineReader, ResourceGuard, Sha256,
 };
 pub use tcp::{
-    int_from_bytes, int_to_bytes, tcp_accept_ready, tcp_accept_timeout, tcp_close,
-    tcp_close_listener, tcp_connect, tcp_listen, tcp_port, tcp_recv, tcp_recv_ready, tcp_select,
-    tcp_send_buffer, tcp_send_ready, tcp_sendall, tcp_set_deadline, tcp_shutdown_write,
+    int_from_bytes, int_from_bytes_signed, int_to_bytes, tcp_accept_ready, tcp_accept_timeout,
+    tcp_close, tcp_close_listener, tcp_connect, tcp_listen, tcp_port, tcp_recv, tcp_recv_ready,
+    tcp_select, tcp_send_buffer, tcp_send_ready, tcp_sendall, tcp_set_deadline, tcp_shutdown_write,
     TcpListener, TcpStream,
 };
 pub use udp::{udp_bind, udp_close, udp_port, udp_recvfrom, udp_sendto, UdpSocket};
@@ -663,8 +970,12 @@ pub fn cached_json_string<'a>(
 pub fn json_string(value: &Json) -> Result<String> {
     Ok(value.as_str().ok_or("expected JSON string")?.to_string())
 }
+#[track_caller]
 pub fn json_int(value: &Json) -> Result<i64> {
-    Ok(value.as_i64().ok_or("expected JSON integer")?)
+    let location = std::panic::Location::caller();
+    Ok(value
+        .as_i64()
+        .ok_or_else(|| format!("expected JSON integer: {value} at {location}"))?)
 }
 pub fn json_bool(value: &Json) -> Result<bool> {
     Ok(value.as_bool().ok_or("expected JSON boolean")?)
@@ -678,6 +989,16 @@ pub fn json_is_null(value: &Json) -> bool {
 pub fn json_array_ref(value: &Json) -> Result<&[Json]> {
     Ok(value.as_array().ok_or("expected JSON array")?.as_slice())
 }
+pub fn json_object(value: &Json) -> Result<indexmap::IndexMap<String, Json>> {
+    match value {
+        Json::Object(entries) => Ok(entries
+            .iter()
+            .map(|(key, value)| (key.clone(), value.clone()))
+            .collect()),
+        _ => Err("expected a JSON object".into()),
+    }
+}
+
 pub fn json_array(value: &Json) -> Result<Vec<Json>> {
     Ok(json_array_ref(value)?.to_vec())
 }
@@ -689,12 +1010,14 @@ pub fn json_get(value: &Json, key: &str, default: &Json) -> Result<Json> {
         .unwrap_or(default)
         .clone())
 }
+#[track_caller]
 pub fn json_key_ref<'a>(value: &'a Json, key: &str) -> Result<&'a Json> {
+    let location = std::panic::Location::caller();
     Ok(value
         .as_object()
         .ok_or("expected JSON object")?
         .get(key)
-        .ok_or("missing JSON key")?)
+        .ok_or_else(|| format!("missing JSON key {key:?} at {location}"))?)
 }
 pub fn json_index_ref(value: &Json, position: i64) -> Result<&Json> {
     let values = value.as_array().ok_or("expected JSON array")?;
@@ -707,19 +1030,43 @@ pub fn json_index(value: &Json, position: i64) -> Result<Json> {
     Ok(json_index_ref(value, position)?.clone())
 }
 
+pub fn clamp_index(length: usize, index: i64) -> usize {
+    let adjusted = if index < 0 {
+        length as i64 + index
+    } else {
+        index
+    };
+    adjusted.max(0).min(length as i64) as usize
+}
+
+#[track_caller]
 pub fn index(length: usize, index: i64) -> Result<usize> {
+    let location = std::panic::Location::caller();
     let index = if index < 0 {
         length as i64 + index
     } else {
         index
     };
     if index < 0 || index as usize >= length {
-        return Err("index out of range".into());
+        return Err(
+            format!("index out of range: {index} for length {length} at {location}").into(),
+        );
     }
     Ok(index as usize)
 }
+pub fn index_of<T: PartialEq>(values: &[T], value: &T) -> Result<i64> {
+    values
+        .iter()
+        .position(|item| item == value)
+        .map(|index| index as i64)
+        .ok_or_else(|| "value is not in sequence".into())
+}
+
+#[track_caller]
 pub fn at<T: Clone>(values: &[T], i: i64) -> Result<T> {
-    Ok(values[index(values.len(), i)?].clone())
+    let location = std::panic::Location::caller();
+    let position = index(values.len(), i).map_err(|error| format!("{error}; at {location}"))?;
+    Ok(values[position].clone())
 }
 pub fn char_at_view(value: &str, position: i64) -> Result<&str> {
     let character = if position < 0 {
@@ -791,10 +1138,183 @@ pub fn str_split_whitespace(value: &str) -> Vec<String> {
         .map(str::to_string)
         .collect()
 }
+
+pub fn shlex_split(value: &str) -> Result<Vec<String>> {
+    #[derive(Clone, Copy, PartialEq)]
+    enum Quote {
+        None,
+        Single,
+        Double,
+    }
+    let mut words = Vec::new();
+    let mut word = String::new();
+    let mut quote = Quote::None;
+    let mut escaped = false;
+    let mut started = false;
+    for character in value.chars() {
+        if escaped {
+            if quote == Quote::Double && !matches!(character, '$' | '`' | '"' | '\\' | '\n') {
+                word.push('\\');
+            }
+            if character != '\n' {
+                word.push(character);
+            }
+            escaped = false;
+            continue;
+        }
+        if character == '\\' && quote != Quote::Single {
+            escaped = true;
+            started = true;
+            continue;
+        }
+        if quote == Quote::Single {
+            if character == '\'' {
+                quote = Quote::None;
+            } else {
+                word.push(character);
+            }
+            continue;
+        }
+        if quote == Quote::Double {
+            if character == '"' {
+                quote = Quote::None;
+            } else {
+                word.push(character);
+            }
+            continue;
+        }
+        match character {
+            '\'' | '"' => {
+                quote = if character == '\'' {
+                    Quote::Single
+                } else {
+                    Quote::Double
+                };
+                started = true;
+            }
+            character if py_whitespace(character) => {
+                if started {
+                    words.push(std::mem::take(&mut word));
+                    started = false;
+                }
+            }
+            _ => {
+                word.push(character);
+                started = true;
+            }
+        }
+    }
+    if escaped {
+        return Err("No escaped character".into());
+    }
+    if quote != Quote::None {
+        return Err("No closing quotation".into());
+    }
+    if started {
+        words.push(word);
+    }
+    Ok(words)
+}
+
 pub fn finite(value: f64) -> Result<f64> {
     if !value.is_finite() {
         return Err("non-finite floating point result".into());
     }
+    Ok(value)
+}
+
+pub fn format_int(value: i64, spec: &str) -> String {
+    let digits = spec.strip_suffix('d').unwrap_or(spec);
+    let zero = digits.starts_with('0');
+    let width = digits.parse::<usize>().unwrap_or(0);
+    let text = value.to_string();
+    let padding = width.saturating_sub(text.len());
+    if zero {
+        let sign = if value < 0 { "-" } else { "" };
+        let unsigned = text.trim_start_matches('-');
+        format!("{sign}{}{}", "0".repeat(padding), unsigned)
+    } else {
+        format!("{}{}", " ".repeat(padding), text)
+    }
+}
+
+pub fn format_text(value: &str, spec: &str) -> String {
+    let digits = spec.strip_suffix('s').unwrap_or(spec);
+    let (width, precision) = digits
+        .split_once('.')
+        .map(|(width, precision)| {
+            (
+                width.parse::<usize>().unwrap_or(0),
+                precision.parse::<usize>().unwrap_or(usize::MAX),
+            )
+        })
+        .unwrap_or((digits.parse::<usize>().unwrap_or(0), usize::MAX));
+    let text: String = value.chars().take(precision).collect();
+    let padding = width.saturating_sub(text.chars().count());
+    format!("{text}{}", " ".repeat(padding))
+}
+
+pub fn format_float(value: f64, spec: &str) -> Result<String> {
+    let precision = spec
+        .strip_prefix('.')
+        .and_then(|text| text.strip_suffix('f'))
+        .map(|text| text.parse::<usize>())
+        .transpose()?
+        .unwrap_or(6);
+    Ok(format!("{value:.precision$}"))
+}
+
+pub fn repr_text(value: &str) -> String {
+    let quote = if value.contains('\'') && !value.contains('"') {
+        '"'
+    } else {
+        '\''
+    };
+    let mut output = String::from(quote);
+    for character in value.chars() {
+        match character {
+            '\\' => output.push_str("\\\\"),
+            '\n' => output.push_str("\\n"),
+            '\r' => output.push_str("\\r"),
+            '\t' => output.push_str("\\t"),
+            character if character == quote => {
+                output.push('\\');
+                output.push(character);
+            }
+            character if character.is_control() => {
+                output.push_str(&format!("\\x{:02x}", character as u32))
+            }
+            character => output.push(character),
+        }
+    }
+    output.push(quote);
+    output
+}
+
+pub fn stream_write(stream: i64, value: &str) -> Result<()> {
+    match stream {
+        1 => std::io::stdout().write_all(value.as_bytes())?,
+        2 => std::io::stderr().write_all(value.as_bytes())?,
+        _ => return Err("stream is not writable".into()),
+    }
+    Ok(())
+}
+
+pub fn stream_flush(stream: i64) -> Result<()> {
+    match stream {
+        1 => std::io::stdout().flush()?,
+        2 => std::io::stderr().flush()?,
+        _ => return Err("stream is not writable".into()),
+    }
+    Ok(())
+}
+
+pub fn stream_readline(stream: i64) -> Result<String> {
+    if stream != 0 {
+        return Err("stream is not readable".into());
+    }
+    let mut value = String::new();
+    std::io::stdin().read_line(&mut value)?;
     Ok(value)
 }
 
@@ -951,6 +1471,20 @@ pub fn log(level: i64, message: &str) -> Result<()> {
 pub fn read_text(path: &str) -> Result<String> {
     Ok(std::fs::read_to_string(path)?)
 }
+
+pub fn read_text_encoding(path: &str, encoding: &str) -> Result<String> {
+    let bytes = std::fs::read(path)?;
+    let text = decode_bytes(
+        &bytes,
+        if encoding == "utf-8-sig" {
+            "utf-8"
+        } else {
+            encoding
+        },
+        "strict",
+    )?;
+    Ok(text.strip_prefix('\u{feff}').unwrap_or(&text).to_owned())
+}
 pub fn write_text(path: &str, value: &str) -> Result<()> {
     Ok(std::fs::write(path, value.as_bytes())?)
 }
@@ -979,6 +1513,37 @@ pub fn list_dir(path: &str) -> Result<Vec<String>> {
 pub fn path_exists(path: &str) -> bool {
     std::path::Path::new(path).exists()
 }
+
+pub fn path_is_dir(path: &str) -> Result<bool> {
+    Ok(std::fs::metadata(path)?.is_dir())
+}
+
+pub fn path_is_file(path: &str) -> Result<bool> {
+    Ok(std::fs::metadata(path)?.is_file())
+}
+
+pub fn path_iterdir(path: &str) -> Result<Vec<String>> {
+    let mut entries = Vec::new();
+    for entry in std::fs::read_dir(path)? {
+        entries.push(
+            entry?
+                .path()
+                .into_os_string()
+                .into_string()
+                .map_err(|_| "non-UTF8 path")?,
+        );
+    }
+    entries.sort();
+    Ok(entries)
+}
+pub fn path_suffix(path: &str) -> String {
+    let name = path.rsplit('/').next().unwrap_or(path);
+    match name.rfind('.') {
+        Some(index) if index > 0 && index + 1 < name.len() => name[index..].to_owned(),
+        _ => String::new(),
+    }
+}
+
 pub fn path_join(parent: &str, child: &str) -> Result<String> {
     Ok(std::path::Path::new(parent)
         .join(child)

@@ -44,8 +44,18 @@ def emit_hex_constructor(compiler: ServiceCompiler, node: ast.Call, name: str) -
     return Expr(code, Type(name.split(".")[0]))
 
 
-def emit_sequence_constructor(compiler: ServiceCompiler, node: ast.Call, name: str) -> Expr:
-    value = compiler.read_value(node.args[0])
+def emit_sequence_constructor(
+    compiler: ServiceCompiler, node: ast.Call, name: str, expected: Type | None = None
+) -> Expr:
+    source_type = Type("list", expected.args) if expected is not None and expected.args else None
+    value = (
+        compiler.expr(node.args[0], source_type)
+        if source_type is not None
+        and isinstance(node.args[0], ast.Call)
+        and isinstance(node.args[0].func, ast.Name)
+        and node.args[0].func.id == "__comprehend"
+        else compiler.read_value(node.args[0])
+    )
     if value.type.name == "tuple" and value.type.args and all(item == value.type.args[0] for item in value.type.args):
         value = compiler.convert(value, Type("tuple_var", (value.type.args[0],)), node)
     rule = sequence_constructor_rule(value.type.name)
@@ -60,8 +70,17 @@ def emit_sequence_constructor(compiler: ServiceCompiler, node: ast.Call, name: s
 
 def emit_set_constructor(compiler: ServiceCompiler, node: ast.Call) -> Expr:
     value = compiler.expr(node.args[0])
-    if value.type.name != "list" or value.type.args[0].name not in {"int", "str", "bool"}:
-        compiler.error("set(value) requires a list of int, str or bool values", node)
+    if value.type.name == "dict":
+        value = Expr(
+            f"({value.code}).keys().cloned().collect::<Vec<_>>()",
+            Type("list", (value.type.args[0],)),
+        )
+    if value.type.name == "Json" or value.type.name == "optional" and value.type.args[0].name == "Json":
+        value = compiler.convert(value, Type("list", (Type("Json"),)), node)
+    if value.type.name == "tuple" and value.type.args and all(item == value.type.args[0] for item in value.type.args):
+        value = compiler.convert(value, Type("tuple_var", (value.type.args[0],)), node)
+    if value.type.name not in {"list", "set", "tuple_var"} or not compiler.hashable(value.type.args[0]):
+        compiler.error(f"set(value) requires a typed collection of hashable values, got {value.type}", node)
     return Expr(
         f"({value.code}).into_iter().collect::<std::collections::BTreeSet<_>>()",
         Type("set", value.type.args),
@@ -69,6 +88,7 @@ def emit_set_constructor(compiler: ServiceCompiler, node: ast.Call) -> Expr:
 
 
 def emit_empty_constructor(compiler: ServiceCompiler, node: ast.Call, name: str, expected: Type | None) -> Expr:
+    name = "set" if name == "frozenset" else name
     if expected is None or expected.name != ("tuple_var" if name == "tuple" else name):
         compiler.error("empty collection constructor requires a matching type annotation", node)
     constructor = {

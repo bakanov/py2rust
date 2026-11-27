@@ -9,6 +9,7 @@ import ast
 from typing import TYPE_CHECKING
 
 from ..library_contracts import LIBRARY
+from .values import Type
 
 if TYPE_CHECKING:
     from ..service import ServiceCompiler
@@ -77,18 +78,30 @@ def collect_declarations(compiler: ServiceCompiler, tree: ast.Module) -> tuple[l
             ):
                 compiler.error("unsupported module import", node)
             compiler.modules.update(n.name for n in node.names)
+        elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+            target = node.targets[0]
+            compiler.check_name(target.id, target)
+            expression = compiler.expr(node.value)
+            compiler.constants[target.id] = expression
+            compiler.constant_nodes[target.id] = (node.value, expression.type)
+        elif (
+            isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Tuple)
+            and isinstance(node.value, ast.Tuple)
+            and len(node.targets[0].elts) == len(node.value.elts)
+        ):
+            for target, value in zip(node.targets[0].elts, node.value.elts):
+                if not isinstance(target, ast.Name):
+                    compiler.error("module tuple constants require named targets", target)
+                compiler.check_name(target.id, target)
+                expression = compiler.expr(value)
+                compiler.constants[target.id] = expression
+                compiler.constant_nodes[target.id] = (value, expression.type)
         elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
             compiler.check_name(node.target.id, node)
-            if not isinstance(node.value, ast.Constant) and not (
-                isinstance(node.value, ast.UnaryOp)
-                and isinstance(node.value.op, ast.USub)
-                and isinstance(node.value.operand, ast.Constant)
-            ):
-                compiler.error("module constants require scalar literals", node)
             typ = compiler.typ(node.annotation)
-            if typ.name not in {"str", "bytes", "int", "float", "bool"}:
-                compiler.error("module constants require scalar types", node)
-            compiler.constants[node.target.id] = compiler.expr(node.value, typ)
+            compiler.constant_nodes[node.target.id] = (node.value, typ)
         elif isinstance(node, ast.ClassDef):
             if node.decorator_list:
                 compiler.record_definition(node)
@@ -122,10 +135,11 @@ def collect_declarations(compiler: ServiceCompiler, tree: ast.Module) -> tuple[l
                 compiler.error("enum values must be unique and have one type", node)
             compiler.enums[node.name] = values
         elif isinstance(node, ast.FunctionDef):
+            if node.name in {"py2rust__stdlib__Random__shuffle", "py__strategy__random__MapRandom__shuffle"}:
+                continue  # Calls are emitted as type-specific intrinsic loops.
             compiler.check_name(node.name, node)
             if (
                 node.decorator_list
-                or node.args.defaults
                 or node.args.kw_defaults
                 or node.args.vararg
                 or node.args.kwarg
@@ -134,13 +148,28 @@ def collect_declarations(compiler: ServiceCompiler, tree: ast.Module) -> tuple[l
                 or getattr(node, "type_params", [])
             ):
                 compiler.error("unsupported function signature", node)
-            signature = (
-                tuple(compiler.typ(a.annotation) for a in node.args.args),
-                compiler.typ(node.returns),
-            )
+            try:
+                signature = (
+                    tuple(compiler.typ(a.annotation) for a in node.args.args),
+                    compiler.typ(node.returns),
+                )
+            except Exception as error:
+                annotations = [ast.unparse(argument.annotation) for argument in node.args.args]
+                compiler.error(
+                    f"unsupported signature in {node.name}({', '.join(annotations)}) -> "
+                    f"{ast.unparse(node.returns)}: {error}",
+                    node,
+                )
+            post_init_suffix = "escaped_5f5f706f73745f696e69745f5f"
+            if node.name.endswith(post_init_suffix):
+                record_name = node.name.removesuffix(post_init_suffix).removesuffix("__")
+                signature = (signature[0], Type(record_name))
+                node.body.append(ast.Return(value=ast.Name(id="self_", ctx=ast.Load())))
             if any(t.name == "HttpServer" for t in (*signature[0], signature[1])):
                 compiler.error("HTTP listeners stay in the owning function", node)
             compiler.functions[node.name] = signature
+            compiler.function_parameters[node.name] = [argument.arg for argument in node.args.args]
+            compiler.function_defaults[node.name] = tuple(node.args.defaults)
             functions.append(node)
         elif (
             isinstance(node, ast.If)
@@ -151,7 +180,7 @@ def collect_declarations(compiler: ServiceCompiler, tree: ast.Module) -> tuple[l
         elif isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
             continue  # Module documentation has no runtime effect.
         else:
-            compiler.error("unsupported module statement", node)
+            compiler.error(f"unsupported module statement: {ast.unparse(node)}", node)
     if len(mains) != 1:
         compiler.error("exactly one main guard is required", tree)
     return functions, mains[0]

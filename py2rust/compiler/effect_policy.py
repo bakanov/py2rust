@@ -136,7 +136,7 @@ def analyze_function(function: ir.Function) -> FunctionEffects:
         return  # noqa: PLR1711
 
     for item in statements(function.body):
-        if item.operation in {"assert", "reraise", "store_index", "delete_index"}:
+        if item.operation in {"assert", "raise", "reraise", "store_index", "delete_index"}:
             effect = effect.join(Effects(may_fail=True))
         if item.operation in {"for", "while"}:
             effect = effect.join(Effects(may_diverge=True, costs=frozenset({"loop"})))

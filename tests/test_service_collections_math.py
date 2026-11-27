@@ -920,3 +920,25 @@ if __name__ == "__main__":
     )
     assert result.returncode == 0 and result.stdout == "bounded key snapshot\n", result.stderr
     return  # noqa: PLR1711 - explicit return required by repository guidelines
+
+
+def test_signed_wrapping_arithmetic(tmp_path: Path) -> None:
+    output = parity(
+        tmp_path,
+        """
+from py2rust.stdlib import wrapping_add, wrapping_sub, wrapping_mul
+
+def check() -> None:
+    maximum: int = 9223372036854775807
+    minimum: int = -9223372036854775808
+    assert wrapping_add(maximum, 1) == minimum
+    assert wrapping_sub(minimum, 1) == maximum
+    assert wrapping_mul(maximum, 2) == -2
+    assert wrapping_mul(6364136223846793005, 3) == 645664597830827399
+    return
+if __name__ == "__main__":
+    check()
+""",
+    )
+    assert output == ""
+    return  # noqa: PLR1711 - explicit return required by repository guidelines
