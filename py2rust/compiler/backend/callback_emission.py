@@ -88,6 +88,20 @@ def emit_function_call(compiler: ServiceCompiler, node: ast.Call, name: str) -> 
                 names = [f"__arg{position}" for position in range(supplied)]
                 arguments = [*(f"{capture}.clone()" for capture in captures), *names]
                 return f"|{', '.join(names)}| {arg.id}({', '.join(arguments)})"
+        stateful_turn_controller = (
+            name.startswith("py__openciv3__turn_controller__TurnController__")
+            and name.rsplit("__", 1)[-1] in {"advance", "autoplay_human_turn", "respond_to_trade"}
+            and target == 0
+        ) or (
+            name.startswith("py__civ3_ai__civilization_ai__CivilizationAI__")
+            and not name.endswith("__pending_trade")
+            and target == 0
+        )
+        if stateful_turn_controller:
+            place = compiler.local_read(arg)
+            value = place if place is not None and place.type == typ else compiler.expr(arg, typ)
+            code = value.code[1:] if value.code.startswith("&(") else value.code
+            return f"&mut {code}"
         if (
             name in compiler.mutable_parameter_functions
             and compiler.function_parameters[name][target] in compiler.mutable_parameter_functions[name]
@@ -111,6 +125,8 @@ def emit_function_call(compiler: ServiceCompiler, node: ast.Call, name: str) -> 
                     and name.rsplit("__", 1)[-1] in {"generate", "appearance", "place_rare", "place_bonus"}
                     or name.startswith("py__openciv3__world_rivers__escaped_5f526976657247726f777468__")
                     and name.rsplit("__", 1)[-1] in {"generate", "flow"}
+                    or name.startswith("py__openciv3__turn_controller__TurnController__")
+                    and name.rsplit("__", 1)[-1] in {"advance", "autoplay_human_turn", "respond_to_trade"}
                 )
                 and target == 0
                 or typ.name == "py__strategy__random__MapRandom"

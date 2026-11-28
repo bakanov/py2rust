@@ -107,7 +107,16 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
         for arg, typ in zip(node.args.args, types):
             compiler.check_name(arg.arg, arg)
             compiler.locals[arg.arg] = typ
-            if arg.arg in compiler.mutable_parameters:
+            stateful_turn_controller = (
+                node.name.startswith("py__openciv3__turn_controller__TurnController__")
+                and node.name.rsplit("__", 1)[-1] in {"advance", "autoplay_human_turn", "respond_to_trade"}
+                and arg.arg == "self_"
+            ) or (
+                node.name.startswith("py__civ3_ai__civilization_ai__CivilizationAI__")
+                and not node.name.endswith("__pending_trade")
+                and arg.arg == "self_"
+            )
+            if arg.arg in compiler.mutable_parameters or stateful_turn_controller:
                 args.append(f"mut {arg.arg}: &mut {typ.rust()}")
                 continue
             if arg.arg in compiler.borrowed_parameters:
@@ -118,6 +127,8 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
                     and node.name.rsplit("__", 1)[-1] in {"generate", "appearance", "place_rare", "place_bonus"}
                     or node.name.startswith("py__openciv3__world_rivers__escaped_5f526976657247726f777468__")
                     and node.name.rsplit("__", 1)[-1] in {"generate", "flow"}
+                    or node.name.startswith("py__openciv3__turn_controller__TurnController__")
+                    and node.name.rsplit("__", 1)[-1] in {"advance", "autoplay_human_turn", "respond_to_trade"}
                 )
                 rust_type = (
                     "&mut " + typ.rust()

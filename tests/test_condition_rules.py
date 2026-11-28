@@ -58,3 +58,25 @@ if __name__ == "__main__":
         lambda self, text: compile_typed({"main": (tmp_path / "main.py", text)}),
     )
     assert parity(tmp_path, source) == "True\nTrue\nFalse\nTrue\n"
+
+
+def test_optional_membership_handles_none(tmp_path: Path, monkeypatch) -> None:
+    source = """def check() -> None:
+    values: set[int] = {1, 2}
+    present: int | None = 2
+    missing: int | None = 3
+    empty: int | None = None
+    assert present in values
+    assert missing not in values
+    assert empty not in values
+    assert not (empty in values)
+
+if __name__ == "__main__":
+    check()
+"""
+    monkeypatch.setattr(
+        ServiceCompiler,
+        "compile",
+        lambda self, text: compile_typed({"main": (tmp_path / "main.py", text)}),
+    )
+    assert parity(tmp_path, source) == ""

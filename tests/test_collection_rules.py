@@ -8,7 +8,9 @@ from py2rust.compiler import pipeline, service
 
 from .test_services import parity
 
-SOURCE = """def pair() -> tuple[int, str]:
+SOURCE = """LOOKUP: dict[str, list[int]] = {"values": [1, 2, 3]}
+
+def pair() -> tuple[int, str]:
     print("pair evaluated")
     return (1, "text")
 
@@ -37,6 +39,11 @@ def check() -> None:
     mapping: dict[str, int] = {"b": 2, "a": 1}
     assert list(mapping) == ["b", "a"]
     assert list((4, 5)) == [4, 5]
+    groups: dict[int, list[int]] = {}
+    groups.setdefault(1, []).append(2)
+    groups.setdefault(1, []).extend([3, 4])
+    assert groups == {1: [2, 3, 4]}
+    assert LOOKUP["values"][1] == 2
     assert tuple(original) == (1, 2, 3)
     print("collections passed")
 

@@ -83,6 +83,10 @@ The first native builds were much slower than Python for avoidable reasons:
 
 Collection-valued module constants now use `OnceLock`, continent traversal uses an index cursor, and empty citizen allocation returns before hydrology construction. These are general improvements, not generated-Rust patches.
 
+Profiling later showed that caching alone was insufficient: every cached collection read still cloned the complete table. Context-sensitive `local_read()` now borrows static collection constants for lookups and iteration while owned consumers retain clones. This reduced the ten-turn native campaign from **155.8 seconds to 4.7 seconds** (about 33×), and the reduced standalone startup to **1.65 seconds**. Python's corresponding campaign takes about 7 seconds on the same machine. The profile separated 151 seconds of initialization from only 3 seconds of gameplay, preventing premature optimization of the turn engine.
+
+This is also a concrete whole-project optimization: the compiler must consider the constant's storage lifetime and each consumer's ownership needs together. A single global `borrowed` flag is too broad—owned returns and tuple unpacking still need materialization. Cross-module immutable sharing works best as a consumer-sensitive decision.
+
 ## Validation lessons
 
 - The reduced OpenCiv3 audit reached **104/104 modules with zero blockers**.
@@ -100,6 +104,33 @@ A successful application run and focused regression selection do not prove the w
 - Some dynamic-union and ownership representations remain compatibility mechanisms rather than a complete Python object model.
 - Full-suite validation and final commit-readiness checks are deferred.
 - The native declaration fixture has a separate missing `source_types.py` issue in its temporary project and should be resolved independently of OpenCiv3.
+
+## Full-console investigation
+
+A second native entry now exercises city founding, production selection, trade
+networks, unit removal, AI movement phases, barbarian phases, and economic rounds.
+It founds Rome and completes ten autoplay rounds with one city and seven units.
+Rome grows to population 2 with +2 food and +3 shields and discovers Pottery once.
+Autonomous settler expansion and some production/map details still do not match
+Python; this is a runnable development milestone, not full parity.
+
+The important new lesson is that collection methods need real mutable places as
+well as correct function return values. Returning `GameState` does not help when
+`game.cities.append()` still mutates `game.cities.clone()`. Conversely, fixing the
+receiver alone does not propagate updates through functions that return only a
+report. Both sides must be designed together.
+
+Other concrete findings:
+
+- Assigning a container into a record before filling it relies on aliasing; build
+  it first and assign the finished value when using owned-value semantics.
+- Optional membership must handle `None` without unwrapping it.
+- Python object-identity removal is not structural-record removal; stable IDs are
+  the appropriate native representation.
+- Finite ranking sentinels avoid non-finite values and unnecessary string-to-float
+  conversions in a finite native numeric profile.
+- Location-bearing diagnostics and native backtraces are much faster than guessing
+  from a complete application's final error.
 
 ## Next milestones
 

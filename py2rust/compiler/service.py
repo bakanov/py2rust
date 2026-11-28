@@ -128,9 +128,10 @@ class ServiceCompiler:
     def error(self, message: str, node: ast.AST) -> None:
         raise ServiceError(message, node)
 
-    def materialize_constant(self, name: str) -> Expr:
-        if name in self.constants:
-            return self.constants[name]
+    def materialize_constant(self, name: str, *, borrow: bool = False) -> Expr:
+        cache_name = name + ("&" if borrow else "")
+        if cache_name in self.constants:
+            return self.constants[cache_name]
         if name in self.evaluating_constants:
             self.error(f"cyclic module constant: {name}", self.constant_nodes[name][0])
         self.evaluating_constants.add(name)
@@ -142,10 +143,11 @@ class ServiceCompiler:
                 f"{{ static __CONSTANT_{name}: std::sync::OnceLock<{typ.rust()}> = std::sync::OnceLock::new(); "
                 f"if __CONSTANT_{name}.get().is_none() {{ let __constant_value = {value.code}; "
                 f"let _ = __CONSTANT_{name}.set(__constant_value); }} "
-                f'__CONSTANT_{name}.get().ok_or("missing module constant")?.clone() }}',
+                f'__CONSTANT_{name}.get().ok_or("missing module constant")?{"" if borrow else ".clone()" } }}',
                 typ,
+                borrowed=borrow,
             )
-        self.constants[name] = value
+        self.constants[cache_name] = value
         return value
 
     def typ(self, node: ast.AST, self_type: str | None = None) -> Type:
@@ -597,6 +599,8 @@ class ServiceCompiler:
 
     def local_read(self, node: ast.AST) -> Expr | None:
         """A reference can escape this expression only when rooted in a live local."""
+        if isinstance(node, ast.Name) and node.id in self.constant_nodes and node.id not in self.locals:
+            return self.materialize_constant(node.id, borrow=True)
         from .backend.projected_strings import projected_string
 
         projected = projected_string(self, node)
@@ -818,6 +822,16 @@ class ServiceCompiler:
             and all(item == right.type.args[0] for item in right.type.args)
         ):
             right = self.convert(right, Type("tuple_var", (right.type.args[0],)), node)
+        if (
+            membership
+            and left.type.name == "optional"
+            and right.type.name in {"dict", "list", "set", "tuple_var"}
+            and right.type.args[0] == left.type.args[0]
+        ):
+            rule = membership_rule(left.type.args[0].name, right.type.name)
+            test = render_membership(rule, "__value", self.reference(right), isinstance(operation, ast.NotIn))
+            missing = "true" if isinstance(operation, ast.NotIn) else "false"
+            return Expr(f"match ({left.code}) {{ Some(__value) => {test}, None => {missing} }}", Type("bool"))
         if membership:
             rule = membership_rule(left.type.name, right.type.name)
             if not rule:
@@ -1435,6 +1449,29 @@ class ServiceCompiler:
 
     def method(self, node: ast.Call) -> Expr:
         if (
+            node.func.attr in {"append", "extend"}
+            and len(node.args) == 1
+            and isinstance(node.func.value, ast.Call)
+            and isinstance(node.func.value.func, ast.Attribute)
+            and node.func.value.func.attr == "setdefault"
+            and len(node.func.value.args) == 2
+            and not node.func.value.keywords
+            and isinstance(node.func.value.func.value, ast.Name)
+            and node.func.value.func.value.id not in self.borrowed_parameters
+        ):
+            mapping_name = node.func.value.func.value.id
+            mapping = self.locals.get(mapping_name)
+            if mapping is not None and mapping.name == "dict" and mapping.args[1].name == "list":
+                key = self.expr(node.func.value.args[0], mapping.args[0])
+                default = self.expr(node.func.value.args[1], mapping.args[1])
+                item_type = mapping.args[1] if node.func.attr == "extend" else mapping.args[1].args[0]
+                item = self.expr(node.args[0], item_type)
+                method = "extend" if node.func.attr == "extend" else "push"
+                return Expr(
+                    f"{{ {mapping_name}.entry({key.code}).or_insert({default.code}).{method}({item.code}); () }}",
+                    Type("None"),
+                )
+        if (
             node.func.attr == "add"
             and len(node.args) == 1
             and isinstance(node.func.value, ast.Subscript)
@@ -1481,11 +1518,19 @@ class ServiceCompiler:
             "sort",
             "reverse",
         }
-        place = (
-            self.local_read(node.func.value)
-            if node.func.attr in mutating_methods and isinstance(node.func.value, ast.Name)
-            else None
+        mutation_root = node.func.value
+        while isinstance(mutation_root, (ast.Attribute, ast.Subscript)):
+            mutation_root = mutation_root.value
+        borrowed_mutation = (
+            isinstance(mutation_root, ast.Name)
+            and mutation_root.id in self.borrowed_parameters
+            or any(isinstance(part, ast.Subscript) for part in ast.walk(node.func.value))
         )
+        place = (
+            self.local_read(node.func.value) if node.func.attr in mutating_methods and not borrowed_mutation else None
+        )
+        if place is not None and place.code.startswith("&("):
+            place = Expr(place.code[1:], place.type)
         obj = place if place is not None else self.expr(node.func.value)
         if self.optimize_text and obj.type.name == "str":
             use = runtime_argument_use(RuntimeParameter("str", "shared"), [node.func.value, *node.args], 0)
