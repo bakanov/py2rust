@@ -6,6 +6,10 @@ application. It uses the [typed service subset](service-subset.md), including
 HTTP/HTTPS, JSON, typed dataclass records and the existing library API. It does not broaden that subset to
 arbitrary Python, third-party Python packages or general Python classes.
 
+For the staged OpenCiv3 GDExtension migration, see the
+[graphical game plan](OPENCIV3_GODOT_MIGRATION.md) and its
+[file-by-file inventory](OPENCIV3_GODOT_FILE_PLAN.md).
+
 ## One command
 
 From the downloaded py2rust checkout:
@@ -135,10 +139,14 @@ project's `math.py` or `math.rs`; otherwise `math.ceil` uses the service profile
 Python imports produce a source error. Local `.py` and `.rs` files with the same
 import name are ambiguous and rejected.
 
-The linker lowers Python declarations into one generated Rust source with distinct,
-readable names. `.py2rust-project.json` maps those names back to source files and
-lines. Python validation errors retain their original file/line; Rust compiler
-diagnostics point to the generated source or copied Rust file.
+The linker preserves Python modules as generated Rust modules. For example,
+`package/helpers.py` becomes `src/package/helpers.rs`, a package initializer becomes
+`mod.rs`, and root `main.py` becomes `src/entry.rs`. `src/main.rs` is only the crate
+root and executable entry point. Supporting runtime sources are under `runtime/`,
+separate from application code. `.py2rust-project.json` maps fully qualified Rust
+symbols back to Python source files/lines and generated Rust files. Python
+validation errors retain their original file/line; Rust compiler diagnostics point
+to the generated module or copied Rust file.
 
 ## Rust function interfaces
 
@@ -245,28 +253,30 @@ and has no Python runtime. Separate test shims are used only for CPython compari
 
 ## Names in exported Rust
 
-Project commands (`transpile`, `build`, and `run`) assign readable Rust names at
-export, after linking and compiler analysis. For the access-log example:
+Project commands (`transpile`, `build`, and `run`) assign readable Rust names and
+module paths after linking and compiler analysis. For the access-log example:
 
-| Internal symbol | Exported Rust |
+| Internal symbol | Exported Rust path |
 | --- | --- |
-| `py__analysis__Summary` | `Summary` |
-| `py__analysis__summarize` | `summarize` |
-| `py__main__main` | `run_main` |
+| `py__analysis__Summary` | `crate::analysis::Summary` |
+| `py__analysis__summarize` | `crate::analysis::summarize` |
+| `py__main__main` | `crate::entry::main` |
 
-Rust's `main` remains the executable entry point and calls `run_main`. When
-multiple modules export the same name, the compiler qualifies it with a readable
-module prefix, such as `left_value` and `right_value`, or `LeftSummary` and
-`RightSummary`. It also avoids Rust keywords and names already used by locals;
-a numeric suffix resolves remaining collisions deterministically.
+Rust's `main` remains in `src/main.rs` and calls `crate::entry::main`. Modules can
+reuse names without global prefixes: `crate::left::value` and
+`crate::right::value` are distinct, as are `crate::left::Summary` and
+`crate::right::Summary`. References within the defining module use the short
+name. The emitter avoids Rust keywords and local capture; a numeric suffix
+resolves remaining collisions deterministically.
 
-This is a syntax-aware identifier rewrite, not a text substitution. String
-values, comments, source paths and handwritten Rust files remain intact. The
-project manifest maps the exported names back to the original Python/Rust source
-locations. Internal IR and optimization reports retain stable linker IDs;
-exported function report rows additionally record `rust_symbol`. Low-level IR
-emission APIs still expose internal names. Block-local temporary naming is a
-separate concern and is unchanged by this pass.
+This is a syntax-aware module partition and identifier rewrite, not text
+substitution. String values, comments and handwritten Rust files remain intact.
+Source comments use project-relative Python paths. The project manifest maps
+fully qualified exported names to original Python/Rust source locations and
+generated Rust files. Internal IR and optimization reports retain stable linker
+IDs; exported function report rows additionally record `rust_symbol`. Low-level
+IR emission APIs still expose internal names and flat source. Block-local
+temporary naming is a separate concern and is unchanged by this pass.
 
 Rebuild your Docker image with `docker build -t py2rust-demo .` and run it again
 to get these names in a new export directory. Previously exported files are not

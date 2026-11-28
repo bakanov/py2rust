@@ -34,8 +34,9 @@ subset; it does not compile or embed mypy.
    the IR, without reparsing application source. This retains the mature runtime
    and ownership implementation while the backend and analyses migrate.
 7. `create_project(..., frontend="typed")` uses the typed pipeline with the shared
-   managed-output packager, Rust formatting, source maps and native-source copying.
-   Generated native module references are relative to packaged wrappers. A compiled
+   managed-output packager, Python-shaped Rust modules, per-file formatting,
+   Python/Rust source maps and native-source copying. Generated native module
+   references are relative to packaged wrappers. A compiled
    relocation test moves the source and output directories before building and
    running a project with nested Rust modules. Direct `compile_typed` emission can
    still reference original native paths; use project packaging for relocation.

@@ -1333,7 +1333,7 @@ def test_packaged_typed_native_project_is_relocatable(tmp_path: Path, monkeypatc
     metadata = json.loads((output / MARKER).read_text())
     assert metadata["frontend"] == "typed"
     assert metadata["symbols"]
-    module_paths = [line for line in (output / "src/main.rs").read_text().splitlines() if "#[path" in line]
+    module_paths = [line for line in (output / "src/bridge/math.rs").read_text().splitlines() if "#[path" in line]
     assert module_paths and all(str(root) not in line for line in module_paths)
     root.rename(tmp_path / "unavailable-source")
     relocated = tmp_path / "relocated"

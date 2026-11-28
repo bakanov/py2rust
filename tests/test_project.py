@@ -438,6 +438,35 @@ def test_main_guards_in_dependencies_are_not_executed(tmp_path):
     assert result.stdout == "42\n"
 
 
+def test_generated_layout_preserves_python_modules(tmp_path):
+    root = sources(
+        tmp_path,
+        {
+            "main.py": "from package.helper import answer\nprint(answer())\n",
+            "package/__init__.py": "",
+            "package/helper.py": "from model import Box\ndef answer() -> int:\n    return Box(42).value\n",
+            "model.py": "from dataclasses import dataclass\n@dataclass\nclass Box:\n    value: int\n",
+        },
+    )
+    output = tmp_path / "rust"
+    create_project(root, output)
+    assert (output / "src/entry.rs").is_file()
+    assert (output / "src/package/mod.rs").is_file()
+    assert (output / "src/package/helper.rs").is_file()
+    assert (output / "src/model.rs").is_file()
+    assert (output / "runtime/lib.rs").is_file()
+    assert not (output / "src/lib.rs").exists()
+    assert len((output / "src/main.rs").read_text().splitlines()) < 30
+    assert "crate::model::Box" in (output / "src/package/helper.rs").read_text()
+    assert "// Python: package/helper.py:2" in (output / "src/package/helper.rs").read_text()
+    metadata = json.loads((output / MARKER).read_text())
+    assert metadata["format"] == 2
+    assert metadata["layout"] == "python-modules"
+    assert metadata["modules"]["package"] == "src/package/mod.rs"
+    assert metadata["modules"]["package.helper"] == "src/package/helper.rs"
+    assert metadata["symbols"]["crate::model::Box"]["rust"] == "src/model.rs"
+
+
 def test_manifest_maps_symbols_to_python_and_rust_sources(tmp_path):
     root = sources(
         tmp_path,

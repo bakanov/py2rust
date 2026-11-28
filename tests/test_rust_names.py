@@ -43,12 +43,13 @@ if __name__ == "__main__":
         },
     )
     create_project(root, tmp_path / "rust", frontend=frontend)
-    code = (tmp_path / "rust/src/main.rs").read_text()
+    code = (tmp_path / "rust/src/entry.rs").read_text()
     assert "struct Summary" in code
-    assert "fn run_main(" in code
+    assert "fn main(" in code
     metadata = json.loads((tmp_path / "rust" / MARKER).read_text())
-    assert metadata["symbols"]["Summary"]["name"] == "Summary"
-    assert metadata["symbols"]["run_main"]["name"] == "main"
+    assert metadata["symbols"]["crate::entry::Summary"]["name"] == "Summary"
+    assert metadata["symbols"]["crate::entry::Summary"]["rust"] == "src/entry.rs"
+    assert metadata["symbols"]["crate::entry::main"]["name"] == "main"
 
 
 def test_colliding_python_and_native_exports_execute(tmp_path):
@@ -73,6 +74,8 @@ if __name__ == "__main__":
     result = run_project(root, tmp_path / "rust")
     assert result.returncode == 0, result.stderr
     assert result.stdout == "py__left__value\n"
-    code = (tmp_path / "rust/src/main.rs").read_text()
-    assert "fn left_value_2(" in code
-    assert "fn right_value(" in code
+    assert "pub(crate) fn value(" in (tmp_path / "rust/src/left.rs").read_text()
+    assert "pub(crate) fn value(" in (tmp_path / "rust/src/right.rs").read_text()
+    code = (tmp_path / "rust/src/entry.rs").read_text()
+    assert "crate::left::value()" in code
+    assert "crate::right::value()" in code

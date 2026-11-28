@@ -86,16 +86,37 @@ def emit_function_call(compiler: ServiceCompiler, node: ast.Call, name: str) -> 
             if callback_result == typ.args[-1] and len(callback_params) >= supplied:
                 captures = compiler.function_parameters[arg.id][: len(callback_params) - supplied]
                 names = [f"__arg{position}" for position in range(supplied)]
-                arguments = [*(f"{capture}.clone()" for capture in captures), *names]
+                borrowed = compiler.parameter_uses.get(arg.id, {})
+                parameters = compiler.function_parameters[arg.id][-supplied:] if supplied else []
+                arguments = [
+                    *(f"{capture}.clone()" for capture in captures),
+                    *(
+                        f"&{name}" if parameter in borrowed and borrowed[parameter].mode == "borrow" else name
+                        for name, parameter in zip(names, parameters)
+                    ),
+                ]
                 return f"|{', '.join(names)}| {arg.id}({', '.join(arguments)})"
         stateful_turn_controller = (
-            name.startswith("py__openciv3__turn_controller__TurnController__")
-            and name.rsplit("__", 1)[-1] in {"advance", "autoplay_human_turn", "respond_to_trade"}
-            and target == 0
-        ) or (
-            name.startswith("py__civ3_ai__civilization_ai__CivilizationAI__")
-            and not name.endswith("__pending_trade")
-            and target == 0
+            (
+                name.startswith("py__openciv3__turn_controller__TurnController__")
+                and name.rsplit("__", 1)[-1] in {"advance", "autoplay_human_turn", "respond_to_trade"}
+                and target == 0
+            )
+            or (
+                name.startswith("py__civ3_ai__civilization_ai__CivilizationAI__")
+                and not name.endswith("__pending_trade")
+                and target == 0
+            )
+            or (name.startswith("py__civ3_console__session__ConsoleSession__") and target == 0)
+            or (
+                name
+                in {
+                    "py__openciv3__human_units__HumanUnits__confirm_founding",
+                    "py__openciv3__human_research__HumanResearch__choose",
+                    "py__openciv3__human_economy__HumanEconomy__apply",
+                }
+                and target == 0
+            )
         )
         if stateful_turn_controller:
             place = compiler.local_read(arg)
@@ -114,6 +135,8 @@ def emit_function_call(compiler: ServiceCompiler, node: ast.Call, name: str) -> 
             elif code.startswith("&"):
                 code = code[1:]
             return f"&mut {code}"
+        if name.endswith("__continue_routes") and target == 0 and isinstance(arg, ast.Name):
+            return f"&{arg.id}"
         if decisions and decisions[target].mode == "borrow":
             use = runtime_argument_use(RuntimeParameter(str(typ), "shared"), sources, index)
             place = compiler.argument_place(arg, allow_place=use.mode == "borrow")

@@ -94,7 +94,9 @@ Do not replace correct code simply to reduce the textual number of `clone()` cal
 
 Clippy all/pedantic and unused-mut/parentheses diagnostics were force-enabled to
 bypass generated-file allow attributes. Counts below cover primary diagnostics
-in generated `src/main.rs`, excluding the runtime and dependencies.
+in generated application modules under `src/`, excluding `src/native/`, the runtime
+and dependencies. The counts below are archived flat-output measurements; rerunning
+the assessment now aggregates the Python-shaped module files.
 
 | Complete project | Python lines | Rust lines | Clone call sites | Diagnostics |
 | --- | ---: | ---: | ---: | ---: |

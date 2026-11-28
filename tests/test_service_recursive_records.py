@@ -129,7 +129,7 @@ if __name__ == "__main__":
         check=True,
     )
     assert result.stdout == expected.stdout == "Branch Alias\n"
-    generated = (tmp_path / "rust/src/main.rs").read_text()
+    generated = (tmp_path / "rust/src/model.rs").read_text()
     assert "children: indexmap::IndexMap<String, Branch>" in generated
     return  # noqa: PLR1711
 

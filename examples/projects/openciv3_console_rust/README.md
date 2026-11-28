@@ -5,6 +5,10 @@ rules, city-founding, production, trade-network, AI-turn, and economic-round
 engine code. It founds Rome explicitly and then autoplays ten turns. No Python
 interpreter is required by the executable.
 
+Application modules mirror their Python sources under `src/openciv3/`,
+`src/civ3_ai/`, and `src/civ3_console/`. `src/main.rs` only declares modules and
+starts the campaign. Generic py2rust support code is isolated under `runtime/`.
+
 This is not yet full console parity. Autonomous settler expansion and some map,
 production, and economic details still differ from Python. The verified native
 result grows Rome to population 2 and discovers Pottery. The command-line parser,
@@ -54,20 +58,10 @@ From the py2rust repository root with its development environment installed:
 
 ```bash
 export PYTHONPATH="$PWD"
-python - <<'PY'
-from pathlib import Path
-from py2rust.compiler.pipeline import compile_loaded_project
-from py2rust.compiler.project import Project
-from py2rust.compiler.project_output import write_service_project
-
-root = Path.home() / "experimental/OpenCiv3-Development/OpenCiv3-Development/C7"
-code = compile_loaded_project(
-    Project(root, "civ3_console/native_campaign.py"),
-    packaged=True,
-    python_scope=True,
-)
-write_service_project(code, Path("examples/projects/openciv3_console_rust"))
-PY
+python -m py2rust.compiler.project transpile "$CIV3_ROOT" \
+  --entry civ3_console/native_campaign.py \
+  --python-scope \
+  -o examples/projects/openciv3_console_rust
 ```
 
 Do not maintain fixes by editing generated Rust. Change the transpiler or the

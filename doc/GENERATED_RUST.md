@@ -87,7 +87,9 @@ After:
 Clippy was run on the complete generated application binaries, with the same
 `clippy::all`, `clippy::pedantic`, `unused_mut` and `unused_parens` force-warn flags
 for both versions. The table counts diagnostics whose primary span is generated
-`src/main.rs`, excluding runtime-library diagnostics.
+generated application modules under `src/`, excluding `src/native/`, runtime-library
+diagnostics and dependencies. Current exports preserve this module layout; the
+archived measurements below were collected from the former flat `src/main.rs`.
 
 | Application | All warnings before | After | Unnecessary mut before | After |
 | --- | ---: | ---: | ---: | ---: |

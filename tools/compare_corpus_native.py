@@ -19,6 +19,7 @@ import tempfile
 
 from assess_corpus_speed import ROOT, SELECTED, digest
 from corpus_speed_workloads import TimedApplication, job
+from py2rust.compiler.project_output import application_source_text
 
 BASELINES = {
     "041": "csv_json.rs",
@@ -146,7 +147,7 @@ def compare(
         saved_generated = project.parent / "generated-program"
         shutil.copyfile(original / "program", saved_generated)
         saved_generated.chmod(0o755)
-        shutil.copyfile(original / "rust/src/main.rs", project.parent / "generated.rs")
+        (project.parent / "generated.rs").write_text(application_source_text(original / "rust"))
         binaries = {"generated": saved_generated, "native": native}
         before_stamp = None
         if before is not None:

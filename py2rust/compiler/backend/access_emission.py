@@ -70,7 +70,8 @@ def emit_attribute(compiler: ServiceCompiler, node: ast.Attribute) -> Expr:
     if projected_union is not None:
         return projected_union
     optional_record = obj.type.name == "optional" and obj.type.args and obj.type.args[0].name in compiler.records
-    if optional_record:
+    optional_enum = obj.type.name == "optional" and obj.type.args and obj.type.args[0].name in compiler.enums
+    if optional_record or optional_enum:
         inner = obj.type.args[0]
         obj = Expr(f'(*({obj.code}).as_ref().ok_or("expected a value")?).clone()', inner)
     if obj.type.name in compiler.records:
@@ -104,7 +105,7 @@ def emit_attribute(compiler: ServiceCompiler, node: ast.Attribute) -> Expr:
             )
         typ = Type("str" if node.attr == "name" or isinstance(next(iter(values.values())), str) else "int")
         return Expr(f"match {obj.code} {{ {', '.join(arms)} }}", typ)
-    compiler.error("unsupported attribute", node)
+    compiler.error("unsupported attribute: " + ast.unparse(node), node)
 
 
 def emit_subscript(compiler: ServiceCompiler, node: ast.Subscript) -> Expr:

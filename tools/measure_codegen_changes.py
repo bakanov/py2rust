@@ -10,6 +10,8 @@ import statistics
 import subprocess
 import time
 
+from py2rust.compiler.project_output import application_source_digest
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -79,8 +81,7 @@ def main() -> None:
         ),
         "method": "9 measured runs per executable; rotating before/after/native order; one warmup; process startup, warm file reads and stdout included; compile excluded",
         "generated_sha256": {
-            name: hashlib.sha256((path / "generated/src/main.rs").read_bytes()).hexdigest()
-            for name, path in [("before", before), ("after", after)]
+            name: application_source_digest(path / "generated") for name, path in [("before", before), ("after", after)]
         },
         "binary_sha256": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in binaries.items()},
         "rows": rows,

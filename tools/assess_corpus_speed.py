@@ -12,6 +12,7 @@ import subprocess
 import time
 
 from py2rust.compiler.project import create_project
+from py2rust.compiler.project_output import application_source_digest, application_source_files
 
 ROOT = Path(__file__).resolve().parents[1]
 SELECTED = [
@@ -115,8 +116,8 @@ def build(output: Path, identifiers: list[str]) -> None:
                 status="built",
                 build_seconds=time.perf_counter() - started,
                 binary_sha256=hashlib.sha256((work / "program").read_bytes()).hexdigest(),
-                generated_sha256=hashlib.sha256((work / "rust/src/main.rs").read_bytes()).hexdigest(),
-                generated_bytes=(work / "rust/src/main.rs").stat().st_size,
+                generated_sha256=application_source_digest(work / "rust"),
+                generated_bytes=sum(len(path.read_bytes()) for path in application_source_files(work / "rust")),
             )
             print(f"{identifier}: release built in {row['build_seconds']:.1f}s", flush=True)
         except Exception as error:

@@ -64,7 +64,7 @@ def test_typed_cli_packages_selected_frontend(tmp_path: Path, monkeypatch, capsy
     from py2rust.compiler.project import MARKER
 
     assert json.loads((output / MARKER).read_text())["frontend"] == "typed"
-    assert "rt::json_get(document," in (output / "src/main.rs").read_text()
+    assert "rt::json_get(document," in (output / "src/entry.rs").read_text()
 
 
 def test_typed_explain_enforces_unknown_native_effect_gate(tmp_path: Path, monkeypatch, capsys) -> None:

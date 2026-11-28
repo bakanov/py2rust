@@ -31,9 +31,11 @@ below; see [native compiler](SELF_HOSTING.md).
    IR and prepared decisions into `service.py` and its focused backend adapters. This temporary
    AST reconstruction is still present. Remaining ownership and optimization
    analyses use that AST; the backend is not yet fully IR-native.
-6. Project packaging formats Rust, copies the runtime and native modules, writes
-   the Cargo manifest/lockfile and protects managed outputs. Packaged native
-   references are relative so generated projects can be relocated.
+6. Project packaging partitions emission into Python-shaped Rust modules, assigns
+   readable scoped names, formats every source file and records Python/Rust source
+   mappings. Supporting runtime sources live under `runtime/`; imported native
+   Rust lives under `src/native/`. The packager writes the Cargo manifest/lockfile,
+   protects managed outputs and keeps native references relocatable.
 
 ## Policy boundaries
 
@@ -101,17 +103,21 @@ module portability; the native compiler has separate source self-rebuild checks.
 
 `service.py` remains the transitional AST expression/statement adapter. Its
 `compile_tree` delegates to `backend/module_emission.py`, which coordinates
-function state, memory plans, source comments and module output.
+function state, memory plans, source comments and flat program output.
 `backend/declarations.py` separately validates imports, module constants, enum and
 function declarations, and the main guard. These modules consume the same typed
 plans as before; they are host-side adapters, not portable rule modules.
 
-`project_output.py` prepares the runtime, Cargo manifest/lock and emitted main
-source without importing the compiler or either frontend. Both the service writer
-and whole-project builder use it. Whole-project ownership markers, native Rust
-sources, destination validation and protection of hand edits remain in
-`project.py`. `service_cli.py` handles the compatibility service command, with a
-small forwarding entry point retained in `service.py`.
+`modular/emission.py` uses Rust syntax trees to partition that flat program into
+real modules, qualify cross-module references and apply crate-local visibility.
+`modular/project.py` formats module files and provides an explicit standalone
+writer. `project_output.py` prepares Cargo manifests, lockfiles and runtime files
+without importing either frontend; the compatibility service writer retains flat
+output, while whole-project builds use `runtime/` and Python-shaped `src/` files.
+Whole-project ownership markers, native Rust sources, destination validation and
+protection of hand edits remain in `project.py`. `service_cli.py` handles the
+compatibility service command, with a small forwarding entry point retained in
+`service.py`.
 
 This separation permits a future native emitter to hand Rust text to packaging
 without loading mypy. It does not make Python AST traversal or filesystem

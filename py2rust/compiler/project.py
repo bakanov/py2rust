@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .library_contracts import LIBRARY
-from .project_output import cargo_files
+from .project_output import cargo_module_files
 from .rust_imports import ProjectError, read_rust_exports, symbol_name
 from .rust_text import quote
 from .service import ServiceCompiler, ServiceError
@@ -522,8 +522,43 @@ def write_if_changed(path: Path, data: bytes) -> None:
     path.write_bytes(data)
 
 
+def native_source_files(project: Project, output: Path) -> dict[str, bytes]:
+    """Copy native Rust modules and wrappers; other assets and extra Cargo dependencies are not inferred."""
+    files = {}
+    ignored = {"target", "build", "__pycache__"}
+    for directory, dirs, names in os.walk(project.root):
+        dirs[:] = [
+            d
+            for d in dirs
+            if not d.startswith(".")
+            and d not in ignored
+            and (Path(directory) / d).resolve() != output
+            and not (Path(directory) / d).is_symlink()
+        ]
+        for name in names:
+            source = Path(directory) / name
+            if source.suffix == ".rs":
+                if not source.resolve().is_relative_to(project.root):
+                    raise ProjectError("Rust source symlink escapes the project root", source)
+                files["src/native/" + source.relative_to(project.root).as_posix()] = source.read_bytes()
+    for module in project.modules.values():
+        if module.tree is None:
+            files["src/native/" + module.path.relative_to(project.root).as_posix()] = module.path.read_bytes()
+            wrapper = module.path.relative_to(project.root).parent / (
+                symbol_name(module.name, "module_wrapper") + ".rs"
+            )
+            files["src/native/" + wrapper.as_posix()] = f"pub mod r#{module.path.stem};\n".encode()
+    return files
+
+
 def create_project(
-    root: Path, output: Path, entry: str = "main.py", binary_name: str = "py2rust-service", *, frontend: str = "typed"
+    root: Path,
+    output: Path,
+    entry: str = "main.py",
+    binary_name: str = "py2rust-service",
+    *,
+    frontend: str = "typed",
+    python_scope: bool = False,
 ) -> Project:
     if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", binary_name):
         raise ProjectError(
@@ -539,61 +574,36 @@ def create_project(
     if frontend == "typed":
         from .pipeline import compile_loaded_project
 
-        code = compile_loaded_project(project, packaged=True)
+        code = compile_loaded_project(project, packaged=True, python_scope=python_scope)
     elif frontend == "legacy":
+        if python_scope:
+            raise ProjectError("python scope requires the typed frontend", root)
         code = project.compile()
     else:
         raise ProjectError("unknown compiler frontend: " + frontend, root)
-    from .rust_names import readable_names
+    from .modular import ModuleSource, ModularEmissionError, emit_modules
+    from .modular.project import format_rust_files
 
-    symbols = {symbol: location["name"] for symbol, location in project.source_map.items()}
-    symbols.update(
-        (symbol_name(module.name, "rust_module"), module.name.replace(".", "_") + "_native")
-        for module in project.modules.values()
-        if module.tree is None
-    )
-    code, emitted_names = readable_names(code, symbols)
+    try:
+        emission = emit_modules(
+            code,
+            [ModuleSource.from_project(module) for module in project.modules.values()],
+            source_root=root,
+        )
+        formatted = format_rust_files(emission.files)
+    except ModularEmissionError as error:
+        raise ProjectError(str(error), project.entry) from error
+    emitted_names = {symbol: item.path for symbol, item in emission.symbols.items()}
     for row in project.optimization_report.get("functions", []):
         row["rust_symbol"] = emitted_names.get(row["symbol"], row["symbol"])
-    formatted = subprocess.run(
-        ["rustfmt", "--edition=2021", "--config", "skip_children=true"],
-        input=code,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if formatted.returncode:
-        raise ProjectError("generated Rust formatting failed: " + formatted.stderr, project.entry)
-    files = cargo_files(formatted.stdout, binary_name)
-    # Preserve relative Rust module paths. Generated/build/hidden directories are
-    # excluded; non-Rust include! assets and external Cargo dependencies are not inferred.
-    ignored = {"target", "build", "__pycache__"}
-    for directory, dirs, names in os.walk(root):
-        dirs[:] = [
-            d
-            for d in dirs
-            if not d.startswith(".")
-            and d not in ignored
-            and (Path(directory) / d).resolve() != output
-            and not (Path(directory) / d).is_symlink()
-        ]
-        for name in names:
-            source = Path(directory) / name
-            if source.suffix == ".rs":
-                if not source.resolve().is_relative_to(root):
-                    raise ProjectError("Rust source symlink escapes the project root", source)
-                files["src/native/" + source.relative_to(root).as_posix()] = source.read_bytes()
-    for module in project.modules.values():
-        if module.tree is None:
-            files["src/native/" + module.path.relative_to(root).as_posix()] = module.path.read_bytes()
-            wrapper = module.path.relative_to(root).parent / (symbol_name(module.name, "module_wrapper") + ".rs")
-            files["src/native/" + wrapper.as_posix()] = f"pub mod r#{module.path.stem};\n".encode()
+    files = cargo_module_files(formatted, binary_name)
+    files.update(native_source_files(project, output))
     previous = {}
     if not (output / MARKER).resolve().is_relative_to(output):
         raise ProjectError("project marker symlink escapes the output directory", output / MARKER)
     if (output / MARKER).exists():
         metadata = json.loads((output / MARKER).read_text())
-        if metadata.get("format") != 1 or metadata.get("root") != str(root):
+        if metadata.get("format") not in {1, 2} or metadata.get("root") != str(root):
             raise ProjectError("output belongs to another project or an unsupported format", output)
         previous = metadata["files"]
     # Never traverse a generated-directory symlink or overwrite hand edits.
@@ -608,13 +618,22 @@ def create_project(
                 "generated file has local edits; move edits into source or choose a new output directory",
                 destination,
             )
+    symbol_locations = {}
+    for symbol, location in project.source_map.items():
+        emitted = emission.symbols.get(symbol)
+        generated = dict(location)
+        if emitted is not None:
+            generated["rust"] = emitted.file
+        symbol_locations[emitted_names.get(symbol, symbol)] = generated
     provenance = {
-        "format": 1,
+        "format": 2,
         "root": str(root),
         "entry": entry,
         "binary_name": binary_name,
         "frontend": frontend,
-        "symbols": {emitted_names.get(symbol, symbol): location for symbol, location in project.source_map.items()},
+        "layout": "python-modules",
+        "modules": emission.modules,
+        "symbols": symbol_locations,
         "files": {name: hashlib.sha256(data).hexdigest() for name, data in files.items()},
     }
     # Managed files are replaced; user files and Cargo target caches are retained.
@@ -636,6 +655,7 @@ def main() -> int:
     parser.add_argument("--entry", default=None, help="entry Python file relative to the project root")
     parser.add_argument("-o", "--output", type=Path)
     parser.add_argument("--frontend", choices=["legacy", "typed"], default="typed")
+    parser.add_argument("--python-scope", action="store_true", help="enable checked Python-scope lowering")
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--release", action="store_true")
     parser.add_argument("--name", default="py2rust-service", help="generated Cargo executable name")
@@ -649,6 +669,8 @@ def main() -> int:
     args = parser.parse_args()
     if args.action != "explain" and (args.function or args.deny):
         parser.error("--function and --deny require the explain action")
+    if args.python_scope and args.frontend != "typed":
+        parser.error("--python-scope requires the typed frontend")
     root = args.project.resolve()
     entry = args.entry or ("main.py" if (root / "main.py").is_file() else "__main__.py")
     output = args.output or root / ".py2rust" / "rust"
@@ -660,7 +682,7 @@ def main() -> int:
             if args.frontend == "typed":
                 from .pipeline import compile_loaded_project
 
-                compile_loaded_project(project, explain=True)
+                compile_loaded_project(project, explain=True, python_scope=args.python_scope)
             else:
                 project.compile(explain=True)
             report = select_and_check(
@@ -668,7 +690,7 @@ def main() -> int:
             )
             print(json.dumps(report, indent=2, sort_keys=True))
             return 2 if report["violations"] else 0
-        create_project(root, output, entry, args.name, frontend=args.frontend)
+        create_project(root, output, entry, args.name, frontend=args.frontend, python_scope=args.python_scope)
         if args.action == "transpile":
             print(output.resolve())
             return 0

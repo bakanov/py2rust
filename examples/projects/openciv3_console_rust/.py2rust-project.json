@@ -1,0 +1,3401 @@
+{
+  "binary_name": "py2rust-service",
+  "entry": "civ3_console/native_campaign.py",
+  "files": {
+    "Cargo.lock": "ee9527845793e8402aaf21c563084de8c8ea1462933ded23d5767ca2c7317ac8",
+    "Cargo.toml": "8518f4e5835204b2c71c711ed21aa914aa6327c52296f8a8ce11b453d60821b3",
+    "runtime/byte_buffers.rs": "cabe0f63bd1ae605bf0dccfccb5bdcb85ba232de42fc84a233b07593c73a3bc0",
+    "runtime/casefold.rs": "51b864b9eb766bb5e7f7fe592de728267d565579a038df9628c20258ffa65efc",
+    "runtime/compression.rs": "79d72ef593934e241965b363a5d862c98bfdc8d2c94f6783f504025a76adf813",
+    "runtime/filesystem.rs": "2188c16c593da9ec1809a80760161f64ee36264028fcf03e8534e0dc6945a8ba",
+    "runtime/float_text.rs": "3f41e4f669a53f0b15f8292ed15cafcc3eff56f666a0b5950e293f05e3a49210",
+    "runtime/gzip.rs": "b43aa8c50fcaea5e9a0b123226430e9a8f8964ed6138da48e21f4a74ad79ce49",
+    "runtime/heaps.rs": "a4b44e8ffd38f983962bd1bb104661f7b942f206905adc21e01484f0d53d7eef",
+    "runtime/http.rs": "1eed711346bb275147863bae6dc1d7e9c029e5eb7cf0b08e9e581f410dffdc2c",
+    "runtime/http_dates.rs": "f7d2d864b9a5863b06a6880ca7966f837fc66aa6599b854b8b54fc1cce51ad01",
+    "runtime/integer_lookup.rs": "2c23600d5e8a03f2ee3a0b435a4485c67a5cdba1f0715b25fa51021922f96a6f",
+    "runtime/json_output.rs": "1f9b688ba4862e220adbdcb3f60146cb450db082b31bd97b291ccfd09090f82f",
+    "runtime/lib.rs": "76ac2c46de7bd408acc5a621761b537817dab1e73ac64cc94cfbb14496031b5d",
+    "runtime/map_positions.rs": "ec68585d102daa0428c783302e7a896f51ceb75fa2f656e46f86a88b2f816a4e",
+    "runtime/markup.rs": "5e3cf65dc9bcd91261205a7aed9c56bf7d37e45545b52da7411ac500fe959257",
+    "runtime/memoization.rs": "10abe74c4c6ae03739ccbc7fc9c653f4360cfa35f0177041403c57a83bc1ea00",
+    "runtime/parallel.rs": "fd26af5fcb4936ced1da767ad8c0141aaad3927b6e66ecac72c54a8f84990810",
+    "runtime/process_pool.rs": "1493c4b784672989ef007e45e78b74ea2c1b360b6750861c846ee4f04868d00b",
+    "runtime/processes.rs": "3c385e09ce4f392ac62edb1e665ae383bcd3c1165e08dc7d607fb7a2ce7a2c2a",
+    "runtime/python_ast.rs": "7f2389e6fec2d112876abda65403d53e37d30f1c4dcbebaaa57cb3ffb7897da9",
+    "runtime/python_identifiers.rs": "5406e1478dc7d95b7d6c067734d63a6793eb7717d64ee75eb779a1fec9cd278e",
+    "runtime/python_syntax.rs": "d21d38e91cd5c18f3b9ec89edd4dfc8f7a7b197920d20b6c2e34c1b47332e33c",
+    "runtime/random.rs": "7a2dc91435ef13483f77646b6ba0802b229cae4612c6ea1a2d310ccaa91e38fa",
+    "runtime/rational.rs": "02293726c88065ba37b59477d187d5ae5737f16c3870d86cd36b0d0b6309369a",
+    "runtime/regular_expressions.rs": "df4e7d104a7f3860f1176609f151f87986c65fa8e701bed4f02613a943ad1d93",
+    "runtime/resources.rs": "b8c519eeac288f21ea8e63c591a4fa234e1eae13d52c91c2556332067d82b4d0",
+    "runtime/sorting.rs": "c8b1bb41edbe23726099d69a620606b54d2bb3daaebed411bcaf20be7865f82e",
+    "runtime/split_views.rs": "5dc2deaaeb0cf50bcf2f00ee82f1dd0f898037aed10c3ad7983eba35c26169ae",
+    "runtime/tcp.rs": "b5456a6fae51b9bb2071251bf6bb621bc4fa8bc0438f828d3fc5723ab9ce3855",
+    "runtime/terminal.rs": "860d51df03ab6a0e6aecc99370b4b151df49d60fee74baf62dc002e1304d58dc",
+    "runtime/terminal_tables.rs": "b515625bd46944fe633bd0a5f6350a17fbf9e8a80c751bb121dbccbff6659c5b",
+    "runtime/timezones.rs": "233df8d5ee111554f50101ca00e465c04c32adbd922f77d828681973966ad3ac",
+    "runtime/udp.rs": "a07da2b23a23806a8ceb87a4ae15345895b7ec9eb5896fd7bf3d13c0306917e1",
+    "runtime/unique_json.rs": "7ad7424ccbfa2b2ae881a7d3e8eb40b7f94271b405dcb1da88a6f94b733cd490",
+    "runtime/unix.rs": "28a0fbace1f4ed0ae6388b999b5129e83cfb603aa659891c975b8815a3a4b609",
+    "runtime/web.rs": "7bb123107df35de64ebd29bc9d07e360415e149ce44736f9adb162778ac98c79",
+    "src/civ/economy.rs": "510a8f94bc092679540be646de125272d88b61ae02c7c91f0743e51003738343",
+    "src/civ/mod.rs": "89a290db626fb379f094a08fee0d47f56575e950c0f58133422f21d8d7a58daf",
+    "src/civ3_ai/barbarian_ai.rs": "da8a2c16fbbcd7d9921ddeac756b4855f79a234166395a54da58f41af4c09edf",
+    "src/civ3_ai/civilization_ai.rs": "c7e94962e68cea1c8904ee5d42615fb63540181c45c6fc9c7d445d0c8c3392c5",
+    "src/civ3_ai/combat_ai.rs": "7f77949a6d9d3de19b181cbcc6aae64789afbb348483e8dd9c3462e1a89ee808",
+    "src/civ3_ai/defender_ai.rs": "7b69d31a54df55af2aa842c1f01e9be4c4f66655059b7088bc14a2fae6a97475",
+    "src/civ3_ai/economic_ai.rs": "ff0e50f13f01f377173c2509f802c4ae80ee865580f92cbac3ca294aa6897f25",
+    "src/civ3_ai/explorer_ai.rs": "104a91ccdcc640a584e3fcc2773e8cd96d6b758cd90981f182acd20f0c9be1a0",
+    "src/civ3_ai/mod.rs": "5e86d903d841af27d290fe9355287a9807df9e870608a134487658b24bfa8f51",
+    "src/civ3_ai/production_ai.rs": "1e3559ccac24f91ce923f705334077f17a960c9fcd0c62d991b99101fc3cf70b",
+    "src/civ3_ai/settler_ai.rs": "5b7aebcb0608d217e3cc45ce8244d9a232cb3debc3ce05ae9f45b7c7debe089e",
+    "src/civ3_ai/settler_locations.rs": "60a0bb14905d257440007a45ca6e789d9331ec7e13c6ce6ca6bbe4866f98db68",
+    "src/civ3_ai/strategic_ai.rs": "3a4cd349e770a3a35b2f6f43453721a08f454158bc96c3d748dd608ee363a948",
+    "src/civ3_ai/worker_ai.rs": "98d2ae34d3db468b18268a30cb36ab456ad6f9f6ae2417002da45bfe9ddc017d",
+    "src/civ3_console/mod.rs": "198879883ddcec77d8325dbb34a9fe04ded1d253cb93a95f56f52fa8bb62d4e9",
+    "src/civ3_console/native_campaign.rs": "d321e679cd761b05e676f07b27ccab80daa4bb63bea51d869195f3ea2b01e660",
+    "src/main.rs": "5a2fd86162eb9baec2d8e9be0cb467c1b02d2f84ed9f8f66f2992c4f598996f8",
+    "src/openciv3/air_missions.rs": "f758d602cae3c63368d316fd25ee808183e95783703928059f3d4f39dce54fff",
+    "src/openciv3/barbarian_spawning.rs": "4495273f36fc5984450f14c4d4ec930c266727a326a079f1f7af0ed8b8c0cd3c",
+    "src/openciv3/binary.rs": "e50dcb4fe9ccdbcabde96ede3df28c4ce53f217aff7c649e89b12ae0cf4155e1",
+    "src/openciv3/blast.rs": "be240d46b2633cc19e65dd23f8f7513e75563f2462c9e1a992385a9b1fcb8f7a",
+    "src/openciv3/bombardment.rs": "adb15a624a61f19dbe63b9b2d4af11978f564d7247566227402dc3cfa8fcfc1f",
+    "src/openciv3/borders.rs": "91be74855f065f01e908add5af4e988c37d8f60ef16726a16ad7abbc417c3cb3",
+    "src/openciv3/building_effects.rs": "36952c1cdc61b9c0fb567bd54e0f1c2b2bc7196262dfd1d9b57a17ef6d9dd06b",
+    "src/openciv3/building_rules.rs": "770599214617fa8210c518cd7a6de1ad3b36323541e0b38d79fe2ab05b7128c3",
+    "src/openciv3/calendar.rs": "16c4b14f7cd510b80b92779e324aa7b73a81df95db846b4769eaedb27222e713",
+    "src/openciv3/cities.rs": "f347327b626aa250a3c1edd2f5091c6254501628815078678fe7858d0f49f57a",
+    "src/openciv3/citizen_allocation.rs": "63e7baf41977db50c418dc432a13b4c22545ac8f77d6b383f9301f93ac3c8b25",
+    "src/openciv3/citizen_moods.rs": "57865ec1694680b7c4104635c7ed86f4c2d3d8d09179ee6171a1bf80c78cb8f4",
+    "src/openciv3/city_culture.rs": "ddd64743f0715f4145134ca4a90e83880b37bff3d2c8b3b515be1efa3899d922",
+    "src/openciv3/city_economy.rs": "74927f64520dd4ad0e9fdd605cb5063d2e15d6c3dea9a3e07f7fd979a12e8416",
+    "src/openciv3/city_founding.rs": "4ae70869a644528cfaebf24c86c8b00e4aab0d28cf413c0e302cd5626c9dc855",
+    "src/openciv3/city_growth.rs": "d975cdb2fbf08afa92bc085e5252de74bba696e4d10797985c9dd3df04543142",
+    "src/openciv3/city_lifecycle.rs": "a375a4705e7f7bb32fb8fbb93ad1d9eb59e7d177fb88a436c32b5f5ef1927624",
+    "src/openciv3/city_names.rs": "3109bdc114f551ad962560161d37f2aec61200c2b555d11c2573e30ec4a33450",
+    "src/openciv3/city_production.rs": "0eb377aebf3b5a0ca9d804eac073e78f0662645afd725292a7da26e25c85381f",
+    "src/openciv3/city_roads.rs": "dff42bdb5ba7a919f0a6ae6691ba6ce354b886c4f4e951f9448850306ff8c5d7",
+    "src/openciv3/combat.rs": "ee0aee8b31851d17f4bb35f14d6e5cccd3bb3147f97699977cb6588c5a7f4e68",
+    "src/openciv3/combat_strength.rs": "029009b1f8d16e996bd40e4dc542621f101cb10bf76fe00d15c18107c8613d14",
+    "src/openciv3/corruption.rs": "e66f6755da8cedfebaee8d9a3491c67d51d228dd763c0f73ddb496c1bb4b5fe6",
+    "src/openciv3/deal_lifecycle.rs": "1eff5eecfad9f3e78c77cabd9692d422604291fdd5ce3b0f0d21d7b2fa19f838",
+    "src/openciv3/diplomacy.rs": "31ab7ca0f443ebf293f53a5c3ab7f46340d07fb6235d101304d0b94d3a41d6da",
+    "src/openciv3/diplomacy_actions.rs": "0618c5047442010f87fb28135f9915700136b417da4cce6b5a53b2664a3dcf70",
+    "src/openciv3/game_state.rs": "fbc6a3175ad8fd321b3b31582fdb1b727683bfc02c32e0b46793ef46ffbb7b5d",
+    "src/openciv3/global_rules.rs": "7ee11029e557a26e5b1a48ff59dba09606d50623a3084ad0e2f58b0fe26a8ff0",
+    "src/openciv3/government_rules.rs": "49684cfe41dbbb5108a991edab15930758ba663942c5fe88d58492a635735363",
+    "src/openciv3/history.rs": "118153f99a5655f88d8a5c07be4e411d0df3879c50c80fba5a33ae501ebb1bee",
+    "src/openciv3/hydrology.rs": "dc22ac9d4bdee15126e21915bd1d8b1ebd7f63976bfe846dc3d5aa4a12843391",
+    "src/openciv3/inflows.rs": "8b2c1cecec41328bd79b6a5b906e65af80f6b33a80ee3843de35187aa2d4b9f5",
+    "src/openciv3/json_io.rs": "31036f03a53ea4d6f33dfd6cf71d5f7b876a5355e6f455863283780a6c81127a",
+    "src/openciv3/json_rules.rs": "1da124c2e841538d2eb3609af94a5608cf89149140ae10ef3fe5cc354701b9b9",
+    "src/openciv3/mod.rs": "b3152529c2ae092beb6a801dca5d494a62eafae7dd1dc1049ce7df558da7a5e3",
+    "src/openciv3/naval_risk.rs": "aa92e554004a89e676d59a8d0e97e806cdc142cab0025951e3d55a2437854aee",
+    "src/openciv3/pathfinding.rs": "ca6e3933f8cf34f7369d70ce118df47d1515394f197479ffc31fe90d306dc8c9",
+    "src/openciv3/player_economy.rs": "cd870431e40eca0af34817b0dd99ffa8aa3a1b9de2c8f7f3acdc64cefb76b8a1",
+    "src/openciv3/players.rs": "5de981aa88b462a4283e128038bad1535a95c26efdb1be9ab8040296e19215b3",
+    "src/openciv3/production_cost.rs": "023209ae24e84f74154f12cd738cd097c496aa0e144c4173fdcd25ccdf432ab6",
+    "src/openciv3/production_eligibility.rs": "1ee62cebb1065c7ee455fd0c652cb8de79c81a9c4eb5b82348e81d295a903087",
+    "src/openciv3/recurring_deals.rs": "1df2d6d6bfb4f7051678118d04c634af0d480d1b8b411251fa570e87263d3d7e",
+    "src/openciv3/research.rs": "d903c3e2f1192a04e79bd3e2f44a0b9e7bec80e70a99f587254c1df4524e6cfe",
+    "src/openciv3/rules.rs": "7db81ef129a7f75630fb4cc00a0a7fef232a6a80d1e3430b9058ed9b581976ad",
+    "src/openciv3/scenario.rs": "81b3032593c4be45d1a8378eeae08a399f0b889df995435ddc1c3e3e894e5879",
+    "src/openciv3/scenario_model.rs": "5dc2b9a9e3853a27d54f6b5756b0da19fcb6de8852a82e58d2b57beb25d16f28",
+    "src/openciv3/standalone.rs": "fe17fab4256cbdc23b9da77a8f6d07f5251fe87dd8ecd620abbd12b06bd2205f",
+    "src/openciv3/starting_bonus.rs": "91d4ae2837ceb748edc93aeb69fa4869aefd099c6022fcf996bc04e6797f60ef",
+    "src/openciv3/trade_network.rs": "e7833868f89367cab244e316a7ae70b8d7b1293bd0958a922e2690f0477b6bf5",
+    "src/openciv3/trading.rs": "6d448c01f43f5e6f876d960f85f9a3897bc9c83dda02636a24adcf70009c8c46",
+    "src/openciv3/treasury.rs": "d1f41c422b8bc49fd8703e3ed142c77ae9bf88691cb6e54510a755853279d283",
+    "src/openciv3/turn_controller.rs": "06c51fe887f5207c6f43f27dcc455cf7041cd2a1ad2732a0b7cced3bb89897f8",
+    "src/openciv3/turn_phases.rs": "9ba988f60eca5643169b21d3d63832bdfc1282fd78cce46e6a863c76dee80f30",
+    "src/openciv3/unit_animation.rs": "059ae8fde8e5e47bc4be266869cc7116b120c9e6ad5bf3b21ff231583ff60c5d",
+    "src/openciv3/unit_entry.rs": "62df0fa071d7a86cf91f18de01f4eeb166871966343e365274003f560478521f",
+    "src/openciv3/unit_lifecycle.rs": "5581bffb3cf1b0846e82b4a3abc6e7476f2280075b8094ec7b16a711143fa8ee",
+    "src/openciv3/unit_missions.rs": "69b3becf6e5813b175b64c708e172032bf5b6816b87eb22ce898d0e478800fa1",
+    "src/openciv3/unit_movement.rs": "c74adbfc6b74783b601a1e1b76e4bf94b3f9cad74be34469c1466cb9d9272429",
+    "src/openciv3/unit_rules.rs": "01bc02513acce771deb227e2b94a4a041bfc19e6bce2707c6d2ec88251b1a429",
+    "src/openciv3/unit_turns.rs": "f343e75dfcecb17bcb743bc8c426768efbaf5f09fda1b060740dca73dafbecc3",
+    "src/openciv3/units.rs": "ecd0b4f341eedbeaf8e801c60a497951a1c7e582bd5f9c17d5fe848f874ed2bc",
+    "src/openciv3/victory.rs": "1bae3009629ce3fe03d7a9eaa558a0e73b08d022cc0620e995fb47425f0c5ea6",
+    "src/openciv3/visibility.rs": "716f283260b24b3e99bc3489c8588368f415cc65bde8889d6ae78d63f5964620",
+    "src/openciv3/worker_jobs.rs": "cc0ee9d905981e948dcfe756ba0b643c9577e81c26244c606cb2e6fe4d1af093",
+    "src/openciv3/worker_rules.rs": "42f8b64127a936c709582a8de4b6f94d01f8f21cade11a1ce8c7dbb841e00227",
+    "src/openciv3/world.rs": "a45ee521b2eacd199acbef1fe24a75a821431de3d85905acdb2c4b12e9ee4b96",
+    "src/openciv3/world_elevation.rs": "ed1fee747a48c3983d56d986c9bc4c93b6f84ef26ba3db77a40c1efaad1c3722",
+    "src/openciv3/world_size.rs": "575210090e3f81235e3948deb0033b6c23b026ec38bc9653febdbb1dd5796537",
+    "src/openciv3/world_vegetation.rs": "2925cdcea950e7d73c41d444eefe3d589db0fae693d39e5ba9c65a4a6f1aa845",
+    "src/openciv3/yields.rs": "79d1a11aa0f1cfb20f7135aef1d0fae039c7fe392f747af1d71cc425b0672542",
+    "src/strategy/_noise_tables.rs": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "src/strategy/grid.rs": "5632028d3f393dc815ff897371ef4d58dcd520ffb3a92d65f69328c53b225786",
+    "src/strategy/height_map.rs": "7e5bba23ec36b2a3ca8b02953742eab55e38855eadaa85cbcea8cc80c921bc0d",
+    "src/strategy/interfaces.rs": "5e8ef7efe3b6ed853e84be030522d47acac7a0d57fc013547c6bb2d8a47df4a6",
+    "src/strategy/mod.rs": "036bb4cfce55f3c2eca870e4954dcefaa7869daf1d62bb9e9959563be79b01af",
+    "src/strategy/noise.rs": "3d3296eb50df4686878c83722305748fe8e05730ae1b3fe8833285702b341614",
+    "src/strategy/random.rs": "37855d83c8f51c3f107112278aff874fae75ae9625f16b73cd6079f329be7d9e",
+    "src/strategy/wrapping.rs": "b8684b28a3ddb0214a9fc6adc835f7fc98ce87337c501c9861d7377f498f183a"
+  },
+  "format": 2,
+  "frontend": "typed",
+  "layout": "python-modules",
+  "modules": {
+    "civ": "src/civ/mod.rs",
+    "civ.economy": "src/civ/economy.rs",
+    "civ3_ai": "src/civ3_ai/mod.rs",
+    "civ3_ai.barbarian_ai": "src/civ3_ai/barbarian_ai.rs",
+    "civ3_ai.civilization_ai": "src/civ3_ai/civilization_ai.rs",
+    "civ3_ai.combat_ai": "src/civ3_ai/combat_ai.rs",
+    "civ3_ai.defender_ai": "src/civ3_ai/defender_ai.rs",
+    "civ3_ai.economic_ai": "src/civ3_ai/economic_ai.rs",
+    "civ3_ai.explorer_ai": "src/civ3_ai/explorer_ai.rs",
+    "civ3_ai.production_ai": "src/civ3_ai/production_ai.rs",
+    "civ3_ai.settler_ai": "src/civ3_ai/settler_ai.rs",
+    "civ3_ai.settler_locations": "src/civ3_ai/settler_locations.rs",
+    "civ3_ai.strategic_ai": "src/civ3_ai/strategic_ai.rs",
+    "civ3_ai.worker_ai": "src/civ3_ai/worker_ai.rs",
+    "civ3_console": "src/civ3_console/mod.rs",
+    "civ3_console.native_campaign": "src/civ3_console/native_campaign.rs",
+    "openciv3": "src/openciv3/mod.rs",
+    "openciv3.air_missions": "src/openciv3/air_missions.rs",
+    "openciv3.barbarian_spawning": "src/openciv3/barbarian_spawning.rs",
+    "openciv3.binary": "src/openciv3/binary.rs",
+    "openciv3.blast": "src/openciv3/blast.rs",
+    "openciv3.bombardment": "src/openciv3/bombardment.rs",
+    "openciv3.borders": "src/openciv3/borders.rs",
+    "openciv3.building_effects": "src/openciv3/building_effects.rs",
+    "openciv3.building_rules": "src/openciv3/building_rules.rs",
+    "openciv3.calendar": "src/openciv3/calendar.rs",
+    "openciv3.cities": "src/openciv3/cities.rs",
+    "openciv3.citizen_allocation": "src/openciv3/citizen_allocation.rs",
+    "openciv3.citizen_moods": "src/openciv3/citizen_moods.rs",
+    "openciv3.city_culture": "src/openciv3/city_culture.rs",
+    "openciv3.city_economy": "src/openciv3/city_economy.rs",
+    "openciv3.city_founding": "src/openciv3/city_founding.rs",
+    "openciv3.city_growth": "src/openciv3/city_growth.rs",
+    "openciv3.city_lifecycle": "src/openciv3/city_lifecycle.rs",
+    "openciv3.city_names": "src/openciv3/city_names.rs",
+    "openciv3.city_production": "src/openciv3/city_production.rs",
+    "openciv3.city_roads": "src/openciv3/city_roads.rs",
+    "openciv3.combat": "src/openciv3/combat.rs",
+    "openciv3.combat_strength": "src/openciv3/combat_strength.rs",
+    "openciv3.corruption": "src/openciv3/corruption.rs",
+    "openciv3.deal_lifecycle": "src/openciv3/deal_lifecycle.rs",
+    "openciv3.diplomacy": "src/openciv3/diplomacy.rs",
+    "openciv3.diplomacy_actions": "src/openciv3/diplomacy_actions.rs",
+    "openciv3.game_state": "src/openciv3/game_state.rs",
+    "openciv3.global_rules": "src/openciv3/global_rules.rs",
+    "openciv3.government_rules": "src/openciv3/government_rules.rs",
+    "openciv3.history": "src/openciv3/history.rs",
+    "openciv3.hydrology": "src/openciv3/hydrology.rs",
+    "openciv3.inflows": "src/openciv3/inflows.rs",
+    "openciv3.json_io": "src/openciv3/json_io.rs",
+    "openciv3.json_rules": "src/openciv3/json_rules.rs",
+    "openciv3.naval_risk": "src/openciv3/naval_risk.rs",
+    "openciv3.pathfinding": "src/openciv3/pathfinding.rs",
+    "openciv3.player_economy": "src/openciv3/player_economy.rs",
+    "openciv3.players": "src/openciv3/players.rs",
+    "openciv3.production_cost": "src/openciv3/production_cost.rs",
+    "openciv3.production_eligibility": "src/openciv3/production_eligibility.rs",
+    "openciv3.recurring_deals": "src/openciv3/recurring_deals.rs",
+    "openciv3.research": "src/openciv3/research.rs",
+    "openciv3.rules": "src/openciv3/rules.rs",
+    "openciv3.scenario": "src/openciv3/scenario.rs",
+    "openciv3.scenario_model": "src/openciv3/scenario_model.rs",
+    "openciv3.standalone": "src/openciv3/standalone.rs",
+    "openciv3.starting_bonus": "src/openciv3/starting_bonus.rs",
+    "openciv3.trade_network": "src/openciv3/trade_network.rs",
+    "openciv3.trading": "src/openciv3/trading.rs",
+    "openciv3.treasury": "src/openciv3/treasury.rs",
+    "openciv3.turn_controller": "src/openciv3/turn_controller.rs",
+    "openciv3.turn_phases": "src/openciv3/turn_phases.rs",
+    "openciv3.unit_animation": "src/openciv3/unit_animation.rs",
+    "openciv3.unit_entry": "src/openciv3/unit_entry.rs",
+    "openciv3.unit_lifecycle": "src/openciv3/unit_lifecycle.rs",
+    "openciv3.unit_missions": "src/openciv3/unit_missions.rs",
+    "openciv3.unit_movement": "src/openciv3/unit_movement.rs",
+    "openciv3.unit_rules": "src/openciv3/unit_rules.rs",
+    "openciv3.unit_turns": "src/openciv3/unit_turns.rs",
+    "openciv3.units": "src/openciv3/units.rs",
+    "openciv3.victory": "src/openciv3/victory.rs",
+    "openciv3.visibility": "src/openciv3/visibility.rs",
+    "openciv3.worker_jobs": "src/openciv3/worker_jobs.rs",
+    "openciv3.worker_rules": "src/openciv3/worker_rules.rs",
+    "openciv3.world": "src/openciv3/world.rs",
+    "openciv3.world_elevation": "src/openciv3/world_elevation.rs",
+    "openciv3.world_size": "src/openciv3/world_size.rs",
+    "openciv3.world_vegetation": "src/openciv3/world_vegetation.rs",
+    "openciv3.yields": "src/openciv3/yields.rs",
+    "strategy": "src/strategy/mod.rs",
+    "strategy._noise_tables": "src/strategy/_noise_tables.rs",
+    "strategy.grid": "src/strategy/grid.rs",
+    "strategy.height_map": "src/strategy/height_map.rs",
+    "strategy.interfaces": "src/strategy/interfaces.rs",
+    "strategy.noise": "src/strategy/noise.rs",
+    "strategy.random": "src/strategy/random.rs",
+    "strategy.wrapping": "src/strategy/wrapping.rs"
+  },
+  "root": "/home/dima/experimental/OpenCiv3-Development/OpenCiv3-Development/C7",
+  "symbols": {
+    "crate::civ3_ai::barbarian_ai::BarbarianAction": {
+      "file": "civ3_ai/barbarian_ai.py",
+      "line": 18,
+      "name": "BarbarianAction",
+      "rust": "src/civ3_ai/barbarian_ai.rs"
+    },
+    "crate::civ3_ai::barbarian_ai::BarbarianTurn": {
+      "file": "civ3_ai/barbarian_ai.py",
+      "line": 26,
+      "name": "BarbarianTurn",
+      "rust": "src/civ3_ai/barbarian_ai.rs"
+    },
+    "crate::civ3_ai::barbarian_ai::play_barbarian_turn": {
+      "file": "civ3_ai/barbarian_ai.py",
+      "line": 88,
+      "name": "play_barbarian_turn",
+      "rust": "src/civ3_ai/barbarian_ai.rs"
+    },
+    "crate::civ3_ai::barbarian_ai::play_barbarian_turn_state": {
+      "file": "civ3_ai/barbarian_ai.py",
+      "line": 93,
+      "name": "play_barbarian_turn_state",
+      "rust": "src/civ3_ai/barbarian_ai.rs"
+    },
+    "crate::civ3_ai::barbarian_ai::play_barbarian_unit": {
+      "file": "civ3_ai/barbarian_ai.py",
+      "line": 41,
+      "name": "play_barbarian_unit",
+      "rust": "src/civ3_ai/barbarian_ai.rs"
+    },
+    "crate::civ3_ai::barbarian_ai::should_wake": {
+      "file": "civ3_ai/barbarian_ai.py",
+      "line": 32,
+      "name": "should_wake",
+      "rust": "src/civ3_ai/barbarian_ai.rs"
+    },
+    "crate::civ3_ai::civilization_ai::AITradePause": {
+      "file": "civ3_ai/civilization_ai.py",
+      "line": 56,
+      "name": "AITradePause",
+      "rust": "src/civ3_ai/civilization_ai.rs"
+    },
+    "crate::civ3_ai::civilization_ai::AIUnitTurn": {
+      "file": "civ3_ai/civilization_ai.py",
+      "line": 48,
+      "name": "AIUnitTurn",
+      "rust": "src/civ3_ai/civilization_ai.rs"
+    },
+    "crate::civ3_ai::civilization_ai::CivilizationAI": {
+      "file": "civ3_ai/civilization_ai.py",
+      "line": 118,
+      "name": "CivilizationAI",
+      "rust": "src/civ3_ai/civilization_ai.rs"
+    },
+    "crate::civ3_ai::civilization_ai::MissionTask": {
+      "file": "civ3_ai/civilization_ai.py",
+      "line": 39,
+      "name": "MissionTask",
+      "rust": "src/civ3_ai/civilization_ai.rs"
+    },
+    "crate::civ3_ai::civilization_ai::_TradeSession": {
+      "file": "civ3_ai/civilization_ai.py",
+      "line": 61,
+      "name": "_TradeSession",
+      "rust": "src/civ3_ai/civilization_ai.rs"
+    },
+    "crate::civ3_ai::civilization_ai::_forward_airbase": {
+      "file": "civ3_ai/civilization_ai.py",
+      "line": 101,
+      "name": "_forward_airbase",
+      "rust": "src/civ3_ai/civilization_ai.rs"
+    },
+    "crate::civ3_ai::civilization_ai::_play_aircraft": {
+      "file": "civ3_ai/civilization_ai.py",
+      "line": 71,
+      "name": "_play_aircraft",
+      "rust": "src/civ3_ai/civilization_ai.rs"
+    },
+    "crate::civ3_ai::combat_ai::CombatPlan": {
+      "file": "civ3_ai/combat_ai.py",
+      "line": 24,
+      "name": "CombatPlan",
+      "rust": "src/civ3_ai/combat_ai.rs"
+    },
+    "crate::civ3_ai::combat_ai::CombatStep": {
+      "file": "civ3_ai/combat_ai.py",
+      "line": 30,
+      "name": "CombatStep",
+      "rust": "src/civ3_ai/combat_ai.rs"
+    },
+    "crate::civ3_ai::combat_ai::_enemies": {
+      "file": "civ3_ai/combat_ai.py",
+      "line": 59,
+      "name": "_enemies",
+      "rust": "src/civ3_ai/combat_ai.rs"
+    },
+    "crate::civ3_ai::combat_ai::_known_camp": {
+      "file": "civ3_ai/combat_ai.py",
+      "line": 35,
+      "name": "_known_camp",
+      "rust": "src/civ3_ai/combat_ai.rs"
+    },
+    "crate::civ3_ai::combat_ai::advance_combat_plan": {
+      "file": "civ3_ai/combat_ai.py",
+      "line": 126,
+      "name": "advance_combat_plan",
+      "rust": "src/civ3_ai/combat_ai.rs"
+    },
+    "crate::civ3_ai::combat_ai::plan_camp_attack": {
+      "file": "civ3_ai/combat_ai.py",
+      "line": 42,
+      "name": "plan_camp_attack",
+      "rust": "src/civ3_ai/combat_ai.rs"
+    },
+    "crate::civ3_ai::combat_ai::plan_combat": {
+      "file": "civ3_ai/combat_ai.py",
+      "line": 97,
+      "name": "plan_combat",
+      "rust": "src/civ3_ai/combat_ai.rs"
+    },
+    "crate::civ3_ai::combat_ai::score_target": {
+      "file": "civ3_ai/combat_ai.py",
+      "line": 69,
+      "name": "score_target",
+      "rust": "src/civ3_ai/combat_ai.rs"
+    },
+    "crate::civ3_ai::defender_ai::DefensePlan": {
+      "file": "civ3_ai/defender_ai.py",
+      "line": 15,
+      "name": "DefensePlan",
+      "rust": "src/civ3_ai/defender_ai.rs"
+    },
+    "crate::civ3_ai::defender_ai::DefenseStep": {
+      "file": "civ3_ai/defender_ai.py",
+      "line": 21,
+      "name": "DefenseStep",
+      "rust": "src/civ3_ai/defender_ai.rs"
+    },
+    "crate::civ3_ai::defender_ai::advance_defense_plan": {
+      "file": "civ3_ai/defender_ai.py",
+      "line": 71,
+      "name": "advance_defense_plan",
+      "rust": "src/civ3_ai/defender_ai.rs"
+    },
+    "crate::civ3_ai::defender_ai::defend_in_place": {
+      "file": "civ3_ai/defender_ai.py",
+      "line": 45,
+      "name": "defend_in_place",
+      "rust": "src/civ3_ai/defender_ai.rs"
+    },
+    "crate::civ3_ai::defender_ai::defense_scores": {
+      "file": "civ3_ai/defender_ai.py",
+      "line": 26,
+      "name": "defense_scores",
+      "rust": "src/civ3_ai/defender_ai.rs"
+    },
+    "crate::civ3_ai::defender_ai::plan_city_defense": {
+      "file": "civ3_ai/defender_ai.py",
+      "line": 51,
+      "name": "plan_city_defense",
+      "rust": "src/civ3_ai/defender_ai.rs"
+    },
+    "crate::civ3_ai::economic_ai::adjust_sliders": {
+      "file": "civ3_ai/economic_ai.py",
+      "line": 79,
+      "name": "adjust_sliders",
+      "rust": "src/civ3_ai/economic_ai.rs"
+    },
+    "crate::civ3_ai::economic_ai::budget_is_tolerable": {
+      "file": "civ3_ai/economic_ai.py",
+      "line": 17,
+      "name": "budget_is_tolerable",
+      "rust": "src/civ3_ai/economic_ai.rs"
+    },
+    "crate::civ3_ai::economic_ai::reassign_city_citizens": {
+      "file": "civ3_ai/economic_ai.py",
+      "line": 22,
+      "name": "reassign_city_citizens",
+      "rust": "src/civ3_ai/economic_ai.rs"
+    },
+    "crate::civ3_ai::explorer_ai::ExplorationPlan": {
+      "file": "civ3_ai/explorer_ai.py",
+      "line": 18,
+      "name": "ExplorationPlan",
+      "rust": "src/civ3_ai/explorer_ai.rs"
+    },
+    "crate::civ3_ai::explorer_ai::ExplorationStep": {
+      "file": "civ3_ai/explorer_ai.py",
+      "line": 24,
+      "name": "ExplorationStep",
+      "rust": "src/civ3_ai/explorer_ai.rs"
+    },
+    "crate::civ3_ai::explorer_ai::_safe_naval_route": {
+      "file": "civ3_ai/explorer_ai.py",
+      "line": 52,
+      "name": "_safe_naval_route",
+      "rust": "src/civ3_ai/explorer_ai.rs"
+    },
+    "crate::civ3_ai::explorer_ai::advance_exploration_plan": {
+      "file": "civ3_ai/explorer_ai.py",
+      "line": 99,
+      "name": "advance_exploration_plan",
+      "rust": "src/civ3_ai/explorer_ai.rs"
+    },
+    "crate::civ3_ai::explorer_ai::exploration_score": {
+      "file": "civ3_ai/explorer_ai.py",
+      "line": 29,
+      "name": "exploration_score",
+      "rust": "src/civ3_ai/explorer_ai.rs"
+    },
+    "crate::civ3_ai::explorer_ai::plan_exploration": {
+      "file": "civ3_ai/explorer_ai.py",
+      "line": 71,
+      "name": "plan_exploration",
+      "rust": "src/civ3_ai/explorer_ai.rs"
+    },
+    "crate::civ3_ai::production_ai::ProductionChoice": {
+      "file": "civ3_ai/production_ai.py",
+      "line": 39,
+      "name": "ProductionChoice",
+      "rust": "src/civ3_ai/production_ai.rs"
+    },
+    "crate::civ3_ai::production_ai::choose_production": {
+      "file": "civ3_ai/production_ai.py",
+      "line": 57,
+      "name": "choose_production",
+      "rust": "src/civ3_ai/production_ai.rs"
+    },
+    "crate::civ3_ai::production_ai::score_building": {
+      "file": "civ3_ai/production_ai.py",
+      "line": 177,
+      "name": "score_building",
+      "rust": "src/civ3_ai/production_ai.rs"
+    },
+    "crate::civ3_ai::production_ai::score_unit": {
+      "file": "civ3_ai/production_ai.py",
+      "line": 99,
+      "name": "score_unit",
+      "rust": "src/civ3_ai/production_ai.rs"
+    },
+    "crate::civ3_ai::production_ai::weak_economy": {
+      "file": "civ3_ai/production_ai.py",
+      "line": 173,
+      "name": "weak_economy",
+      "rust": "src/civ3_ai/production_ai.rs"
+    },
+    "crate::civ3_ai::production_ai::worker_production_types": {
+      "file": "civ3_ai/production_ai.py",
+      "line": 239,
+      "name": "worker_production_types",
+      "rust": "src/civ3_ai/production_ai.rs"
+    },
+    "crate::civ3_ai::settler_ai::SettlerStatus": {
+      "file": "civ3_ai/settler_ai.py",
+      "line": 24,
+      "name": "SettlerStatus",
+      "rust": "src/civ3_ai/settler_ai.rs"
+    },
+    "crate::civ3_ai::settler_ai::SettlerStep": {
+      "file": "civ3_ai/settler_ai.py",
+      "line": 34,
+      "name": "SettlerStep",
+      "rust": "src/civ3_ai/settler_ai.rs"
+    },
+    "crate::civ3_ai::settler_ai::_retarget": {
+      "file": "civ3_ai/settler_ai.py",
+      "line": 41,
+      "name": "_retarget",
+      "rust": "src/civ3_ai/settler_ai.rs"
+    },
+    "crate::civ3_ai::settler_ai::advance_settler": {
+      "file": "civ3_ai/settler_ai.py",
+      "line": 51,
+      "name": "advance_settler",
+      "rust": "src/civ3_ai/settler_ai.rs"
+    },
+    "crate::civ3_ai::settler_ai::play_escort": {
+      "file": "civ3_ai/settler_ai.py",
+      "line": 119,
+      "name": "play_escort",
+      "rust": "src/civ3_ai/settler_ai.rs"
+    },
+    "crate::civ3_ai::settler_ai::recruit_escort": {
+      "file": "civ3_ai/settler_ai.py",
+      "line": 107,
+      "name": "recruit_escort",
+      "rust": "src/civ3_ai/settler_ai.rs"
+    },
+    "crate::civ3_ai::settler_locations::SettlerWeights": {
+      "file": "civ3_ai/settler_locations.py",
+      "line": 16,
+      "name": "SettlerWeights",
+      "rust": "src/civ3_ai/settler_locations.rs"
+    },
+    "crate::civ3_ai::settler_locations::count_open_sites": {
+      "file": "civ3_ai/settler_locations.py",
+      "line": 103,
+      "name": "count_open_sites",
+      "rust": "src/civ3_ai/settler_locations.rs"
+    },
+    "crate::civ3_ai::settler_locations::settlement_scores": {
+      "file": "civ3_ai/settler_locations.py",
+      "line": 28,
+      "name": "settlement_scores",
+      "rust": "src/civ3_ai/settler_locations.rs"
+    },
+    "crate::civ3_ai::strategic_ai::StrategyUpdate": {
+      "file": "civ3_ai/strategic_ai.py",
+      "line": 22,
+      "name": "StrategyUpdate",
+      "rust": "src/civ3_ai/strategic_ai.rs"
+    },
+    "crate::civ3_ai::strategic_ai::available_land_score": {
+      "file": "civ3_ai/strategic_ai.py",
+      "line": 37,
+      "name": "available_land_score",
+      "rust": "src/civ3_ai/strategic_ai.rs"
+    },
+    "crate::civ3_ai::strategic_ai::military_strength": {
+      "file": "civ3_ai/strategic_ai.py",
+      "line": 28,
+      "name": "military_strength",
+      "rust": "src/civ3_ai/strategic_ai.rs"
+    },
+    "crate::civ3_ai::strategic_ai::opponent_scores": {
+      "file": "civ3_ai/strategic_ai.py",
+      "line": 45,
+      "name": "opponent_scores",
+      "rust": "src/civ3_ai/strategic_ai.rs"
+    },
+    "crate::civ3_ai::strategic_ai::rank_priorities": {
+      "file": "civ3_ai/strategic_ai.py",
+      "line": 70,
+      "name": "rank_priorities",
+      "rust": "src/civ3_ai/strategic_ai.rs"
+    },
+    "crate::civ3_ai::strategic_ai::reevaluate_priorities": {
+      "file": "civ3_ai/strategic_ai.py",
+      "line": 89,
+      "name": "reevaluate_priorities",
+      "rust": "src/civ3_ai/strategic_ai.rs"
+    },
+    "crate::civ3_ai::worker_ai::WorkerPlan": {
+      "file": "civ3_ai/worker_ai.py",
+      "line": 35,
+      "name": "WorkerPlan",
+      "rust": "src/civ3_ai/worker_ai.rs"
+    },
+    "crate::civ3_ai::worker_ai::WorkerStep": {
+      "file": "civ3_ai/worker_ai.py",
+      "line": 41,
+      "name": "WorkerStep",
+      "rust": "src/civ3_ai/worker_ai.rs"
+    },
+    "crate::civ3_ai::worker_ai::advance_worker_plan": {
+      "file": "civ3_ai/worker_ai.py",
+      "line": 122,
+      "name": "advance_worker_plan",
+      "rust": "src/civ3_ai/worker_ai.rs"
+    },
+    "crate::civ3_ai::worker_ai::choose_improvement": {
+      "file": "civ3_ai/worker_ai.py",
+      "line": 79,
+      "name": "choose_improvement",
+      "rust": "src/civ3_ai/worker_ai.rs"
+    },
+    "crate::civ3_ai::worker_ai::important_resource": {
+      "file": "civ3_ai/worker_ai.py",
+      "line": 48,
+      "name": "important_resource",
+      "rust": "src/civ3_ai/worker_ai.rs"
+    },
+    "crate::civ3_ai::worker_ai::improvement_score": {
+      "file": "civ3_ai/worker_ai.py",
+      "line": 56,
+      "name": "improvement_score",
+      "rust": "src/civ3_ai/worker_ai.rs"
+    },
+    "crate::civ3_ai::worker_ai::plan_worker": {
+      "file": "civ3_ai/worker_ai.py",
+      "line": 93,
+      "name": "plan_worker",
+      "rust": "src/civ3_ai/worker_ai.rs"
+    },
+    "crate::civ3_console::native_campaign::advance_to_human": {
+      "file": "civ3_console/native_campaign.py",
+      "line": 20,
+      "name": "advance_to_human",
+      "rust": "src/civ3_console/native_campaign.rs"
+    },
+    "crate::civ3_console::native_campaign::main": {
+      "file": "civ3_console/native_campaign.py",
+      "line": 37,
+      "name": "main",
+      "rust": "src/civ3_console/native_campaign.rs"
+    },
+    "crate::civ::economy::Yield": {
+      "file": "civ/economy.py",
+      "line": 6,
+      "name": "Yield",
+      "rust": "src/civ/economy.rs"
+    },
+    "crate::openciv3::air_missions::AirBase": {
+      "file": "openciv3/air_missions.py",
+      "line": 17,
+      "name": "AirBase",
+      "rust": "src/openciv3/air_missions.rs"
+    },
+    "crate::openciv3::air_missions::can_rebase": {
+      "file": "openciv3/air_missions.py",
+      "line": 22,
+      "name": "can_rebase",
+      "rust": "src/openciv3/air_missions.rs"
+    },
+    "crate::openciv3::air_missions::rebase_aircraft": {
+      "file": "openciv3/air_missions.py",
+      "line": 59,
+      "name": "rebase_aircraft",
+      "rust": "src/openciv3/air_missions.rs"
+    },
+    "crate::openciv3::air_missions::rebase_destination": {
+      "file": "openciv3/air_missions.py",
+      "line": 28,
+      "name": "rebase_destination",
+      "rust": "src/openciv3/air_missions.rs"
+    },
+    "crate::openciv3::barbarian_spawning::select_barbarian_type": {
+      "file": "openciv3/barbarian_spawning.py",
+      "line": 18,
+      "name": "select_barbarian_type",
+      "rust": "src/openciv3/barbarian_spawning.rs"
+    },
+    "crate::openciv3::barbarian_spawning::select_spawn_tile": {
+      "file": "openciv3/barbarian_spawning.py",
+      "line": 27,
+      "name": "select_spawn_tile",
+      "rust": "src/openciv3/barbarian_spawning.rs"
+    },
+    "crate::openciv3::barbarian_spawning::spawn_barbarians": {
+      "file": "openciv3/barbarian_spawning.py",
+      "line": 40,
+      "name": "spawn_barbarians",
+      "rust": "src/openciv3/barbarian_spawning.rs"
+    },
+    "crate::openciv3::binary::Record": {
+      "file": "openciv3/binary.py",
+      "line": 6,
+      "name": "Record",
+      "rust": "src/openciv3/binary.rs"
+    },
+    "crate::openciv3::blast::_Bits": {
+      "file": "openciv3/blast.py",
+      "line": 64,
+      "name": "_Bits",
+      "rust": "src/openciv3/blast.rs"
+    },
+    "crate::openciv3::blast::_codebook": {
+      "file": "openciv3/blast.py",
+      "line": 83,
+      "name": "_codebook",
+      "rust": "src/openciv3/blast.rs"
+    },
+    "crate::openciv3::blast::_symbol": {
+      "file": "openciv3/blast.py",
+      "line": 101,
+      "name": "_symbol",
+      "rust": "src/openciv3/blast.rs"
+    },
+    "crate::openciv3::blast::decompress": {
+      "file": "openciv3/blast.py",
+      "line": 111,
+      "name": "decompress",
+      "rust": "src/openciv3/blast.rs"
+    },
+    "crate::openciv3::bombardment::BombardKind": {
+      "file": "openciv3/bombardment.py",
+      "line": 36,
+      "name": "BombardKind",
+      "rust": "src/openciv3/bombardment.rs"
+    },
+    "crate::openciv3::bombardment::BombardResult": {
+      "file": "openciv3/bombardment.py",
+      "line": 102,
+      "name": "BombardResult",
+      "rust": "src/openciv3/bombardment.rs"
+    },
+    "crate::openciv3::bombardment::BombardTarget": {
+      "file": "openciv3/bombardment.py",
+      "line": 43,
+      "name": "BombardTarget",
+      "rust": "src/openciv3/bombardment.rs"
+    },
+    "crate::openciv3::bombardment::_resolve_bombardment": {
+      "file": "openciv3/bombardment.py",
+      "line": 128,
+      "name": "_resolve_bombardment",
+      "rust": "src/openciv3/bombardment.rs"
+    },
+    "crate::openciv3::bombardment::bombard_target": {
+      "file": "openciv3/bombardment.py",
+      "line": 63,
+      "name": "bombard_target",
+      "rust": "src/openciv3/bombardment.rs"
+    },
+    "crate::openciv3::bombardment::can_bombard": {
+      "file": "openciv3/bombardment.py",
+      "line": 49,
+      "name": "can_bombard",
+      "rust": "src/openciv3/bombardment.rs"
+    },
+    "crate::openciv3::bombardment::damage_improvement": {
+      "file": "openciv3/bombardment.py",
+      "line": 26,
+      "name": "damage_improvement",
+      "rust": "src/openciv3/bombardment.rs"
+    },
+    "crate::openciv3::bombardment::fire_bombardment": {
+      "file": "openciv3/bombardment.py",
+      "line": 110,
+      "name": "fire_bombardment",
+      "rust": "src/openciv3/bombardment.rs"
+    },
+    "crate::openciv3::borders::calculate_ownership": {
+      "file": "openciv3/borders.py",
+      "line": 67,
+      "name": "calculate_ownership",
+      "rust": "src/openciv3/borders.rs"
+    },
+    "crate::openciv3::borders::city_tile": {
+      "file": "openciv3/borders.py",
+      "line": 19,
+      "name": "city_tile",
+      "rust": "src/openciv3/borders.rs"
+    },
+    "crate::openciv3::borders::expansion_level": {
+      "file": "openciv3/borders.py",
+      "line": 9,
+      "name": "expansion_level",
+      "rust": "src/openciv3/borders.rs"
+    },
+    "crate::openciv3::borders::natural_claims": {
+      "file": "openciv3/borders.py",
+      "line": 26,
+      "name": "natural_claims",
+      "rust": "src/openciv3/borders.rs"
+    },
+    "crate::openciv3::borders::resolve_claim": {
+      "file": "openciv3/borders.py",
+      "line": 33,
+      "name": "resolve_claim",
+      "rust": "src/openciv3/borders.rs"
+    },
+    "crate::openciv3::building_effects::culture_rates": {
+      "file": "openciv3/building_effects.py",
+      "line": 61,
+      "name": "culture_rates",
+      "rust": "src/openciv3/building_effects.rs"
+    },
+    "crate::openciv3::building_effects::effective_buildings": {
+      "file": "openciv3/building_effects.py",
+      "line": 12,
+      "name": "effective_buildings",
+      "rust": "src/openciv3/building_effects.rs"
+    },
+    "crate::openciv3::building_effects::spaceship_parts_built": {
+      "file": "openciv3/building_effects.py",
+      "line": 56,
+      "name": "spaceship_parts_built",
+      "rust": "src/openciv3/building_effects.rs"
+    },
+    "crate::openciv3::building_effects::spaceship_requirements": {
+      "file": "openciv3/building_effects.py",
+      "line": 48,
+      "name": "spaceship_requirements",
+      "rust": "src/openciv3/building_effects.rs"
+    },
+    "crate::openciv3::building_rules::Building": {
+      "file": "openciv3/building_rules.py",
+      "line": 76,
+      "name": "Building",
+      "rust": "src/openciv3/building_rules.rs"
+    },
+    "crate::openciv3::calendar::Calendar": {
+      "file": "openciv3/calendar.py",
+      "line": 30,
+      "name": "Calendar",
+      "rust": "src/openciv3/calendar.rs"
+    },
+    "crate::openciv3::calendar::CalendarDate": {
+      "file": "openciv3/calendar.py",
+      "line": 21,
+      "name": "CalendarDate",
+      "rust": "src/openciv3/calendar.rs"
+    },
+    "crate::openciv3::cities::City": {
+      "file": "openciv3/cities.py",
+      "line": 35,
+      "name": "City",
+      "rust": "src/openciv3/cities.rs"
+    },
+    "crate::openciv3::cities::CityBuilding": {
+      "file": "openciv3/cities.py",
+      "line": 27,
+      "name": "CityBuilding",
+      "rust": "src/openciv3/cities.rs"
+    },
+    "crate::openciv3::cities::Resident": {
+      "file": "openciv3/cities.py",
+      "line": 18,
+      "name": "Resident",
+      "rust": "src/openciv3/cities.rs"
+    },
+    "crate::openciv3::cities::built_great_wonders": {
+      "file": "openciv3/cities.py",
+      "line": 131,
+      "name": "built_great_wonders",
+      "rust": "src/openciv3/cities.rs"
+    },
+    "crate::openciv3::cities::initialize_cities": {
+      "file": "openciv3/cities.py",
+      "line": 87,
+      "name": "initialize_cities",
+      "rust": "src/openciv3/cities.rs"
+    },
+    "crate::openciv3::citizen_allocation::allocate_citizens": {
+      "file": "openciv3/citizen_allocation.py",
+      "line": 15,
+      "name": "allocate_citizens",
+      "rust": "src/openciv3/citizen_allocation.rs"
+    },
+    "crate::openciv3::citizen_allocation::allocate_citizens_result": {
+      "file": "openciv3/citizen_allocation.py",
+      "line": 21,
+      "name": "allocate_citizens_result",
+      "rust": "src/openciv3/citizen_allocation.rs"
+    },
+    "crate::openciv3::citizen_moods::luxury_happiness": {
+      "file": "openciv3/citizen_moods.py",
+      "line": 58,
+      "name": "luxury_happiness",
+      "rust": "src/openciv3/citizen_moods.rs"
+    },
+    "crate::openciv3::citizen_moods::recalculate_all_moods": {
+      "file": "openciv3/citizen_moods.py",
+      "line": 13,
+      "name": "recalculate_all_moods",
+      "rust": "src/openciv3/citizen_moods.rs"
+    },
+    "crate::openciv3::citizen_moods::recalculate_moods": {
+      "file": "openciv3/citizen_moods.py",
+      "line": 64,
+      "name": "recalculate_moods",
+      "rust": "src/openciv3/citizen_moods.rs"
+    },
+    "crate::openciv3::citizen_moods::resolve_moods": {
+      "file": "openciv3/citizen_moods.py",
+      "line": 25,
+      "name": "resolve_moods",
+      "rust": "src/openciv3/citizen_moods.rs"
+    },
+    "crate::openciv3::city_culture::advance_city_culture": {
+      "file": "openciv3/city_culture.py",
+      "line": 61,
+      "name": "advance_city_culture",
+      "rust": "src/openciv3/city_culture.rs"
+    },
+    "crate::openciv3::city_culture::refresh_ownership": {
+      "file": "openciv3/city_culture.py",
+      "line": 13,
+      "name": "refresh_ownership",
+      "rust": "src/openciv3/city_culture.rs"
+    },
+    "crate::openciv3::city_culture::refresh_ownership_state": {
+      "file": "openciv3/city_culture.py",
+      "line": 18,
+      "name": "refresh_ownership_state",
+      "rust": "src/openciv3/city_culture.rs"
+    },
+    "crate::openciv3::city_economy::CityFood": {
+      "file": "openciv3/city_economy.py",
+      "line": 77,
+      "name": "CityFood",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::CityProduction": {
+      "file": "openciv3/city_economy.py",
+      "line": 95,
+      "name": "CityProduction",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::Commerce": {
+      "file": "openciv3/city_economy.py",
+      "line": 121,
+      "name": "Commerce",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::CorruptibleYield": {
+      "file": "openciv3/city_economy.py",
+      "line": 16,
+      "name": "CorruptibleYield",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::after_corruption": {
+      "file": "openciv3/city_economy.py",
+      "line": 21,
+      "name": "after_corruption",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::city_commerce": {
+      "file": "openciv3/city_economy.py",
+      "line": 138,
+      "name": "city_commerce",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::city_food": {
+      "file": "openciv3/city_economy.py",
+      "line": 85,
+      "name": "city_food",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::city_maintenance": {
+      "file": "openciv3/city_economy.py",
+      "line": 179,
+      "name": "city_maintenance",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::city_production": {
+      "file": "openciv3/city_economy.py",
+      "line": 103,
+      "name": "city_production",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::city_tile_yields": {
+      "file": "openciv3/city_economy.py",
+      "line": 50,
+      "name": "city_tile_yields",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::food_box": {
+      "file": "openciv3/city_economy.py",
+      "line": 45,
+      "name": "food_box",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::growth_turns": {
+      "file": "openciv3/city_economy.py",
+      "line": 28,
+      "name": "growth_turns",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::production_turns": {
+      "file": "openciv3/city_economy.py",
+      "line": 37,
+      "name": "production_turns",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_economy::split_commerce": {
+      "file": "openciv3/city_economy.py",
+      "line": 129,
+      "name": "split_commerce",
+      "rust": "src/openciv3/city_economy.rs"
+    },
+    "crate::openciv3::city_founding::can_found_city": {
+      "file": "openciv3/city_founding.py",
+      "line": 21,
+      "name": "can_found_city",
+      "rust": "src/openciv3/city_founding.rs"
+    },
+    "crate::openciv3::city_founding::found_city": {
+      "file": "openciv3/city_founding.py",
+      "line": 34,
+      "name": "found_city",
+      "rust": "src/openciv3/city_founding.rs"
+    },
+    "crate::openciv3::city_founding::found_city_state": {
+      "file": "openciv3/city_founding.py",
+      "line": 39,
+      "name": "found_city_state",
+      "rust": "src/openciv3/city_founding.rs"
+    },
+    "crate::openciv3::city_growth::advance_city_growth": {
+      "file": "openciv3/city_growth.py",
+      "line": 60,
+      "name": "advance_city_growth",
+      "rust": "src/openciv3/city_growth.rs"
+    },
+    "crate::openciv3::city_growth::advance_city_growth_result": {
+      "file": "openciv3/city_growth.py",
+      "line": 65,
+      "name": "advance_city_growth_result",
+      "rust": "src/openciv3/city_growth.rs"
+    },
+    "crate::openciv3::city_growth::can_grow": {
+      "file": "openciv3/city_growth.py",
+      "line": 16,
+      "name": "can_grow",
+      "rust": "src/openciv3/city_growth.rs"
+    },
+    "crate::openciv3::city_growth::can_join_city": {
+      "file": "openciv3/city_growth.py",
+      "line": 37,
+      "name": "can_join_city",
+      "rust": "src/openciv3/city_growth.rs"
+    },
+    "crate::openciv3::city_growth::join_city": {
+      "file": "openciv3/city_growth.py",
+      "line": 44,
+      "name": "join_city",
+      "rust": "src/openciv3/city_growth.rs"
+    },
+    "crate::openciv3::city_lifecycle::CityDestruction": {
+      "file": "openciv3/city_lifecycle.py",
+      "line": 51,
+      "name": "CityDestruction",
+      "rust": "src/openciv3/city_lifecycle.rs"
+    },
+    "crate::openciv3::city_lifecycle::CityRaid": {
+      "file": "openciv3/city_lifecycle.py",
+      "line": 108,
+      "name": "CityRaid",
+      "rust": "src/openciv3/city_lifecycle.rs"
+    },
+    "crate::openciv3::city_lifecycle::capital_score": {
+      "file": "openciv3/city_lifecycle.py",
+      "line": 17,
+      "name": "capital_score",
+      "rust": "src/openciv3/city_lifecycle.rs"
+    },
+    "crate::openciv3::city_lifecycle::destroy_city": {
+      "file": "openciv3/city_lifecycle.py",
+      "line": 74,
+      "name": "destroy_city",
+      "rust": "src/openciv3/city_lifecycle.rs"
+    },
+    "crate::openciv3::city_lifecycle::ransack_city": {
+      "file": "openciv3/city_lifecycle.py",
+      "line": 115,
+      "name": "ransack_city",
+      "rust": "src/openciv3/city_lifecycle.rs"
+    },
+    "crate::openciv3::city_lifecycle::raze_cities": {
+      "file": "openciv3/city_lifecycle.py",
+      "line": 58,
+      "name": "raze_cities",
+      "rust": "src/openciv3/city_lifecycle.rs"
+    },
+    "crate::openciv3::city_lifecycle::relocate_capital": {
+      "file": "openciv3/city_lifecycle.py",
+      "line": 37,
+      "name": "relocate_capital",
+      "rust": "src/openciv3/city_lifecycle.rs"
+    },
+    "crate::openciv3::city_names::next_city_name": {
+      "file": "openciv3/city_names.py",
+      "line": 5,
+      "name": "next_city_name",
+      "rust": "src/openciv3/city_names.rs"
+    },
+    "crate::openciv3::city_production::advance_building_production": {
+      "file": "openciv3/city_production.py",
+      "line": 44,
+      "name": "advance_building_production",
+      "rust": "src/openciv3/city_production.rs"
+    },
+    "crate::openciv3::city_production::advance_unit_production": {
+      "file": "openciv3/city_production.py",
+      "line": 117,
+      "name": "advance_unit_production",
+      "rust": "src/openciv3/city_production.rs"
+    },
+    "crate::openciv3::city_production::create_city_unit": {
+      "file": "openciv3/city_production.py",
+      "line": 93,
+      "name": "create_city_unit",
+      "rust": "src/openciv3/city_production.rs"
+    },
+    "crate::openciv3::city_production::select_most_expensive": {
+      "file": "openciv3/city_production.py",
+      "line": 16,
+      "name": "select_most_expensive",
+      "rust": "src/openciv3/city_production.rs"
+    },
+    "crate::openciv3::city_roads::connect_city_roads": {
+      "file": "openciv3/city_roads.py",
+      "line": 11,
+      "name": "connect_city_roads",
+      "rust": "src/openciv3/city_roads.rs"
+    },
+    "crate::openciv3::combat::CombatOutcome": {
+      "file": "openciv3/combat.py",
+      "line": 16,
+      "name": "CombatOutcome",
+      "rust": "src/openciv3/combat.rs"
+    },
+    "crate::openciv3::combat::CombatResult": {
+      "file": "openciv3/combat.py",
+      "line": 33,
+      "name": "CombatResult",
+      "rust": "src/openciv3/combat.rs"
+    },
+    "crate::openciv3::combat::Promotion": {
+      "file": "openciv3/combat.py",
+      "line": 25,
+      "name": "Promotion",
+      "rust": "src/openciv3/combat.rs"
+    },
+    "crate::openciv3::combat::_capture_defeated_unit": {
+      "file": "openciv3/combat.py",
+      "line": 82,
+      "name": "_capture_defeated_unit",
+      "rust": "src/openciv3/combat.rs"
+    },
+    "crate::openciv3::combat::fight": {
+      "file": "openciv3/combat.py",
+      "line": 96,
+      "name": "fight",
+      "rust": "src/openciv3/combat.rs"
+    },
+    "crate::openciv3::combat::promote": {
+      "file": "openciv3/combat.py",
+      "line": 56,
+      "name": "promote",
+      "rust": "src/openciv3/combat.rs"
+    },
+    "crate::openciv3::combat::retreat_chance": {
+      "file": "openciv3/combat.py",
+      "line": 49,
+      "name": "retreat_chance",
+      "rust": "src/openciv3/combat.rs"
+    },
+    "crate::openciv3::combat::roll_promotion": {
+      "file": "openciv3/combat.py",
+      "line": 64,
+      "name": "roll_promotion",
+      "rust": "src/openciv3/combat.rs"
+    },
+    "crate::openciv3::combat_strength::CombatRole": {
+      "file": "openciv3/combat_strength.py",
+      "line": 15,
+      "name": "CombatRole",
+      "rust": "src/openciv3/combat_strength.rs"
+    },
+    "crate::openciv3::combat_strength::ImprovementDefense": {
+      "file": "openciv3/combat_strength.py",
+      "line": 35,
+      "name": "ImprovementDefense",
+      "rust": "src/openciv3/combat_strength.rs"
+    },
+    "crate::openciv3::combat_strength::StrengthBonus": {
+      "file": "openciv3/combat_strength.py",
+      "line": 29,
+      "name": "StrengthBonus",
+      "rust": "src/openciv3/combat_strength.rs"
+    },
+    "crate::openciv3::combat_strength::combat_strength": {
+      "file": "openciv3/combat_strength.py",
+      "line": 105,
+      "name": "combat_strength",
+      "rust": "src/openciv3/combat_strength.rs"
+    },
+    "crate::openciv3::combat_strength::strength_bonuses": {
+      "file": "openciv3/combat_strength.py",
+      "line": 40,
+      "name": "strength_bonuses",
+      "rust": "src/openciv3/combat_strength.rs"
+    },
+    "crate::openciv3::combat_strength::top_defender": {
+      "file": "openciv3/combat_strength.py",
+      "line": 115,
+      "name": "top_defender",
+      "rust": "src/openciv3/combat_strength.rs"
+    },
+    "crate::openciv3::corruption::adjusted_optimal_cities": {
+      "file": "openciv3/corruption.py",
+      "line": 23,
+      "name": "adjusted_optimal_cities",
+      "rust": "src/openciv3/corruption.rs"
+    },
+    "crate::openciv3::corruption::corruption_fraction": {
+      "file": "openciv3/corruption.py",
+      "line": 8,
+      "name": "corruption_fraction",
+      "rust": "src/openciv3/corruption.rs"
+    },
+    "crate::openciv3::corruption::corruption_levels": {
+      "file": "openciv3/corruption.py",
+      "line": 41,
+      "name": "corruption_levels",
+      "rust": "src/openciv3/corruption.rs"
+    },
+    "crate::openciv3::deal_lifecycle::expire_deals": {
+      "file": "openciv3/deal_lifecycle.py",
+      "line": 38,
+      "name": "expire_deals",
+      "rust": "src/openciv3/deal_lifecycle.rs"
+    },
+    "crate::openciv3::deal_lifecycle::register_deal": {
+      "file": "openciv3/deal_lifecycle.py",
+      "line": 7,
+      "name": "register_deal",
+      "rust": "src/openciv3/deal_lifecycle.rs"
+    },
+    "crate::openciv3::diplomacy::Diplomacy": {
+      "file": "openciv3/diplomacy.py",
+      "line": 26,
+      "name": "Diplomacy",
+      "rust": "src/openciv3/diplomacy.rs"
+    },
+    "crate::openciv3::diplomacy::Relationship": {
+      "file": "openciv3/diplomacy.py",
+      "line": 14,
+      "name": "Relationship",
+      "rust": "src/openciv3/diplomacy.rs"
+    },
+    "crate::openciv3::diplomacy::initialize_diplomacy": {
+      "file": "openciv3/diplomacy.py",
+      "line": 67,
+      "name": "initialize_diplomacy",
+      "rust": "src/openciv3/diplomacy.rs"
+    },
+    "crate::openciv3::diplomacy_actions::WarDeclaration": {
+      "file": "openciv3/diplomacy_actions.py",
+      "line": 39,
+      "name": "WarDeclaration",
+      "rust": "src/openciv3/diplomacy_actions.rs"
+    },
+    "crate::openciv3::diplomacy_actions::_validate_pair": {
+      "file": "openciv3/diplomacy_actions.py",
+      "line": 10,
+      "name": "_validate_pair",
+      "rust": "src/openciv3/diplomacy_actions.rs"
+    },
+    "crate::openciv3::diplomacy_actions::accepts_contact": {
+      "file": "openciv3/diplomacy_actions.py",
+      "line": 102,
+      "name": "accepts_contact",
+      "rust": "src/openciv3/diplomacy_actions.rs"
+    },
+    "crate::openciv3::diplomacy_actions::declare_war": {
+      "file": "openciv3/diplomacy_actions.py",
+      "line": 47,
+      "name": "declare_war",
+      "rust": "src/openciv3/diplomacy_actions.rs"
+    },
+    "crate::openciv3::diplomacy_actions::establish_contact": {
+      "file": "openciv3/diplomacy_actions.py",
+      "line": 17,
+      "name": "establish_contact",
+      "rust": "src/openciv3/diplomacy_actions.rs"
+    },
+    "crate::openciv3::diplomacy_actions::honor_mutual_protection": {
+      "file": "openciv3/diplomacy_actions.py",
+      "line": 80,
+      "name": "honor_mutual_protection",
+      "rust": "src/openciv3/diplomacy_actions.rs"
+    },
+    "crate::openciv3::diplomacy_actions::set_right_of_passage": {
+      "file": "openciv3/diplomacy_actions.py",
+      "line": 28,
+      "name": "set_right_of_passage",
+      "rust": "src/openciv3/diplomacy_actions.rs"
+    },
+    "crate::openciv3::diplomacy_actions::sign_peace": {
+      "file": "openciv3/diplomacy_actions.py",
+      "line": 112,
+      "name": "sign_peace",
+      "rust": "src/openciv3/diplomacy_actions.rs"
+    },
+    "crate::openciv3::game_state::GameState": {
+      "file": "openciv3/game_state.py",
+      "line": 20,
+      "name": "GameState",
+      "rust": "src/openciv3/game_state.rs"
+    },
+    "crate::openciv3::global_rules::GlobalRules": {
+      "file": "openciv3/global_rules.py",
+      "line": 24,
+      "name": "GlobalRules",
+      "rust": "src/openciv3/global_rules.rs"
+    },
+    "crate::openciv3::global_rules::HealingRates": {
+      "file": "openciv3/global_rules.py",
+      "line": 12,
+      "name": "HealingRates",
+      "rust": "src/openciv3/global_rules.rs"
+    },
+    "crate::openciv3::government_rules::Government": {
+      "file": "openciv3/government_rules.py",
+      "line": 15,
+      "name": "Government",
+      "rust": "src/openciv3/government_rules.rs"
+    },
+    "crate::openciv3::government_rules::GovernmentRelation": {
+      "file": "openciv3/government_rules.py",
+      "line": 8,
+      "name": "GovernmentRelation",
+      "rust": "src/openciv3/government_rules.rs"
+    },
+    "crate::openciv3::history::HistoryRecord": {
+      "file": "openciv3/history.py",
+      "line": 14,
+      "name": "HistoryRecord",
+      "rust": "src/openciv3/history.rs"
+    },
+    "crate::openciv3::history::_single": {
+      "file": "openciv3/history.py",
+      "line": 42,
+      "name": "_single",
+      "rust": "src/openciv3/history.rs"
+    },
+    "crate::openciv3::history::record_player_history": {
+      "file": "openciv3/history.py",
+      "line": 46,
+      "name": "record_player_history",
+      "rust": "src/openciv3/history.rs"
+    },
+    "crate::openciv3::history::turn_score": {
+      "file": "openciv3/history.py",
+      "line": 22,
+      "name": "turn_score",
+      "rust": "src/openciv3/history.rs"
+    },
+    "crate::openciv3::hydrology::Hydrology": {
+      "file": "openciv3/hydrology.py",
+      "line": 44,
+      "name": "Hydrology",
+      "rust": "src/openciv3/hydrology.rs"
+    },
+    "crate::openciv3::hydrology::is_water": {
+      "file": "openciv3/hydrology.py",
+      "line": 10,
+      "name": "is_water",
+      "rust": "src/openciv3/hydrology.rs"
+    },
+    "crate::openciv3::hydrology::land_strip": {
+      "file": "openciv3/hydrology.py",
+      "line": 14,
+      "name": "land_strip",
+      "rust": "src/openciv3/hydrology.rs"
+    },
+    "crate::openciv3::hydrology::river_edges": {
+      "file": "openciv3/hydrology.py",
+      "line": 30,
+      "name": "river_edges",
+      "rust": "src/openciv3/hydrology.rs"
+    },
+    "crate::openciv3::inflows::Inflow": {
+      "file": "openciv3/inflows.py",
+      "line": 5,
+      "name": "Inflow",
+      "rust": "src/openciv3/inflows.rs"
+    },
+    "crate::openciv3::inflows::WealthRule": {
+      "file": "openciv3/inflows.py",
+      "line": 16,
+      "name": "WealthRule",
+      "rust": "src/openciv3/inflows.rs"
+    },
+    "crate::openciv3::inflows::wealth_commerce": {
+      "file": "openciv3/inflows.py",
+      "line": 22,
+      "name": "wealth_commerce",
+      "rust": "src/openciv3/inflows.rs"
+    },
+    "crate::openciv3::json_io::read_object": {
+      "file": "openciv3/json_io.py",
+      "line": 9,
+      "name": "read_object",
+      "rust": "src/openciv3/json_io.rs"
+    },
+    "crate::openciv3::json_rules::FoundationalRules": {
+      "file": "openciv3/json_rules.py",
+      "line": 88,
+      "name": "FoundationalRules",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::_assemble_catalog": {
+      "file": "openciv3/json_rules.py",
+      "line": 571,
+      "name": "_assemble_catalog",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::boolean": {
+      "file": "openciv3/json_rules.py",
+      "line": 47,
+      "name": "boolean",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::building_commerce_bonus": {
+      "file": "openciv3/json_rules.py",
+      "line": 424,
+      "name": "building_commerce_bonus",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::decode_buildings": {
+      "file": "openciv3/json_rules.py",
+      "line": 433,
+      "name": "decode_buildings",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::decode_foundational_rules": {
+      "file": "openciv3/json_rules.py",
+      "line": 102,
+      "name": "decode_foundational_rules",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::decode_global_rules": {
+      "file": "openciv3/json_rules.py",
+      "line": 604,
+      "name": "decode_global_rules",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::decode_government": {
+      "file": "openciv3/json_rules.py",
+      "line": 200,
+      "name": "decode_government",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::decode_rule_catalog": {
+      "file": "openciv3/json_rules.py",
+      "line": 567,
+      "name": "decode_rule_catalog",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::decode_standalone_scenario": {
+      "file": "openciv3/json_rules.py",
+      "line": 749,
+      "name": "decode_standalone_scenario",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::decode_terrains": {
+      "file": "openciv3/json_rules.py",
+      "line": 231,
+      "name": "decode_terrains",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::decode_units": {
+      "file": "openciv3/json_rules.py",
+      "line": 336,
+      "name": "decode_units",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::decode_wealth": {
+      "file": "openciv3/json_rules.py",
+      "line": 580,
+      "name": "decode_wealth",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::identifiers": {
+      "file": "openciv3/json_rules.py",
+      "line": 68,
+      "name": "identifiers",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::integer": {
+      "file": "openciv3/json_rules.py",
+      "line": 39,
+      "name": "integer",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::object_field": {
+      "file": "openciv3/json_rules.py",
+      "line": 224,
+      "name": "object_field",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::percentage": {
+      "file": "openciv3/json_rules.py",
+      "line": 417,
+      "name": "percentage",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::records": {
+      "file": "openciv3/json_rules.py",
+      "line": 61,
+      "name": "records",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::reference": {
+      "file": "openciv3/json_rules.py",
+      "line": 78,
+      "name": "reference",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::strings": {
+      "file": "openciv3/json_rules.py",
+      "line": 54,
+      "name": "strings",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::json_rules::text": {
+      "file": "openciv3/json_rules.py",
+      "line": 32,
+      "name": "text",
+      "rust": "src/openciv3/json_rules.rs"
+    },
+    "crate::openciv3::naval_risk::hazardous_waters": {
+      "file": "openciv3/naval_risk.py",
+      "line": 20,
+      "name": "hazardous_waters",
+      "rust": "src/openciv3/naval_risk.rs"
+    },
+    "crate::openciv3::naval_risk::safe_sea_travel": {
+      "file": "openciv3/naval_risk.py",
+      "line": 10,
+      "name": "safe_sea_travel",
+      "rust": "src/openciv3/naval_risk.rs"
+    },
+    "crate::openciv3::pathfinding::UnitPath": {
+      "file": "openciv3/pathfinding.py",
+      "line": 109,
+      "name": "UnitPath",
+      "rust": "src/openciv3/pathfinding.rs"
+    },
+    "crate::openciv3::pathfinding::_MovementCosts": {
+      "file": "openciv3/pathfinding.py",
+      "line": 30,
+      "name": "_MovementCosts",
+      "rust": "src/openciv3/pathfinding.rs"
+    },
+    "crate::openciv3::pathfinding::find_path": {
+      "file": "openciv3/pathfinding.py",
+      "line": 150,
+      "name": "find_path",
+      "rust": "src/openciv3/pathfinding.rs"
+    },
+    "crate::openciv3::pathfinding::movement_cost": {
+      "file": "openciv3/pathfinding.py",
+      "line": 19,
+      "name": "movement_cost",
+      "rust": "src/openciv3/pathfinding.rs"
+    },
+    "crate::openciv3::player_economy::PlayerCommerce": {
+      "file": "openciv3/player_economy.py",
+      "line": 56,
+      "name": "PlayerCommerce",
+      "rust": "src/openciv3/player_economy.rs"
+    },
+    "crate::openciv3::player_economy::UnitSupport": {
+      "file": "openciv3/player_economy.py",
+      "line": 19,
+      "name": "UnitSupport",
+      "rust": "src/openciv3/player_economy.rs"
+    },
+    "crate::openciv3::player_economy::player_commerce": {
+      "file": "openciv3/player_economy.py",
+      "line": 76,
+      "name": "player_commerce",
+      "rust": "src/openciv3/player_economy.rs"
+    },
+    "crate::openciv3::player_economy::requires_unit_support": {
+      "file": "openciv3/player_economy.py",
+      "line": 25,
+      "name": "requires_unit_support",
+      "rust": "src/openciv3/player_economy.rs"
+    },
+    "crate::openciv3::player_economy::unit_support": {
+      "file": "openciv3/player_economy.py",
+      "line": 29,
+      "name": "unit_support",
+      "rust": "src/openciv3/player_economy.rs"
+    },
+    "crate::openciv3::players::Player": {
+      "file": "openciv3/players.py",
+      "line": 11,
+      "name": "Player",
+      "rust": "src/openciv3/players.rs"
+    },
+    "crate::openciv3::players::initialize_players": {
+      "file": "openciv3/players.py",
+      "line": 48,
+      "name": "initialize_players",
+      "rust": "src/openciv3/players.rs"
+    },
+    "crate::openciv3::production_cost::building_cost": {
+      "file": "openciv3/production_cost.py",
+      "line": 30,
+      "name": "building_cost",
+      "rust": "src/openciv3/production_cost.rs"
+    },
+    "crate::openciv3::production_cost::city_building_cost": {
+      "file": "openciv3/production_cost.py",
+      "line": 42,
+      "name": "city_building_cost",
+      "rust": "src/openciv3/production_cost.rs"
+    },
+    "crate::openciv3::production_cost::cost_factor": {
+      "file": "openciv3/production_cost.py",
+      "line": 18,
+      "name": "cost_factor",
+      "rust": "src/openciv3/production_cost.rs"
+    },
+    "crate::openciv3::production_cost::unit_cost": {
+      "file": "openciv3/production_cost.py",
+      "line": 26,
+      "name": "unit_cost",
+      "rust": "src/openciv3/production_cost.rs"
+    },
+    "crate::openciv3::production_eligibility::can_build": {
+      "file": "openciv3/production_eligibility.py",
+      "line": 79,
+      "name": "can_build",
+      "rust": "src/openciv3/production_eligibility.rs"
+    },
+    "crate::openciv3::production_eligibility::can_train": {
+      "file": "openciv3/production_eligibility.py",
+      "line": 16,
+      "name": "can_train",
+      "rust": "src/openciv3/production_eligibility.rs"
+    },
+    "crate::openciv3::production_eligibility::select_building": {
+      "file": "openciv3/production_eligibility.py",
+      "line": 178,
+      "name": "select_building",
+      "rust": "src/openciv3/production_eligibility.rs"
+    },
+    "crate::openciv3::production_eligibility::select_unit": {
+      "file": "openciv3/production_eligibility.py",
+      "line": 73,
+      "name": "select_unit",
+      "rust": "src/openciv3/production_eligibility.rs"
+    },
+    "crate::openciv3::production_eligibility::unit_upgrade_candidates": {
+      "file": "openciv3/production_eligibility.py",
+      "line": 50,
+      "name": "unit_upgrade_candidates",
+      "rust": "src/openciv3/production_eligibility.rs"
+    },
+    "crate::openciv3::recurring_deals::DealDirection": {
+      "file": "openciv3/recurring_deals.py",
+      "line": 36,
+      "name": "DealDirection",
+      "rust": "src/openciv3/recurring_deals.rs"
+    },
+    "crate::openciv3::recurring_deals::DealKind": {
+      "file": "openciv3/recurring_deals.py",
+      "line": 25,
+      "name": "DealKind",
+      "rust": "src/openciv3/recurring_deals.rs"
+    },
+    "crate::openciv3::recurring_deals::DealType": {
+      "file": "openciv3/recurring_deals.py",
+      "line": 11,
+      "name": "DealType",
+      "rust": "src/openciv3/recurring_deals.rs"
+    },
+    "crate::openciv3::recurring_deals::DiplomaticPayments": {
+      "file": "openciv3/recurring_deals.py",
+      "line": 86,
+      "name": "DiplomaticPayments",
+      "rust": "src/openciv3/recurring_deals.rs"
+    },
+    "crate::openciv3::recurring_deals::RecurringDeal": {
+      "file": "openciv3/recurring_deals.py",
+      "line": 43,
+      "name": "RecurringDeal",
+      "rust": "src/openciv3/recurring_deals.rs"
+    },
+    "crate::openciv3::recurring_deals::payments": {
+      "file": "openciv3/recurring_deals.py",
+      "line": 95,
+      "name": "payments",
+      "rust": "src/openciv3/recurring_deals.rs"
+    },
+    "crate::openciv3::research::_single": {
+      "file": "openciv3/research.py",
+      "line": 209,
+      "name": "_single",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::acquire_technologies": {
+      "file": "openciv3/research.py",
+      "line": 86,
+      "name": "acquire_technologies",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::acquire_technology": {
+      "file": "openciv3/research.py",
+      "line": 15,
+      "name": "acquire_technology",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::acquire_technology_result": {
+      "file": "openciv3/research.py",
+      "line": 20,
+      "name": "acquire_technology_result",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::advance_research": {
+      "file": "openciv3/research.py",
+      "line": 97,
+      "name": "advance_research",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::advance_research_result": {
+      "file": "openciv3/research.py",
+      "line": 102,
+      "name": "advance_research_result",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::available_technologies": {
+      "file": "openciv3/research.py",
+      "line": 193,
+      "name": "available_technologies",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::claim_free_technology": {
+      "file": "openciv3/research.py",
+      "line": 52,
+      "name": "claim_free_technology",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::estimate_research_turns": {
+      "file": "openciv3/research.py",
+      "line": 237,
+      "name": "estimate_research_turns",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::pick_ai_research": {
+      "file": "openciv3/research.py",
+      "line": 64,
+      "name": "pick_ai_research",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::queue_research": {
+      "file": "openciv3/research.py",
+      "line": 179,
+      "name": "queue_research",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::remaining_research_cost": {
+      "file": "openciv3/research.py",
+      "line": 214,
+      "name": "remaining_research_cost",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::research_path": {
+      "file": "openciv3/research.py",
+      "line": 137,
+      "name": "research_path",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::select_research": {
+      "file": "openciv3/research.py",
+      "line": 201,
+      "name": "select_research",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::research::start_queued_research": {
+      "file": "openciv3/research.py",
+      "line": 169,
+      "name": "start_queued_research",
+      "rust": "src/openciv3/research.rs"
+    },
+    "crate::openciv3::rules::CitizenType": {
+      "file": "openciv3/rules.py",
+      "line": 190,
+      "name": "CitizenType",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::ExperienceLevel": {
+      "file": "openciv3/rules.py",
+      "line": 178,
+      "name": "ExperienceLevel",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::ImprovementYields": {
+      "file": "openciv3/rules.py",
+      "line": 94,
+      "name": "ImprovementYields",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::Resource": {
+      "file": "openciv3/rules.py",
+      "line": 76,
+      "name": "Resource",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::RuleCatalog": {
+      "file": "openciv3/rules.py",
+      "line": 252,
+      "name": "RuleCatalog",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::Technology": {
+      "file": "openciv3/rules.py",
+      "line": 44,
+      "name": "Technology",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::Terrain": {
+      "file": "openciv3/rules.py",
+      "line": 109,
+      "name": "Terrain",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::WorkerEffect": {
+      "file": "openciv3/rules.py",
+      "line": 225,
+      "name": "WorkerEffect",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::WorkerJob": {
+      "file": "openciv3/rules.py",
+      "line": 231,
+      "name": "WorkerJob",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::WorkerScore": {
+      "file": "openciv3/rules.py",
+      "line": 209,
+      "name": "WorkerScore",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::rules::WorkerValidator": {
+      "file": "openciv3/rules.py",
+      "line": 218,
+      "name": "WorkerValidator",
+      "rust": "src/openciv3/rules.rs"
+    },
+    "crate::openciv3::scenario::Scenario": {
+      "file": "openciv3/scenario.py",
+      "line": 24,
+      "name": "Scenario",
+      "rust": "src/openciv3/scenario.rs"
+    },
+    "crate::openciv3::scenario::_integer": {
+      "file": "openciv3/scenario.py",
+      "line": 13,
+      "name": "_integer",
+      "rust": "src/openciv3/scenario.rs"
+    },
+    "crate::openciv3::scenario::_text": {
+      "file": "openciv3/scenario.py",
+      "line": 19,
+      "name": "_text",
+      "rust": "src/openciv3/scenario.rs"
+    },
+    "crate::openciv3::scenario_model::Civilization": {
+      "file": "openciv3/scenario_model.py",
+      "line": 26,
+      "name": "Civilization",
+      "rust": "src/openciv3/scenario_model.rs"
+    },
+    "crate::openciv3::scenario_model::Difficulty": {
+      "file": "openciv3/scenario_model.py",
+      "line": 85,
+      "name": "Difficulty",
+      "rust": "src/openciv3/scenario_model.rs"
+    },
+    "crate::openciv3::scenario_model::PlayerSlot": {
+      "file": "openciv3/scenario_model.py",
+      "line": 109,
+      "name": "PlayerSlot",
+      "rust": "src/openciv3/scenario_model.rs"
+    },
+    "crate::openciv3::scenario_model::ScenarioDefinition": {
+      "file": "openciv3/scenario_model.py",
+      "line": 208,
+      "name": "ScenarioDefinition",
+      "rust": "src/openciv3/scenario_model.rs"
+    },
+    "crate::openciv3::scenario_model::ScenarioOptions": {
+      "file": "openciv3/scenario_model.py",
+      "line": 146,
+      "name": "ScenarioOptions",
+      "rust": "src/openciv3/scenario_model.rs"
+    },
+    "crate::openciv3::scenario_model::VictoryPointRules": {
+      "file": "openciv3/scenario_model.py",
+      "line": 198,
+      "name": "VictoryPointRules",
+      "rust": "src/openciv3/scenario_model.rs"
+    },
+    "crate::openciv3::scenario_model::biq_game_flags": {
+      "file": "openciv3/scenario_model.py",
+      "line": 140,
+      "name": "biq_game_flags",
+      "rust": "src/openciv3/scenario_model.rs"
+    },
+    "crate::openciv3::standalone::_load_unit_art": {
+      "file": "openciv3/standalone.py",
+      "line": 7,
+      "name": "_load_unit_art",
+      "rust": "src/openciv3/standalone.rs"
+    },
+    "crate::openciv3::standalone::load_ruleset": {
+      "file": "openciv3/standalone.py",
+      "line": 63,
+      "name": "load_ruleset",
+      "rust": "src/openciv3/standalone.rs"
+    },
+    "crate::openciv3::standalone::replacement_art": {
+      "file": "openciv3/standalone.py",
+      "line": 20,
+      "name": "replacement_art",
+      "rust": "src/openciv3/standalone.rs"
+    },
+    "crate::openciv3::standalone::standalone_ruleset": {
+      "file": "openciv3/standalone.py",
+      "line": 27,
+      "name": "standalone_ruleset",
+      "rust": "src/openciv3/standalone.rs"
+    },
+    "crate::openciv3::starting_bonus::spawn_starting_bonus": {
+      "file": "openciv3/starting_bonus.py",
+      "line": 9,
+      "name": "spawn_starting_bonus",
+      "rust": "src/openciv3/starting_bonus.rs"
+    },
+    "crate::openciv3::trade_network::TradeNetwork": {
+      "file": "openciv3/trade_network.py",
+      "line": 30,
+      "name": "TradeNetwork",
+      "rust": "src/openciv3/trade_network.rs"
+    },
+    "crate::openciv3::trade_network::TradeNetworkSegment": {
+      "file": "openciv3/trade_network.py",
+      "line": 22,
+      "name": "TradeNetworkSegment",
+      "rust": "src/openciv3/trade_network.rs"
+    },
+    "crate::openciv3::trading::TradeDeal": {
+      "file": "openciv3/trading.py",
+      "line": 44,
+      "name": "TradeDeal",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::TradeOffer": {
+      "file": "openciv3/trading.py",
+      "line": 16,
+      "name": "TradeOffer",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::affordable_gold_per_turn": {
+      "file": "openciv3/trading.py",
+      "line": 59,
+      "name": "affordable_gold_per_turn",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::can_offer_right_of_passage": {
+      "file": "openciv3/trading.py",
+      "line": 66,
+      "name": "can_offer_right_of_passage",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::embargo_targets": {
+      "file": "openciv3/trading.py",
+      "line": 76,
+      "name": "embargo_targets",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::execute_deal": {
+      "file": "openciv3/trading.py",
+      "line": 178,
+      "name": "execute_deal",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::proposal_values": {
+      "file": "openciv3/trading.py",
+      "line": 135,
+      "name": "proposal_values",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::propose_resource_trade": {
+      "file": "openciv3/trading.py",
+      "line": 274,
+      "name": "propose_resource_trade",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::propose_technology_trade": {
+      "file": "openciv3/trading.py",
+      "line": 215,
+      "name": "propose_technology_trade",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::suggest_terms": {
+      "file": "openciv3/trading.py",
+      "line": 148,
+      "name": "suggest_terms",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::tradable_technologies": {
+      "file": "openciv3/trading.py",
+      "line": 53,
+      "name": "tradable_technologies",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::trading::validate_deal": {
+      "file": "openciv3/trading.py",
+      "line": 96,
+      "name": "validate_deal",
+      "rust": "src/openciv3/trading.rs"
+    },
+    "crate::openciv3::treasury::TreasuryUpdate": {
+      "file": "openciv3/treasury.py",
+      "line": 12,
+      "name": "TreasuryUpdate",
+      "rust": "src/openciv3/treasury.rs"
+    },
+    "crate::openciv3::treasury::settle_treasury": {
+      "file": "openciv3/treasury.py",
+      "line": 20,
+      "name": "settle_treasury",
+      "rust": "src/openciv3/treasury.rs"
+    },
+    "crate::openciv3::turn_controller::BarbariansMoved": {
+      "file": "openciv3/turn_controller.py",
+      "line": 33,
+      "name": "BarbariansMoved",
+      "rust": "src/openciv3/turn_controller.rs"
+    },
+    "crate::openciv3::turn_controller::CivilizationMoved": {
+      "file": "openciv3/turn_controller.py",
+      "line": 26,
+      "name": "CivilizationMoved",
+      "rust": "src/openciv3/turn_controller.rs"
+    },
+    "crate::openciv3::turn_controller::HumanTurn": {
+      "file": "openciv3/turn_controller.py",
+      "line": 19,
+      "name": "HumanTurn",
+      "rust": "src/openciv3/turn_controller.rs"
+    },
+    "crate::openciv3::turn_controller::RoundAdvanced": {
+      "file": "openciv3/turn_controller.py",
+      "line": 38,
+      "name": "RoundAdvanced",
+      "rust": "src/openciv3/turn_controller.rs"
+    },
+    "crate::openciv3::turn_controller::TurnController": {
+      "file": "openciv3/turn_controller.py",
+      "line": 49,
+      "name": "TurnController",
+      "rust": "src/openciv3/turn_controller.rs"
+    },
+    "crate::openciv3::turn_phases::MovementEnd": {
+      "file": "openciv3/turn_phases.py",
+      "line": 41,
+      "name": "MovementEnd",
+      "rust": "src/openciv3/turn_phases.rs"
+    },
+    "crate::openciv3::turn_phases::PlayerRound": {
+      "file": "openciv3/turn_phases.py",
+      "line": 28,
+      "name": "PlayerRound",
+      "rust": "src/openciv3/turn_phases.rs"
+    },
+    "crate::openciv3::turn_phases::_sink_exposed_ships": {
+      "file": "openciv3/turn_phases.py",
+      "line": 46,
+      "name": "_sink_exposed_ships",
+      "rust": "src/openciv3/turn_phases.rs"
+    },
+    "crate::openciv3::turn_phases::advance_economic_round": {
+      "file": "openciv3/turn_phases.py",
+      "line": 84,
+      "name": "advance_economic_round",
+      "rust": "src/openciv3/turn_phases.rs"
+    },
+    "crate::openciv3::turn_phases::advance_economic_round_state": {
+      "file": "openciv3/turn_phases.py",
+      "line": 89,
+      "name": "advance_economic_round_state",
+      "rust": "src/openciv3/turn_phases.rs"
+    },
+    "crate::openciv3::turn_phases::end_player_movement": {
+      "file": "openciv3/turn_phases.py",
+      "line": 63,
+      "name": "end_player_movement",
+      "rust": "src/openciv3/turn_phases.rs"
+    },
+    "crate::openciv3::turn_phases::end_player_movement_state": {
+      "file": "openciv3/turn_phases.py",
+      "line": 68,
+      "name": "end_player_movement_state",
+      "rust": "src/openciv3/turn_phases.rs"
+    },
+    "crate::openciv3::unit_animation::Pose": {
+      "file": "openciv3/unit_animation.py",
+      "line": 38,
+      "name": "Pose",
+      "rust": "src/openciv3/unit_animation.rs"
+    },
+    "crate::openciv3::unit_animation::UnitAnimation": {
+      "file": "openciv3/unit_animation.py",
+      "line": 59,
+      "name": "UnitAnimation",
+      "rust": "src/openciv3/unit_animation.rs"
+    },
+    "crate::openciv3::unit_animation::UnitMotion": {
+      "file": "openciv3/unit_animation.py",
+      "line": 49,
+      "name": "UnitMotion",
+      "rust": "src/openciv3/unit_animation.rs"
+    },
+    "crate::openciv3::unit_animation::facing": {
+      "file": "openciv3/unit_animation.py",
+      "line": 16,
+      "name": "facing",
+      "rust": "src/openciv3/unit_animation.rs"
+    },
+    "crate::openciv3::unit_animation::facing_toward": {
+      "file": "openciv3/unit_animation.py",
+      "line": 24,
+      "name": "facing_toward",
+      "rust": "src/openciv3/unit_animation.rs"
+    },
+    "crate::openciv3::unit_animation::frame_at": {
+      "file": "openciv3/unit_animation.py",
+      "line": 105,
+      "name": "frame_at",
+      "rust": "src/openciv3/unit_animation.rs"
+    },
+    "crate::openciv3::unit_entry::EntryIntent": {
+      "file": "openciv3/unit_entry.py",
+      "line": 12,
+      "name": "EntryIntent",
+      "rust": "src/openciv3/unit_entry.rs"
+    },
+    "crate::openciv3::unit_entry::can_carry": {
+      "file": "openciv3/unit_entry.py",
+      "line": 66,
+      "name": "can_carry",
+      "rust": "src/openciv3/unit_entry.rs"
+    },
+    "crate::openciv3::unit_entry::can_defend_on_land": {
+      "file": "openciv3/unit_entry.py",
+      "line": 36,
+      "name": "can_defend_on_land",
+      "rust": "src/openciv3/unit_entry.rs"
+    },
+    "crate::openciv3::unit_entry::free_capacity": {
+      "file": "openciv3/unit_entry.py",
+      "line": 41,
+      "name": "free_capacity",
+      "rust": "src/openciv3/unit_entry.rs"
+    },
+    "crate::openciv3::unit_entry::resolve_entry": {
+      "file": "openciv3/unit_entry.py",
+      "line": 98,
+      "name": "resolve_entry",
+      "rust": "src/openciv3/unit_entry.rs"
+    },
+    "crate::openciv3::unit_entry::transported_units": {
+      "file": "openciv3/unit_entry.py",
+      "line": 47,
+      "name": "transported_units",
+      "rust": "src/openciv3/unit_entry.rs"
+    },
+    "crate::openciv3::unit_entry::transports_to_board": {
+      "file": "openciv3/unit_entry.py",
+      "line": 78,
+      "name": "transports_to_board",
+      "rust": "src/openciv3/unit_entry.rs"
+    },
+    "crate::openciv3::unit_lifecycle::RemovalResult": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 16,
+      "name": "RemovalResult",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::_has_king": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 26,
+      "name": "_has_king",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::_king": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 22,
+      "name": "_king",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::disband_reward": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 129,
+      "name": "disband_reward",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::disband_unit": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 116,
+      "name": "disband_unit",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::eliminate_if_needed": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 146,
+      "name": "eliminate_if_needed",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::regicide_survival_after_removal": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 30,
+      "name": "regicide_survival_after_removal",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::remove_unit": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 37,
+      "name": "remove_unit",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::remove_unit_state": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 42,
+      "name": "remove_unit_state",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::remove_units": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 46,
+      "name": "remove_units",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_lifecycle::remove_units_state": {
+      "file": "openciv3/unit_lifecycle.py",
+      "line": 51,
+      "name": "remove_units_state",
+      "rust": "src/openciv3/unit_lifecycle.rs"
+    },
+    "crate::openciv3::unit_missions::SettlerMission": {
+      "file": "openciv3/unit_missions.py",
+      "line": 13,
+      "name": "SettlerMission",
+      "rust": "src/openciv3/unit_missions.rs"
+    },
+    "crate::openciv3::unit_missions::assign_escort": {
+      "file": "openciv3/unit_missions.py",
+      "line": 48,
+      "name": "assign_escort",
+      "rust": "src/openciv3/unit_missions.rs"
+    },
+    "crate::openciv3::unit_missions::clear_unit_missions": {
+      "file": "openciv3/unit_missions.py",
+      "line": 62,
+      "name": "clear_unit_missions",
+      "rust": "src/openciv3/unit_missions.rs"
+    },
+    "crate::openciv3::unit_missions::plan_settler": {
+      "file": "openciv3/unit_missions.py",
+      "line": 27,
+      "name": "plan_settler",
+      "rust": "src/openciv3/unit_missions.rs"
+    },
+    "crate::openciv3::unit_missions::reserved_settlements": {
+      "file": "openciv3/unit_missions.py",
+      "line": 20,
+      "name": "reserved_settlements",
+      "rust": "src/openciv3/unit_missions.rs"
+    },
+    "crate::openciv3::unit_movement::AttackCue": {
+      "file": "openciv3/unit_movement.py",
+      "line": 36,
+      "name": "AttackCue",
+      "rust": "src/openciv3/unit_movement.rs"
+    },
+    "crate::openciv3::unit_movement::MoveResult": {
+      "file": "openciv3/unit_movement.py",
+      "line": 44,
+      "name": "MoveResult",
+      "rust": "src/openciv3/unit_movement.rs"
+    },
+    "crate::openciv3::unit_movement::MoveStatus": {
+      "file": "openciv3/unit_movement.py",
+      "line": 26,
+      "name": "MoveStatus",
+      "rust": "src/openciv3/unit_movement.rs"
+    },
+    "crate::openciv3::unit_movement::PathProgress": {
+      "file": "openciv3/unit_movement.py",
+      "line": 214,
+      "name": "PathProgress",
+      "rust": "src/openciv3/unit_movement.rs"
+    },
+    "crate::openciv3::unit_movement::_combat_move": {
+      "file": "openciv3/unit_movement.py",
+      "line": 163,
+      "name": "_combat_move",
+      "rust": "src/openciv3/unit_movement.rs"
+    },
+    "crate::openciv3::unit_movement::_discover_neighbors": {
+      "file": "openciv3/unit_movement.py",
+      "line": 58,
+      "name": "_discover_neighbors",
+      "rust": "src/openciv3/unit_movement.rs"
+    },
+    "crate::openciv3::unit_movement::_enter_tile": {
+      "file": "openciv3/unit_movement.py",
+      "line": 120,
+      "name": "_enter_tile",
+      "rust": "src/openciv3/unit_movement.rs"
+    },
+    "crate::openciv3::unit_movement::follow_path": {
+      "file": "openciv3/unit_movement.py",
+      "line": 221,
+      "name": "follow_path",
+      "rust": "src/openciv3/unit_movement.rs"
+    },
+    "crate::openciv3::unit_movement::move_unit": {
+      "file": "openciv3/unit_movement.py",
+      "line": 80,
+      "name": "move_unit",
+      "rust": "src/openciv3/unit_movement.rs"
+    },
+    "crate::openciv3::unit_rules::UnitPrototype": {
+      "file": "openciv3/unit_rules.py",
+      "line": 118,
+      "name": "UnitPrototype",
+      "rust": "src/openciv3/unit_rules.rs"
+    },
+    "crate::openciv3::unit_turns::begin_player_unit_turn": {
+      "file": "openciv3/unit_turns.py",
+      "line": 83,
+      "name": "begin_player_unit_turn",
+      "rust": "src/openciv3/unit_turns.rs"
+    },
+    "crate::openciv3::unit_turns::begin_unit_turn": {
+      "file": "openciv3/unit_turns.py",
+      "line": 62,
+      "name": "begin_unit_turn",
+      "rust": "src/openciv3/unit_turns.rs"
+    },
+    "crate::openciv3::unit_turns::fortify_unit": {
+      "file": "openciv3/unit_turns.py",
+      "line": 54,
+      "name": "fortify_unit",
+      "rust": "src/openciv3/unit_turns.rs"
+    },
+    "crate::openciv3::unit_turns::healing_rate": {
+      "file": "openciv3/unit_turns.py",
+      "line": 15,
+      "name": "healing_rate",
+      "rust": "src/openciv3/unit_turns.rs"
+    },
+    "crate::openciv3::unit_turns::max_hit_points": {
+      "file": "openciv3/unit_turns.py",
+      "line": 10,
+      "name": "max_hit_points",
+      "rust": "src/openciv3/unit_turns.rs"
+    },
+    "crate::openciv3::unit_turns::skip_unit_turn": {
+      "file": "openciv3/unit_turns.py",
+      "line": 49,
+      "name": "skip_unit_turn",
+      "rust": "src/openciv3/unit_turns.rs"
+    },
+    "crate::openciv3::unit_turns::wake_unit": {
+      "file": "openciv3/unit_turns.py",
+      "line": 58,
+      "name": "wake_unit",
+      "rust": "src/openciv3/unit_turns.rs"
+    },
+    "crate::openciv3::units::Unit": {
+      "file": "openciv3/units.py",
+      "line": 16,
+      "name": "Unit",
+      "rust": "src/openciv3/units.rs"
+    },
+    "crate::openciv3::units::initialize_units": {
+      "file": "openciv3/units.py",
+      "line": 52,
+      "name": "initialize_units",
+      "rust": "src/openciv3/units.rs"
+    },
+    "crate::openciv3::victory::VictoryKind": {
+      "file": "openciv3/victory.py",
+      "line": 19,
+      "name": "VictoryKind",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::VictoryResult": {
+      "file": "openciv3/victory.py",
+      "line": 32,
+      "name": "VictoryResult",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::VictoryStatus": {
+      "file": "openciv3/victory.py",
+      "line": 39,
+      "name": "VictoryStatus",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::_declare_victory": {
+      "file": "openciv3/victory.py",
+      "line": 149,
+      "name": "_declare_victory",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::can_launch_spaceship": {
+      "file": "openciv3/victory.py",
+      "line": 130,
+      "name": "can_launch_spaceship",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::check_victory": {
+      "file": "openciv3/victory.py",
+      "line": 156,
+      "name": "check_victory",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::held_victory_locations": {
+      "file": "openciv3/victory.py",
+      "line": 97,
+      "name": "held_victory_locations",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::launch_spaceship": {
+      "file": "openciv3/victory.py",
+      "line": 143,
+      "name": "launch_spaceship",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::score_victory_locations": {
+      "file": "openciv3/victory.py",
+      "line": 122,
+      "name": "score_victory_locations",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::victory_alliance": {
+      "file": "openciv3/victory.py",
+      "line": 53,
+      "name": "victory_alliance",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::victory_name": {
+      "file": "openciv3/victory.py",
+      "line": 59,
+      "name": "victory_name",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::victory::victory_statuses": {
+      "file": "openciv3/victory.py",
+      "line": 66,
+      "name": "victory_statuses",
+      "rust": "src/openciv3/victory.rs"
+    },
+    "crate::openciv3::visibility::TileKnowledge": {
+      "file": "openciv3/visibility.py",
+      "line": 28,
+      "name": "TileKnowledge",
+      "rust": "src/openciv3/visibility.rs"
+    },
+    "crate::openciv3::visibility::_height": {
+      "file": "openciv3/visibility.py",
+      "line": 18,
+      "name": "_height",
+      "rust": "src/openciv3/visibility.rs"
+    },
+    "crate::openciv3::visibility::unit_sight": {
+      "file": "openciv3/visibility.py",
+      "line": 70,
+      "name": "unit_sight",
+      "rust": "src/openciv3/visibility.rs"
+    },
+    "crate::openciv3::visibility::update_visibility": {
+      "file": "openciv3/visibility.py",
+      "line": 100,
+      "name": "update_visibility",
+      "rust": "src/openciv3/visibility.rs"
+    },
+    "crate::openciv3::worker_jobs::JobCompletion": {
+      "file": "openciv3/worker_jobs.py",
+      "line": 24,
+      "name": "JobCompletion",
+      "rust": "src/openciv3/worker_jobs.rs"
+    },
+    "crate::openciv3::worker_jobs::_complete": {
+      "file": "openciv3/worker_jobs.py",
+      "line": 101,
+      "name": "_complete",
+      "rust": "src/openciv3/worker_jobs.rs"
+    },
+    "crate::openciv3::worker_jobs::_forest_shields": {
+      "file": "openciv3/worker_jobs.py",
+      "line": 69,
+      "name": "_forest_shields",
+      "rust": "src/openciv3/worker_jobs.rs"
+    },
+    "crate::openciv3::worker_jobs::_workers": {
+      "file": "openciv3/worker_jobs.py",
+      "line": 37,
+      "name": "_workers",
+      "rust": "src/openciv3/worker_jobs.rs"
+    },
+    "crate::openciv3::worker_jobs::advance_worker": {
+      "file": "openciv3/worker_jobs.py",
+      "line": 155,
+      "name": "advance_worker",
+      "rust": "src/openciv3/worker_jobs.rs"
+    },
+    "crate::openciv3::worker_jobs::assign_worker_job": {
+      "file": "openciv3/worker_jobs.py",
+      "line": 51,
+      "name": "assign_worker_job",
+      "rust": "src/openciv3/worker_jobs.rs"
+    },
+    "crate::openciv3::worker_jobs::cancel_worker_job": {
+      "file": "openciv3/worker_jobs.py",
+      "line": 32,
+      "name": "cancel_worker_job",
+      "rust": "src/openciv3/worker_jobs.rs"
+    },
+    "crate::openciv3::worker_jobs::turns_to_finish": {
+      "file": "openciv3/worker_jobs.py",
+      "line": 41,
+      "name": "turns_to_finish",
+      "rust": "src/openciv3/worker_jobs.rs"
+    },
+    "crate::openciv3::worker_rules::can_work": {
+      "file": "openciv3/worker_rules.py",
+      "line": 104,
+      "name": "can_work",
+      "rust": "src/openciv3/worker_rules.rs"
+    },
+    "crate::openciv3::worker_rules::improvement_for": {
+      "file": "openciv3/worker_rules.py",
+      "line": 47,
+      "name": "improvement_for",
+      "rust": "src/openciv3/worker_rules.rs"
+    },
+    "crate::openciv3::worker_rules::improvement_yield": {
+      "file": "openciv3/worker_rules.py",
+      "line": 51,
+      "name": "improvement_yield",
+      "rust": "src/openciv3/worker_rules.rs"
+    },
+    "crate::openciv3::worker_rules::irrigation_access": {
+      "file": "openciv3/worker_rules.py",
+      "line": 80,
+      "name": "irrigation_access",
+      "rust": "src/openciv3/worker_rules.rs"
+    },
+    "crate::openciv3::worker_rules::is_worker_prototype": {
+      "file": "openciv3/worker_rules.py",
+      "line": 40,
+      "name": "is_worker_prototype",
+      "rust": "src/openciv3/worker_rules.rs"
+    },
+    "crate::openciv3::worker_rules::meets_job_requirements": {
+      "file": "openciv3/worker_rules.py",
+      "line": 94,
+      "name": "meets_job_requirements",
+      "rust": "src/openciv3/worker_rules.rs"
+    },
+    "crate::openciv3::worker_rules::order_key": {
+      "file": "openciv3/worker_rules.py",
+      "line": 36,
+      "name": "order_key",
+      "rust": "src/openciv3/worker_rules.rs"
+    },
+    "crate::openciv3::worker_rules::worker_job_cost": {
+      "file": "openciv3/worker_rules.py",
+      "line": 76,
+      "name": "worker_job_cost",
+      "rust": "src/openciv3/worker_rules.rs"
+    },
+    "crate::openciv3::worker_rules::worker_speed": {
+      "file": "openciv3/worker_rules.py",
+      "line": 64,
+      "name": "worker_speed",
+      "rust": "src/openciv3/worker_rules.rs"
+    },
+    "crate::openciv3::world::PlacedCity": {
+      "file": "openciv3/world.py",
+      "line": 110,
+      "name": "PlacedCity",
+      "rust": "src/openciv3/world.rs"
+    },
+    "crate::openciv3::world::PlacedUnit": {
+      "file": "openciv3/world.py",
+      "line": 91,
+      "name": "PlacedUnit",
+      "rust": "src/openciv3/world.rs"
+    },
+    "crate::openciv3::world::StartingLocation": {
+      "file": "openciv3/world.py",
+      "line": 137,
+      "name": "StartingLocation",
+      "rust": "src/openciv3/world.rs"
+    },
+    "crate::openciv3::world::Tile": {
+      "file": "openciv3/world.py",
+      "line": 43,
+      "name": "Tile",
+      "rust": "src/openciv3/world.rs"
+    },
+    "crate::openciv3::world::WorldMap": {
+      "file": "openciv3/world.py",
+      "line": 145,
+      "name": "WorldMap",
+      "rust": "src/openciv3/world.rs"
+    },
+    "crate::openciv3::world::resolve_owner": {
+      "file": "openciv3/world.py",
+      "line": 226,
+      "name": "resolve_owner",
+      "rust": "src/openciv3/world.rs"
+    },
+    "crate::openciv3::world_elevation::add_elevation": {
+      "file": "openciv3/world_elevation.py",
+      "line": 26,
+      "name": "add_elevation",
+      "rust": "src/openciv3/world_elevation.rs"
+    },
+    "crate::openciv3::world_size::WorldSize": {
+      "file": "openciv3/world_size.py",
+      "line": 7,
+      "name": "WorldSize",
+      "rust": "src/openciv3/world_size.rs"
+    },
+    "crate::openciv3::world_vegetation::Climate": {
+      "file": "openciv3/world_vegetation.py",
+      "line": 15,
+      "name": "Climate",
+      "rust": "src/openciv3/world_vegetation.rs"
+    },
+    "crate::openciv3::world_vegetation::VegetationRules": {
+      "file": "openciv3/world_vegetation.py",
+      "line": 22,
+      "name": "VegetationRules",
+      "rust": "src/openciv3/world_vegetation.rs"
+    },
+    "crate::openciv3::world_vegetation::add_vegetation": {
+      "file": "openciv3/world_vegetation.py",
+      "line": 37,
+      "name": "add_vegetation",
+      "rust": "src/openciv3/world_vegetation.rs"
+    },
+    "crate::openciv3::yields::apply_government_yield": {
+      "file": "openciv3/yields.py",
+      "line": 27,
+      "name": "apply_government_yield",
+      "rust": "src/openciv3/yields.rs"
+    },
+    "crate::openciv3::yields::natural_tile_yield": {
+      "file": "openciv3/yields.py",
+      "line": 19,
+      "name": "natural_tile_yield",
+      "rust": "src/openciv3/yields.rs"
+    },
+    "crate::openciv3::yields::tile_assignment_score": {
+      "file": "openciv3/yields.py",
+      "line": 13,
+      "name": "tile_assignment_score",
+      "rust": "src/openciv3/yields.rs"
+    },
+    "crate::openciv3::yields::tile_yield": {
+      "file": "openciv3/yields.py",
+      "line": 38,
+      "name": "tile_yield",
+      "rust": "src/openciv3/yields.rs"
+    },
+    "crate::strategy::grid::DistanceMap": {
+      "file": "strategy/grid.py",
+      "line": 17,
+      "name": "DistanceMap",
+      "rust": "src/strategy/grid.rs"
+    },
+    "crate::strategy::grid::GridMap": {
+      "file": "strategy/grid.py",
+      "line": 35,
+      "name": "GridMap",
+      "rust": "src/strategy/grid.rs"
+    },
+    "crate::strategy::grid::GridPoint": {
+      "file": "strategy/grid.py",
+      "line": 9,
+      "name": "GridPoint",
+      "rust": "src/strategy/grid.rs"
+    },
+    "crate::strategy::grid::axis_delta": {
+      "file": "strategy/grid.py",
+      "line": 51,
+      "name": "axis_delta",
+      "rust": "src/strategy/grid.rs"
+    },
+    "crate::strategy::grid::distance": {
+      "file": "strategy/grid.py",
+      "line": 61,
+      "name": "distance",
+      "rust": "src/strategy/grid.rs"
+    },
+    "crate::strategy::grid::rank_distance": {
+      "file": "strategy/grid.py",
+      "line": 67,
+      "name": "rank_distance",
+      "rust": "src/strategy/grid.rs"
+    },
+    "crate::strategy::grid::ring": {
+      "file": "strategy/grid.py",
+      "line": 73,
+      "name": "ring",
+      "rust": "src/strategy/grid.rs"
+    },
+    "crate::strategy::grid::within_rank": {
+      "file": "strategy/grid.py",
+      "line": 90,
+      "name": "within_rank",
+      "rust": "src/strategy/grid.rs"
+    },
+    "crate::strategy::height_map::HeightMap": {
+      "file": "strategy/height_map.py",
+      "line": 14,
+      "name": "HeightMap",
+      "rust": "src/strategy/height_map.rs"
+    },
+    "crate::strategy::interfaces::EventSource": {
+      "file": "strategy/interfaces.py",
+      "line": 8,
+      "name": "EventSource",
+      "rust": "src/strategy/interfaces.rs"
+    },
+    "crate::strategy::interfaces::RandomSource": {
+      "file": "strategy/interfaces.py",
+      "line": 16,
+      "name": "RandomSource",
+      "rust": "src/strategy/interfaces.rs"
+    },
+    "crate::strategy::noise::OpenSimplexNoise": {
+      "file": "strategy/noise.py",
+      "line": 60,
+      "name": "OpenSimplexNoise",
+      "rust": "src/strategy/noise.rs"
+    },
+    "crate::strategy::noise::_Contribution": {
+      "file": "strategy/noise.py",
+      "line": 20,
+      "name": "_Contribution",
+      "rust": "src/strategy/noise.rs"
+    },
+    "crate::strategy::noise::_lookup": {
+      "file": "strategy/noise.py",
+      "line": 25,
+      "name": "_lookup",
+      "rust": "src/strategy/noise.rs"
+    },
+    "crate::strategy::noise::_signed64": {
+      "file": "strategy/noise.py",
+      "line": 47,
+      "name": "_signed64",
+      "rust": "src/strategy/noise.rs"
+    },
+    "crate::strategy::noise::_sum": {
+      "file": "strategy/noise.py",
+      "line": 51,
+      "name": "_sum",
+      "rust": "src/strategy/noise.rs"
+    },
+    "crate::strategy::random::MapRandom": {
+      "file": "strategy/random.py",
+      "line": 16,
+      "name": "MapRandom",
+      "rust": "src/strategy/random.rs"
+    },
+    "crate::strategy::random::seed32": {
+      "file": "strategy/random.py",
+      "line": 11,
+      "name": "seed32",
+      "rust": "src/strategy/random.rs"
+    },
+    "crate::strategy::wrapping::wrapping_add": {
+      "file": "strategy/wrapping.py",
+      "line": 13,
+      "name": "wrapping_add",
+      "rust": "src/strategy/wrapping.rs"
+    },
+    "crate::strategy::wrapping::wrapping_mul": {
+      "file": "strategy/wrapping.py",
+      "line": 24,
+      "name": "wrapping_mul",
+      "rust": "src/strategy/wrapping.rs"
+    },
+    "crate::strategy::wrapping::wrapping_neg": {
+      "file": "strategy/wrapping.py",
+      "line": 7,
+      "name": "wrapping_neg",
+      "rust": "src/strategy/wrapping.rs"
+    },
+    "crate::strategy::wrapping::wrapping_sub": {
+      "file": "strategy/wrapping.py",
+      "line": 20,
+      "name": "wrapping_sub",
+      "rust": "src/strategy/wrapping.rs"
+    },
+    "py__civ3_ai__civilization_ai__UnitPlan": {
+      "file": "civ3_ai/civilization_ai.py",
+      "line": 44,
+      "name": "UnitPlan"
+    },
+    "py__civ3_ai__escaped_5f5f616c6c5f5f": {
+      "file": "civ3_ai/__init__.py",
+      "line": 12,
+      "name": "__all__"
+    },
+    "py__civ3_ai__escaped_5f5f676574617474725f5f": {
+      "file": "civ3_ai/__init__.py",
+      "line": 15,
+      "name": "__getattr__"
+    },
+    "py__civ3_ai__production_ai__UNAVAILABLE_SCORE": {
+      "file": "civ3_ai/production_ai.py",
+      "line": 35,
+      "name": "UNAVAILABLE_SCORE"
+    },
+    "py__civ3_ai__settler_locations__Point": {
+      "file": "civ3_ai/settler_locations.py",
+      "line": 12,
+      "name": "Point"
+    },
+    "py__civ3_ai__worker_ai__DEFAULT_SCORES": {
+      "file": "civ3_ai/worker_ai.py",
+      "line": 24,
+      "name": "DEFAULT_SCORES"
+    },
+    "py__civ3_console__escaped_5f5f616c6c5f5f": {
+      "file": "civ3_console/__init__.py",
+      "line": 3,
+      "name": "__all__"
+    },
+    "py__civ3_console__native_campaign__TURNS": {
+      "file": "civ3_console/native_campaign.py",
+      "line": 17,
+      "name": "TURNS"
+    },
+    "py__civ__escaped_5f5f616c6c5f5f": {
+      "file": "civ/__init__.py",
+      "line": 5,
+      "name": "__all__"
+    },
+    "py__openciv3__barbarian_spawning__SPAWN_RATES": {
+      "file": "openciv3/barbarian_spawning.py",
+      "line": 15,
+      "name": "SPAWN_RATES"
+    },
+    "py__openciv3__blast__BASE": {
+      "file": "openciv3/blast.py",
+      "line": 56,
+      "name": "BASE"
+    },
+    "py__openciv3__blast__Codebook": {
+      "file": "openciv3/blast.py",
+      "line": 60,
+      "name": "Codebook"
+    },
+    "py__openciv3__blast__DISTANCES": {
+      "file": "openciv3/blast.py",
+      "line": 98,
+      "name": "DISTANCES"
+    },
+    "py__openciv3__blast__DISTANCE_LENGTHS": {
+      "file": "openciv3/blast.py",
+      "line": 54,
+      "name": "DISTANCE_LENGTHS"
+    },
+    "py__openciv3__blast__EXTRA": {
+      "file": "openciv3/blast.py",
+      "line": 57,
+      "name": "EXTRA"
+    },
+    "py__openciv3__blast__LENGTHS": {
+      "file": "openciv3/blast.py",
+      "line": 97,
+      "name": "LENGTHS"
+    },
+    "py__openciv3__blast__LENGTH_LENGTHS": {
+      "file": "openciv3/blast.py",
+      "line": 52,
+      "name": "LENGTH_LENGTHS"
+    },
+    "py__openciv3__blast__LITERALS": {
+      "file": "openciv3/blast.py",
+      "line": 96,
+      "name": "LITERALS"
+    },
+    "py__openciv3__blast__LITERAL_LENGTHS": {
+      "file": "openciv3/blast.py",
+      "line": 45,
+      "name": "LITERAL_LENGTHS"
+    },
+    "py__openciv3__bombardment__escaped_5f494d50524f56454d454e5453": {
+      "file": "openciv3/bombardment.py",
+      "line": 21,
+      "name": "_IMPROVEMENTS"
+    },
+    "py__openciv3__building_effects__SPACE_RACE_VICTORY": {
+      "file": "openciv3/building_effects.py",
+      "line": 45,
+      "name": "SPACE_RACE_VICTORY"
+    },
+    "py__openciv3__building_rules__BuildingEffect": {
+      "file": "openciv3/building_rules.py",
+      "line": 8,
+      "name": "BuildingEffect"
+    },
+    "py__openciv3__calendar__DEFAULT_SCALE": {
+      "file": "openciv3/calendar.py",
+      "line": 15,
+      "name": "DEFAULT_SCALE"
+    },
+    "py__openciv3__calendar__DEFAULT_TURN_LIMIT": {
+      "file": "openciv3/calendar.py",
+      "line": 14,
+      "name": "DEFAULT_TURN_LIMIT"
+    },
+    "py__openciv3__calendar__MONTHS": {
+      "file": "openciv3/calendar.py",
+      "line": 17,
+      "name": "MONTHS"
+    },
+    "py__openciv3__calendar__TimeUnit": {
+      "file": "openciv3/calendar.py",
+      "line": 6,
+      "name": "TimeUnit"
+    },
+    "py__openciv3__cities__CitizenMood": {
+      "file": "openciv3/cities.py",
+      "line": 11,
+      "name": "CitizenMood"
+    },
+    "py__openciv3__diplomacy__INITIAL_PEACE": {
+      "file": "openciv3/diplomacy.py",
+      "line": 9,
+      "name": "INITIAL_PEACE"
+    },
+    "py__openciv3__global_rules__DEFAULT_BARBARIAN_CAMP_GOLD": {
+      "file": "openciv3/global_rules.py",
+      "line": 8,
+      "name": "DEFAULT_BARBARIAN_CAMP_GOLD"
+    },
+    "py__openciv3__hydrology__Point": {
+      "file": "openciv3/hydrology.py",
+      "line": 7,
+      "name": "Point"
+    },
+    "py__openciv3__json_io__Json": {
+      "file": "openciv3/json_io.py",
+      "line": 6,
+      "name": "Json"
+    },
+    "py__openciv3__json_rules__TECH_FLAGS": {
+      "file": "openciv3/json_rules.py",
+      "line": 20,
+      "name": "TECH_FLAGS"
+    },
+    "py__openciv3__json_rules__TERRAIN_KEYS": {
+      "file": "openciv3/json_rules.py",
+      "line": 219,
+      "name": "TERRAIN_KEYS"
+    },
+    "py__openciv3__json_rules__UNIT_ABILITIES": {
+      "file": "openciv3/json_rules.py",
+      "line": 322,
+      "name": "UNIT_ABILITIES"
+    },
+    "py__openciv3__json_rules__UNIT_ORDERS": {
+      "file": "openciv3/json_rules.py",
+      "line": 314,
+      "name": "UNIT_ORDERS"
+    },
+    "py__openciv3__naval_risk__SINKING_FLAGS": {
+      "file": "openciv3/naval_risk.py",
+      "line": 7,
+      "name": "SINKING_FLAGS"
+    },
+    "py__openciv3__pathfinding__EPSILON": {
+      "file": "openciv3/pathfinding.py",
+      "line": 16,
+      "name": "EPSILON"
+    },
+    "py__openciv3__pathfinding__Point": {
+      "file": "openciv3/pathfinding.py",
+      "line": 15,
+      "name": "Point"
+    },
+    "py__openciv3__players__StrategicPriority": {
+      "file": "openciv3/players.py",
+      "line": 7,
+      "name": "StrategicPriority"
+    },
+    "py__openciv3__production_cost__TRAIT_FLAGS": {
+      "file": "openciv3/production_cost.py",
+      "line": 12,
+      "name": "TRAIT_FLAGS"
+    },
+    "py__openciv3__recurring_deals__STANDARD_DEAL_TURNS": {
+      "file": "openciv3/recurring_deals.py",
+      "line": 9,
+      "name": "STANDARD_DEAL_TURNS"
+    },
+    "py__openciv3__rules__FoliageAction": {
+      "file": "openciv3/rules.py",
+      "line": 101,
+      "name": "FoliageAction"
+    },
+    "py__openciv3__rules__ResourceKind": {
+      "file": "openciv3/rules.py",
+      "line": 69,
+      "name": "ResourceKind"
+    },
+    "py__openciv3__rules__TechnologyEffect": {
+      "file": "openciv3/rules.py",
+      "line": 17,
+      "name": "TechnologyEffect"
+    },
+    "py__openciv3__scenario_model__CITY_ELIMINATION": {
+      "file": "openciv3/scenario_model.py",
+      "line": 13,
+      "name": "CITY_ELIMINATION"
+    },
+    "py__openciv3__scenario_model__DEFAULT_ERA_IDENTIFIERS": {
+      "file": "openciv3/scenario_model.py",
+      "line": 22,
+      "name": "DEFAULT_ERA_IDENTIFIERS"
+    },
+    "py__openciv3__scenario_model__MASS_REGICIDE": {
+      "file": "openciv3/scenario_model.py",
+      "line": 15,
+      "name": "MASS_REGICIDE"
+    },
+    "py__openciv3__scenario_model__REGICIDE": {
+      "file": "openciv3/scenario_model.py",
+      "line": 14,
+      "name": "REGICIDE"
+    },
+    "py__openciv3__scenario_model__REGICIDE_MODES": {
+      "file": "openciv3/scenario_model.py",
+      "line": 16,
+      "name": "REGICIDE_MODES"
+    },
+    "py__openciv3__scenario_model__TRAITS": {
+      "file": "openciv3/scenario_model.py",
+      "line": 20,
+      "name": "TRAITS"
+    },
+    "py__openciv3__scenario_model__VICTORY_POINT_SCORING": {
+      "file": "openciv3/scenario_model.py",
+      "line": 17,
+      "name": "VICTORY_POINT_SCORING"
+    },
+    "py__openciv3__scenario_model__WONDER_VICTORY": {
+      "file": "openciv3/scenario_model.py",
+      "line": 18,
+      "name": "WONDER_VICTORY"
+    },
+    "py__openciv3__standalone__UNIT_ART": {
+      "file": "openciv3/standalone.py",
+      "line": 17,
+      "name": "UNIT_ART"
+    },
+    "py__openciv3__trade_network__Point": {
+      "file": "openciv3/trade_network.py",
+      "line": 17,
+      "name": "Point"
+    },
+    "py__openciv3__trade_network__ResourceAgreement": {
+      "file": "openciv3/trade_network.py",
+      "line": 18,
+      "name": "ResourceAgreement"
+    },
+    "py__openciv3__turn_controller__TurnEvent": {
+      "file": "openciv3/turn_controller.py",
+      "line": 45,
+      "name": "TurnEvent"
+    },
+    "py__openciv3__unit_animation__DIRECTIONS": {
+      "file": "openciv3/unit_animation.py",
+      "line": 12,
+      "name": "DIRECTIONS"
+    },
+    "py__openciv3__unit_animation__JOB_ACTIONS": {
+      "file": "openciv3/unit_animation.py",
+      "line": 9,
+      "name": "JOB_ACTIONS"
+    },
+    "py__openciv3__unit_animation__MOVE_SECONDS": {
+      "file": "openciv3/unit_animation.py",
+      "line": 45,
+      "name": "MOVE_SECONDS"
+    },
+    "py__openciv3__unit_missions__Point": {
+      "file": "openciv3/unit_missions.py",
+      "line": 9,
+      "name": "Point"
+    },
+    "py__openciv3__unit_rules__UnitAbility": {
+      "file": "openciv3/unit_rules.py",
+      "line": 15,
+      "name": "UnitAbility"
+    },
+    "py__openciv3__unit_rules__UnitDomain": {
+      "file": "openciv3/unit_rules.py",
+      "line": 9,
+      "name": "UnitDomain"
+    },
+    "py__openciv3__unit_rules__UnitOrder": {
+      "file": "openciv3/unit_rules.py",
+      "line": 71,
+      "name": "UnitOrder"
+    },
+    "py__openciv3__unit_rules__UnitStrategy": {
+      "file": "openciv3/unit_rules.py",
+      "line": 48,
+      "name": "UnitStrategy"
+    },
+    "py__openciv3__units__UnitFacing": {
+      "file": "openciv3/units.py",
+      "line": 12,
+      "name": "UnitFacing"
+    },
+    "py__openciv3__victory__CULTURAL_VICTORY": {
+      "file": "openciv3/victory.py",
+      "line": 16,
+      "name": "CULTURAL_VICTORY"
+    },
+    "py__openciv3__visibility__DIRECTIONS": {
+      "file": "openciv3/visibility.py",
+      "line": 13,
+      "name": "DIRECTIONS"
+    },
+    "py__openciv3__visibility__HEIGHTS": {
+      "file": "openciv3/visibility.py",
+      "line": 15,
+      "name": "HEIGHTS"
+    },
+    "py__openciv3__visibility__Point": {
+      "file": "openciv3/visibility.py",
+      "line": 12,
+      "name": "Point"
+    },
+    "py__openciv3__worker_jobs__DEFAULT_EFFECTS": {
+      "file": "openciv3/worker_jobs.py",
+      "line": 17,
+      "name": "DEFAULT_EFFECTS"
+    },
+    "py__openciv3__worker_rules__DEFAULT_VALIDATORS": {
+      "file": "openciv3/worker_rules.py",
+      "line": 28,
+      "name": "DEFAULT_VALIDATORS"
+    },
+    "py__openciv3__worker_rules__IMPROVEMENTS": {
+      "file": "openciv3/worker_rules.py",
+      "line": 24,
+      "name": "IMPROVEMENTS"
+    },
+    "py__openciv3__worker_rules__INSTALLATIONS": {
+      "file": "openciv3/worker_rules.py",
+      "line": 21,
+      "name": "INSTALLATIONS"
+    },
+    "py__openciv3__worker_rules__INSTALLATION_FLAGS": {
+      "file": "openciv3/worker_rules.py",
+      "line": 23,
+      "name": "INSTALLATION_FLAGS"
+    },
+    "py__openciv3__worker_rules__ORDERS": {
+      "file": "openciv3/worker_rules.py",
+      "line": 10,
+      "name": "ORDERS"
+    },
+    "py__openciv3__worker_rules__WORKER_ORDERS": {
+      "file": "openciv3/worker_rules.py",
+      "line": 19,
+      "name": "WORKER_ORDERS"
+    },
+    "py__openciv3__world__OVERLAY_KEYS": {
+      "file": "openciv3/world.py",
+      "line": 32,
+      "name": "OVERLAY_KEYS"
+    },
+    "py__openciv3__world__Overlay": {
+      "file": "openciv3/world.py",
+      "line": 16,
+      "name": "Overlay"
+    },
+    "py__openciv3__world__OwnerKind": {
+      "file": "openciv3/world.py",
+      "line": 9,
+      "name": "OwnerKind"
+    },
+    "py__openciv3__world_elevation__HILLS": {
+      "file": "openciv3/world_elevation.py",
+      "line": 10,
+      "name": "HILLS"
+    },
+    "py__openciv3__world_elevation__MOUNTAINS": {
+      "file": "openciv3/world_elevation.py",
+      "line": 10,
+      "name": "MOUNTAINS"
+    },
+    "py__openciv3__world_elevation__VOLCANO": {
+      "file": "openciv3/world_elevation.py",
+      "line": 10,
+      "name": "VOLCANO"
+    },
+    "py__openciv3__world_elevation__WorldAge": {
+      "file": "openciv3/world_elevation.py",
+      "line": 13,
+      "name": "WorldAge"
+    },
+    "py__openciv3__world_elevation__escaped_5f42414e4453": {
+      "file": "openciv3/world_elevation.py",
+      "line": 19,
+      "name": "_BANDS"
+    },
+    "py__openciv3__world_vegetation__FOREST": {
+      "file": "openciv3/world_vegetation.py",
+      "line": 11,
+      "name": "FOREST"
+    },
+    "py__openciv3__world_vegetation__JUNGLE": {
+      "file": "openciv3/world_vegetation.py",
+      "line": 11,
+      "name": "JUNGLE"
+    },
+    "py__openciv3__world_vegetation__MARSH": {
+      "file": "openciv3/world_vegetation.py",
+      "line": 11,
+      "name": "MARSH"
+    },
+    "py__openciv3__world_vegetation__PINE": {
+      "file": "openciv3/world_vegetation.py",
+      "line": 12,
+      "name": "PINE"
+    },
+    "py__openciv3__world_vegetation__escaped_5f42414e4453": {
+      "file": "openciv3/world_vegetation.py",
+      "line": 30,
+      "name": "_BANDS"
+    },
+    "py__strategy__escaped_5f5f616c6c5f5f": {
+      "file": "strategy/__init__.py",
+      "line": 5,
+      "name": "__all__"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__BASE_2": {
+      "file": "strategy/_noise_tables.py",
+      "line": 35,
+      "name": "BASE_2"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__BASE_3": {
+      "file": "strategy/_noise_tables.py",
+      "line": 58,
+      "name": "BASE_3"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__BASE_4": {
+      "file": "strategy/_noise_tables.py",
+      "line": 112,
+      "name": "BASE_4"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__GRADIENTS_2": {
+      "file": "strategy/_noise_tables.py",
+      "line": 31,
+      "name": "GRADIENTS_2"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__GRADIENTS_3": {
+      "file": "strategy/_noise_tables.py",
+      "line": 50,
+      "name": "GRADIENTS_3"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__GRADIENTS_4": {
+      "file": "strategy/_noise_tables.py",
+      "line": 93,
+      "name": "GRADIENTS_4"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__LOOKUP_2": {
+      "file": "strategy/_noise_tables.py",
+      "line": 45,
+      "name": "LOOKUP_2"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__LOOKUP_3": {
+      "file": "strategy/_noise_tables.py",
+      "line": 81,
+      "name": "LOOKUP_3"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__LOOKUP_4": {
+      "file": "strategy/_noise_tables.py",
+      "line": 202,
+      "name": "LOOKUP_4"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__POINTS_2": {
+      "file": "strategy/_noise_tables.py",
+      "line": 40,
+      "name": "POINTS_2"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__POINTS_3": {
+      "file": "strategy/_noise_tables.py",
+      "line": 64,
+      "name": "POINTS_3"
+    },
+    "py__strategy__escaped_5f6e6f6973655f7461626c6573__POINTS_4": {
+      "file": "strategy/_noise_tables.py",
+      "line": 119,
+      "name": "POINTS_4"
+    },
+    "py__strategy__grid__MapPoint": {
+      "file": "strategy/grid.py",
+      "line": 31,
+      "name": "MapPoint"
+    },
+    "py__strategy__grid__Point": {
+      "file": "strategy/grid.py",
+      "line": 32,
+      "name": "Point"
+    },
+    "py__strategy__height_map__NOISE_HEIGHT": {
+      "file": "strategy/height_map.py",
+      "line": 10,
+      "name": "NOISE_HEIGHT"
+    },
+    "py__strategy__height_map__NOISE_WIDTH": {
+      "file": "strategy/height_map.py",
+      "line": 9,
+      "name": "NOISE_WIDTH"
+    },
+    "py__strategy__interfaces__Event": {
+      "file": "strategy/interfaces.py",
+      "line": 5,
+      "name": "Event"
+    },
+    "py__strategy__noise__escaped_5f4752414449454e5453": {
+      "file": "strategy/noise.py",
+      "line": 16,
+      "name": "_GRADIENTS"
+    },
+    "py__strategy__noise__escaped_5f4c4f4f4b555053": {
+      "file": "strategy/noise.py",
+      "line": 40,
+      "name": "_LOOKUPS"
+    },
+    "py__strategy__noise__escaped_5f4e4f524d": {
+      "file": "strategy/noise.py",
+      "line": 15,
+      "name": "_NORM"
+    },
+    "py__strategy__noise__escaped_5f535155495348": {
+      "file": "strategy/noise.py",
+      "line": 14,
+      "name": "_SQUISH"
+    },
+    "py__strategy__noise__escaped_5f53545245544348": {
+      "file": "strategy/noise.py",
+      "line": 13,
+      "name": "_STRETCH"
+    },
+    "py__strategy__random__escaped_5f4d4158": {
+      "file": "strategy/random.py",
+      "line": 8,
+      "name": "_MAX"
+    },
+    "py__strategy__wrapping__escaped_5f4c4f575f4d41534b": {
+      "file": "strategy/wrapping.py",
+      "line": 4,
+      "name": "_LOW_MASK"
+    },
+    "py__strategy__wrapping__escaped_5f4d494e494d554d": {
+      "file": "strategy/wrapping.py",
+      "line": 3,
+      "name": "_MINIMUM"
+    }
+  }
+}

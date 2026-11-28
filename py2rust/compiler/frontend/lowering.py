@@ -2330,7 +2330,9 @@ class Lowering:
             ):
                 return True
             if isinstance(initializer, n.NameExpr):
-                return initializer.fullname in {"builtins.None", "builtins.True", "builtins.False"}
+                return initializer.fullname in {"builtins.None", "builtins.True", "builtins.False"} or (
+                    initializer.fullname in self.functions
+                )
             if isinstance(initializer, n.UnaryExpr):
                 return initializer.op in {"+", "-"} and isinstance(initializer.expr, (n.IntExpr, n.FloatExpr))
             return (

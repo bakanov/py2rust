@@ -13,6 +13,7 @@ import sys
 import time
 
 from py2rust.compiler.project import create_project
+from py2rust.compiler.project_output import application_source_digest
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -87,7 +88,7 @@ def main() -> None:
         "rustc": subprocess.check_output(["rustc", "--version"], text=True).strip(),
         "source_sha256": {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in sources},
         "input_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        "generated_sha256": hashlib.sha256((project / "src/main.rs").read_bytes()).hexdigest(),
+        "generated_sha256": application_source_digest(project),
         "rows": rows,
     }
     (output / "results.json").write_text(json.dumps(report, indent=2) + "\n")

@@ -17,6 +17,7 @@ import time
 from pathlib import Path
 
 from py2rust.compiler.project import create_project
+from py2rust.compiler.project_output import application_source_text
 from py2rust.compiler.service import create_service_project
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +27,13 @@ def command(args: list[str], env: dict[str, str], log: Path) -> None:
     with log.open("w") as stream:
         subprocess.run(args, env=env, stdout=stream, stderr=subprocess.STDOUT, check=True)
     return
+
+
+def application_diagnostic(span: dict) -> bool:
+    name = span["file_name"].replace("\\", "/")
+    application_path = name.startswith("src/") or "/src/" in name
+    native_path = name.startswith("src/native/") or "/src/native/" in name
+    return span["is_primary"] and application_path and not native_path and name.endswith(".rs")
 
 
 def observe(binary: Path, case: str, engine: str, size: int, rounds: int, repeats: int) -> dict:
@@ -118,7 +126,7 @@ def main() -> None:
     ]:
         destination = out / name
         create_project(path, destination, binary_name="quality_" + name)
-        code = (destination / "src/main.rs").read_text()
+        code = application_source_text(destination)
         log = out / (name + "-clippy.jsonl")
         command(
             [
@@ -153,9 +161,7 @@ def main() -> None:
             if item.get("reason") != "compiler-message":
                 continue
             message = item["message"]
-            if message["level"] == "warning" and any(
-                s["is_primary"] and s["file_name"].endswith("src/main.rs") for s in message["spans"]
-            ):
+            if message["level"] == "warning" and any(application_diagnostic(s) for s in message["spans"]):
                 warnings[(message.get("code") or {}).get("code", "unknown")] += 1
         inspections.append(
             {
@@ -165,7 +171,7 @@ def main() -> None:
                 ),
                 "rust_lines": len(code.splitlines()),
                 "clone_calls": code.count(".clone()"),
-                "functions": len(re.findall(r"^fn ", code, re.MULTILINE)),
+                "functions": len(re.findall(r"^(?:pub\(crate\) )?fn ", code, re.MULTILINE)),
                 "clippy_generated_warnings": dict(warnings),
             }
         )

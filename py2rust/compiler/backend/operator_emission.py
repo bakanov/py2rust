@@ -41,7 +41,7 @@ def emit_unary(compiler: ServiceCompiler, node: ast.UnaryOp) -> Expr:
     ):
         return Expr("i64::MIN", Type("int"))
     value = compiler.expr(node.operand)
-    if value.type.name == "optional" and value.type.args[0].name in {"int", "float"}:
+    if value.type.name == "optional" and value.type.args[0].name in {"int", "float", "bool"}:
         value = compiler.convert(value, value.type.args[0], node)
     if isinstance(node.op, ast.UAdd) and value.type.name in {"int", "float"}:
         return value

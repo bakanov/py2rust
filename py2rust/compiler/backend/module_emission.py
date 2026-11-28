@@ -108,13 +108,30 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
             compiler.check_name(arg.arg, arg)
             compiler.locals[arg.arg] = typ
             stateful_turn_controller = (
-                node.name.startswith("py__openciv3__turn_controller__TurnController__")
-                and node.name.rsplit("__", 1)[-1] in {"advance", "autoplay_human_turn", "respond_to_trade"}
-                and arg.arg == "self_"
-            ) or (
-                node.name.startswith("py__civ3_ai__civilization_ai__CivilizationAI__")
-                and not node.name.endswith("__pending_trade")
-                and arg.arg == "self_"
+                (
+                    node.name.startswith("py__openciv3__turn_controller__TurnController__")
+                    and node.name.rsplit("__", 1)[-1] in {"advance", "autoplay_human_turn", "respond_to_trade"}
+                    and arg.arg == "self_"
+                )
+                or (
+                    node.name.startswith("py__civ3_ai__civilization_ai__CivilizationAI__")
+                    and not node.name.endswith("__pending_trade")
+                    and arg.arg == "self_"
+                )
+                or (
+                    node.name.startswith("py__civ3_console__session__ConsoleSession__")
+                    and not node.name.endswith("escaped_5f5f706f73745f696e69745f5f")
+                    and arg.arg == "self_"
+                )
+                or (
+                    node.name
+                    in {
+                        "py__openciv3__human_units__HumanUnits__confirm_founding",
+                        "py__openciv3__human_research__HumanResearch__choose",
+                        "py__openciv3__human_economy__HumanEconomy__apply",
+                    }
+                    and arg.arg == "self_"
+                )
             )
             if arg.arg in compiler.mutable_parameters or stateful_turn_controller:
                 args.append(f"mut {arg.arg}: &mut {typ.rust()}")
@@ -149,6 +166,8 @@ def emit_module(compiler: ServiceCompiler, tree: ast.Module) -> str:
                 rust_type = typ.rust()
                 if typ.name == "callable":
                     rust_type = rust_type.replace("fn", "impl Fn", 1)
+                    if node.name.endswith("__continue_routes") and arg.arg == "report_automated_move":
+                        rust_type = "&" + rust_type
                 args.append(f"mut {arg.arg}: {rust_type}")
         string_parameters = {arg.arg for arg, typ in zip(node.args.args, types) if typ.name == "str"}
         compiler.indexed_text = (

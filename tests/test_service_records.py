@@ -187,7 +187,7 @@ if __name__ == "__main__":
     )
     assert python.returncode == compiled.returncode == 0, python.stderr + compiled.stderr
     assert python.stdout == compiled.stdout == "DONE native project\n"
-    assert "struct Envelope" in (tmp_path / "rust/src/main.rs").read_text()
+    assert "struct Envelope" in (tmp_path / "rust/src/model.rs").read_text()
     return  # noqa: PLR1711 - explicit return required by repository guidelines
 
 

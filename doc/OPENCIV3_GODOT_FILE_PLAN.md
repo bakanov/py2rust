@@ -1,0 +1,179 @@
+# OpenCiv3 graphical migration: file-by-file plan
+
+Companion to [OPENCIV3_GODOT_MIGRATION.md](OPENCIV3_GODOT_MIGRATION.md).
+"Native" means handwritten Rust beside the Python file. "Transpile" means retain
+typed Python and improve the compiler where necessary. "GDExtension" means a
+handwritten Rust Godot node/API adapter.
+
+The existing 104-module campaign and 113-module console closure are the starting
+point, not files to rewrite blindly. Preserve their working tests and improve
+ownership only after the corresponding parity test exists.
+
+## Consolidated physical Rust layout
+
+The Rust filenames in the tables below are **logical module names**, not a
+requirement to create one physical file per Python file. To reduce fragmentation,
+implement all handwritten code in **10 files under `C7/native/`, plus `lib.rs`**:
+
+- `godot_runtime.rs`: root services, logging, runtime, and audio.
+- `game_node.rs`: the `PythonGame` host.
+- `map_nodes.rs`: main map, minimap, and sprite atlas nodes.
+- `advisor_nodes.rs`: advisor, report, palace, and victory nodes.
+- `menu_nodes.rs`: main menu, shared widgets, credits, and preferences.
+- `setup_nodes.rs`: all new-game setup nodes.
+- `media_native.rs`: media catalogs, sprites, Godot media, PCX, FLIC, and AMB.
+- `config_native.rs`: settings and path handling.
+- `binary.rs`: binary records, BIQ, and SAV.
+- `savegame.rs`: save schema, codec, migrations, and restoration.
+
+This replaces the earlier mechanical 49-file mapping with the same logical work
+in 10 files. Each physical file can contain several internal Rust modules and
+register several Godot classes. Split a file later only if its ownership or test
+boundaries become unclear, not merely to mirror Python filenames.
+
+## 1. Root and map files
+
+| Python file | Action and exact work |
+| --- | --- |
+| `C7/PythonGame.py` | Replace the py4godot host with `PythonGame.rs`. Implement `_ready`, `_process`, input dispatch, dialogs, turn-event handling, autosave, and cleanup as GDExtension code. Keep `HumanUnits`, `HumanCities`, `HumanResearch`, `HumanEconomy`, and rules transpiled. Extract reusable text/view-state formatting into a typed `game_presenter.py` and transpile it. Pass only commands and typed snapshots across the node boundary. |
+| `C7/GlobalSingleton.py` | Replace with `GlobalSingleton.rs`. Implement project/user path initialization, media selection, settings, load commands, and native shutdown. Move path/save work to the native adapters below. Do not emulate `ProjectSettings` or Godot autoload behavior in py2rust. |
+| `C7/LogManager.py` | Replace with `LogManager.rs`. Use a Rust rotating log writer with UTF-8, size limits, one backup, and deterministic close/reopen behavior. Expose native errors to Godot without Python logging handlers. |
+| `C7/Map/PythonMapView.py` | Replace the node with `PythonMapView.rs`. Implement Godot drawing, textures, font/color handling, input, animation timing, and viewport updates. Transpile `map_view`, render-command modules, pathfinding, and unit animation. Send draw batches and changed regions, not a cloned game per frame. |
+| `C7/UIElements/MiniMap/PythonMiniMap.py` | Replace Godot `Image`/`ImageTexture` work with `PythonMiniMap.rs`. Extract the RGB raster calculation to a typed pure module and transpile it. Reuse image/pixel buffers and preserve fog-of-war filtering. |
+
+## 2. Advisors and reports
+
+| Python file | Action and exact work |
+| --- | --- |
+| `UIElements/Advisors/AdvisorReport.py` | Replace the UI shell with `AdvisorReport.rs`; handle scene navigation and report selection in Godot. Keep report contents independent of the node. |
+| `UIElements/Advisors/AdvisorReportData.py` | Transpile typed report assembly after `godot_media`, `unit_media`, and runtime services have native contracts. Replace direct service globals with an explicit report context. |
+| `UIElements/Advisors/Advisors.py` | Replace advisor container/navigation with `Advisors.rs`; connect native report views and lifecycle. |
+| `UIElements/Advisors/DomesticAdvisor.py` | Replace UI behavior with `DomesticAdvisor.rs`; transpile `domestic_report`, government choices, and research calculations. Route revolution/government commands through the native session. |
+| `UIElements/Advisors/ScienceAdvisor.py` | Replace UI behavior with `ScienceAdvisor.rs`; transpile `science_report`, `codex`, and `pedia` data queries. Use typed technology IDs and native icons. |
+| `UIElements/Advisors/TechBox.py` | Replace technology widget/event handling with `TechBox.rs`; transpile research costs, prerequisites, and worker-rule labels. Route media through native `unit_media`/`godot_media`. |
+| `UIElements/GameViews/ReportView.py` | Replace with `ReportView.rs`; use transpiled `advisor_reports` and victory models for content. |
+| `UIElements/GameViews/VictoryStatusView.py` | Replace with `VictoryStatusView.rs`; use transpiled `victory_report` for progress and winner/kind presentation. |
+| `UIElements/GameViews/PalaceBuildingsLayer.py` | Replace drawing/input with `PalaceBuildingsLayer.rs`; transpile palace building placement data and use native texture descriptors. |
+| `UIElements/GameViews/PalaceView.py` | Replace scene/media lifecycle with `PalaceView.rs`; load native media and invoke the buildings layer. |
+| `UIElements/GameViews/GameViews.py` | Replace view switching and lifecycle with `GameViews.rs`; connect report, palace, and victory views. |
+
+## 3. Main menu, shared widgets, credits, and preferences
+
+| Python file | Action and exact work |
+| --- | --- |
+| `UIElements/MainMenu/MainMenu.py` | Replace menu actions/navigation with `MainMenu.rs`; call native setup, load, settings, credits, and exit paths. |
+| `UIElements/MainMenu/Civ3MenuButton.py` | Replace button theme/event adapter with `Civ3MenuButton.rs`; use native media lookup. |
+| `UIElements/Civ3Checkbox.py` | Replace with `Civ3Checkbox.rs`; preserve checked-state events and theme behavior. |
+| `UIElements/Civ3FileDialog.py` | Replace with `Civ3FileDialog.rs`; map Godot paths to native filesystem/save adapters and keep cancellation behavior. |
+| `UIElements/Civ3TextureButton.py` | Replace with `Civ3TextureButton.rs`; use native `godot_media` for textures and normal/disabled states. |
+| `UIElements/Civ3TextureRect.py` | Replace with `Civ3TextureRect.rs`; use native texture loading and layout behavior. |
+| `UIElements/Credits/Credits.py` | Replace menu/resource display with `Credits.rs`; retain existing attribution assets and navigation. |
+| `UIElements/Credits/CreditsScroller.py` | Replace scroll timing/layout with `CreditsScroller.rs`; no engine code is needed. |
+| `UIElements/Preferences.py` | Replace the preferences dialog with `Preferences.rs`; invoke the native settings adapter for immediate validation/save and preserve defaults. |
+
+## 4. New-game setup
+
+| Python file | Action and exact work |
+| --- | --- |
+| `UIElements/NewGame/OpponentSelectors.py` | Replace selector widgets with `OpponentSelectors.rs`; use typed civilization IDs from the setup draft. |
+| `UIElements/NewGame/PlayerDraft.py` | Replace UI/media with `PlayerDraft.rs`; transpile typed selection, civilization, difficulty, and generated-game validation. Keep `new_game`, `quick_start`, `scenario_model`, and `world_generation` in the engine. |
+| `UIElements/NewGame/QuickStart.py` | Replace screen actions with `QuickStart.rs`; transpile `quick_start` draft transitions and settings validation. |
+| `UIElements/NewGame/ScenarioDraft.py` | Replace UI/media with `ScenarioDraft.rs`; transpile scenario metadata queries and use the native BIQ/media loaders. |
+| `UIElements/NewGame/ScenarioSetup.py` | Replace scenario screen coordination with `ScenarioSetup.rs`; connect player/scenario/world drafts and commit a native session. |
+| `UIElements/NewGame/WorldDraft.py` | Replace world-settings UI with `WorldDraft.rs`; transpile `quick_start` and world-settings validation. Reuse transpiled `world_generation`, `world_shape`, `world_biomes`, `world_elevation`, `world_vegetation`, and `world_size`. |
+| `UIElements/NewGame/WorldSetup.py` | Replace setup navigation with `WorldSetup.rs`; validate world settings and invoke native generation without a Python callback. |
+
+## 5. Audio and atlas UI
+
+| Python file | Action and exact work |
+| --- | --- |
+| `C7/Audio/AudioManager.py` | Replace with `AudioManager.rs`; implement Godot audio players, catalog reload, volume settings, and cleanup. Resolve media through the native catalog; do not transpile Godot audio APIs. |
+| `C7/Textures/SpriteAtlas.py` | Replace Godot resource behavior with `SpriteAtlas.rs`; transpile `atlas` rectangle/index calculations and use native texture loading. |
+
+## 6. Report, presentation, and rules-adjacent modules
+
+These are the principal additional Python files to transpile. Replace service
+globals with explicit context and return updated state where the whole-project
+ownership analysis does not yet preserve mutation.
+
+| Python file | Action and exact work |
+| --- | --- |
+| `openciv3/advisor_reports.py` | Transpile foreign/advisor report DTO construction. Keep diplomacy queries pure and add snapshot parity fixtures. |
+| `openciv3/domestic_report.py` | Transpile domestic status, government, and research report construction. Do not access Godot services. |
+| `openciv3/science_report.py` | Transpile technology costs, prerequisites, era, and turn estimates. Compare float rounding with Python fixtures. |
+| `openciv3/victory_report.py` | Transpile victory progress and winner/kind report models. Preserve optional values explicitly. |
+| `openciv3/history.py` | Transpile history records and scoring; return updated history rather than relying on list aliasing. |
+| `openciv3/palace.py` | Transpile palace building/layout data; keep Godot texture and node behavior in the native view. |
+| `openciv3/codex.py` | Transpile codex lookup/filtering with explicit text and ID types. |
+| `openciv3/pedia.py` | Transpile civilopedia queries and report links; keep file/media resolution in native adapters. |
+| `openciv3/tile_info.py` | Transpile tile information/yield text models and compare terrain/resource output to Python. |
+| `openciv3/city_labels.py` | Transpile `CityLabel` and `city_labels` formatting/placement. Return DTOs for native map rendering. |
+| `openciv3/unit_indicators.py` | Transpile unit indicator selection and ordering; return draw commands, not textures. |
+| `openciv3/map_view.py` | Transpile `MapCamera` and `terrain_draws`; test wrapping, centering, zoom, and minimap rectangles. |
+| `openciv3/atlas.py` | Transpile atlas rectangle/crop/index math. Keep actual image resources native. |
+| `openciv3/border_render.py` | Transpile border and player-color draw models. Test wrapped borders and owner changes. |
+| `openciv3/city_render.py` | Transpile city draw-command construction and level/capital display decisions. |
+| `openciv3/fog_render.py` | Transpile fog draw commands using only known/visible snapshots. |
+| `openciv3/improvement_render.py` | Transpile road, rail, irrigation, mine, and other improvement draw decisions. |
+| `openciv3/resource_render.py` | Transpile resource icon placement and visibility rules. |
+| `openciv3/river_render.py` | Transpile river/delta edge draw models; share immutable topology. |
+| `openciv3/terrain_features.py` | Transpile terrain feature draw commands and overlays. |
+| `openciv3/unit_render.py` | Transpile unit draw-command construction, selection, health, and stacking indicators. |
+| `openciv3/unit_animation.py` | Transpile facing, pose, and frame selection; keep frame timing/Godot playback in the native map node. |
+| `openciv3/naval_risk.py` | Transpile safe-sea and hazardous-water predicates; reuse existing movement tests. |
+| `openciv3/government_transition.py` | Transpile revolution and government selection with explicit updated player/state. |
+| `openciv3/trading.py` | Transpile trade valuation, offers, affordability, and execution after ownership analysis. Verify both parties update and no deal is duplicated. |
+| `openciv3/quick_start.py` | Transpile typed quick-start/world setup drafts and validation. Keep screen actions in native nodes. |
+
+## 7. Media and service modules
+
+| Python file | Action and exact work |
+| --- | --- |
+| `openciv3/media.py` | Split typed descriptors/catalog queries from file/media loading. Transpile the former; implement the latter in `media.rs` with bounded JSON/path handling. |
+| `openciv3/unit_media.py` | Replace catalog/texture selection with `unit_media.rs` where it touches media or Godot. Transpile only pure unit-frame selection helpers with a typed catalog interface. |
+| `openciv3/godot_media.py` | Replace entirely with `godot_media.rs`: descriptor loading, textures, images, RGB values, unit frames, city textures, borders, and cleanup. No py4godot emulation is needed. |
+| `openciv3/atlas.py` | Transpile geometry only; `SpriteAtlas.rs` and `godot_media.rs` own image resources. |
+| `openciv3/sprites.py` | Replace sprite/catalog parsing with `sprites.rs` if binary/path-heavy; expose typed descriptors and byte bounds. Keep pure crop calculations transpiled. |
+| `openciv3/settings.py` | Replace INI and filesystem behavior with `settings.rs`. Preserve defaults, validation, atomic writes, and standalone/classic paths. Expose typed getters/setters. |
+| `openciv3/civ3_paths.py` | Replace case-insensitive filesystem lookup with `civ3_paths.rs`; preserve platform behavior and do not recursively scan unbounded directories. |
+| `openciv3/runtime.py` | Replace process-global Python services with an explicit native `RuntimeServices`/session registry in Rust. Define initialization, pending-game ownership, shutdown, and error behavior. Avoid a mutable global game clone. |
+| `openciv3/autosave.py` | Transpile autosave naming/interval policy after the native save API exists. Keep file rotation and writes in the native persistence adapter. |
+
+## 8. Binary formats and persistence
+
+| Python file | Action and exact work |
+| --- | --- |
+| `openciv3/binary.py` | Replace low-level `Record` parsing with `binary.rs`: checked offsets, endian reads, signed values, encoding, and truncation errors. Expose safe byte/string/scalar results. Keep typed record-to-model conversion transpiled where practical. |
+| `openciv3/legacy_import.py` | Use a native bounded BIQ reader and typed scenario conversion. Do not expand a general Python binary-parser framework. Validate section limits and compare every model field with the Python fixture. |
+| `openciv3/legacy_sav.py` | Replace SAV decoding with `legacy_sav.rs`; enforce record/decompression limits and use the native BIQ rules adapter. |
+| `openciv3/legacy_json_save.py` | Prefer transpiling the typed legacy JSON migration after stream/JSON support is available. Replace dynamic decoding and filesystem operations with native helpers; add old-version fixtures. |
+| `openciv3/savegame.py` | Keep the public save/load contract but implement it through `savegame.rs`: version checks, size limits, RNG state, AI plans, human turn, and controller reconstruction. Do not reproduce Python introspection. |
+| `openciv3/save_codec.py` | Replace with `save_codec.rs` and an explicit canonical schema for every saved model. Implement migrations and duplicate/unknown-field validation. Share schema definitions with generated DTO conversion. |
+| `openciv3/pcx.py` | Replace PCX decoding with `pcx.rs`: bounded dimensions, overflow checks, RLE limits, palettes, and pixel fixtures. |
+| `openciv3/flic.py` | Replace FLIC parsing/frame decode with `flic.rs`: chunk sizes, frame budgets, palettes, and truncation tests. |
+| `openciv3/amb.py` | Replace AMB audio parsing with `amb.rs`: checked chunk lengths, formats, and byte limits. |
+
+## 9. Test and tool files
+
+- `C7/Tests/*Smoke.py`, scenario fixtures, and graphical smoke drivers are test
+  harnesses, not production modules. Port relevant scenarios to Rust/GDScript
+  integration tests rather than including them in the shipping library.
+- `civ3_console` remains a separate frontend and regression oracle. Reuse its
+  command scripts for graphical acceptance, but do not make the GDExtension depend
+  on terminal streams or `argparse`.
+- Keep Python unit tests as reference tests. Add native equivalents for every
+  codec and every graphical acceptance action; do not delete the Python fixtures.
+
+## Required status tracking
+
+Track each file in the project inventory with these fields:
+
+```text
+path, action, owner, native_manifest_entry, dependencies,
+lowering_status, cargo_status, python_parity_status,
+godot_smoke_status, performance_status, notes
+```
+
+Allowed status values: `not_started`, `in_progress`, `blocked`, `parity`, and
+`accepted`. A file counts as `accepted` only after its required runtime test, not
+merely after lowering or Cargo compilation.

@@ -753,6 +753,14 @@ class ServiceCompiler:
             if left.type == right.type and left.type.name in self.enums:
                 operator = "!=" if isinstance(operation, ast.IsNot) else "=="
                 return Expr(f"({left.code}) {operator} ({right.code})", Type("bool"))
+            if left.type == right.type and left.type.name in self.records:
+                left_place = self.local_read(left_node) or left
+                right_place = self.local_read(right_node) or right
+                prefix = "!" if isinstance(operation, ast.IsNot) else ""
+                return Expr(
+                    f"{prefix}std::ptr::eq({self.reference(left_place)}, {self.reference(right_place)})",
+                    Type("bool"),
+                )
             literal_left = (
                 isinstance(left_node, ast.Constant)
                 and left_node.value is None
