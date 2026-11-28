@@ -2,8 +2,6 @@
 
 from dataclasses import dataclass
 
-Point = tuple[int, int]
-
 
 @dataclass
 class Unit:
@@ -16,20 +14,20 @@ class Unit:
 @dataclass
 class Plan:
     unit_id: int
-    destination: Point | None
+    destination: tuple[int, int] | None
     score: int
 
 
-def distance(left: Point, right: Point) -> int:
+def distance(left: tuple[int, int], right: tuple[int, int]) -> int:
     return abs(left[0] - right[0]) + abs(left[1] - right[1])
 
 
-def explore_plans(units: list[Unit], targets: list[Point]) -> list[Plan]:
+def explore_plans(units: list[Unit], targets: list[tuple[int, int]]) -> list[Plan]:
     plans: list[Plan] = []
     for unit in units:
-        best_target: Point | None = None
+        best_target: tuple[int, int] | None = None
         best_score: int = -1000000
-        origin: Point = unit.x, unit.y
+        origin: tuple[int, int] = unit.x, unit.y
         for target in targets:
             score: int = 100 - distance(origin, target) * 10 - (target[0] + target[1])
             if score > best_score or (score == best_score and best_target is not None and target < best_target):
@@ -40,7 +38,7 @@ def explore_plans(units: list[Unit], targets: list[Point]) -> list[Plan]:
     return plans
 
 
-def ordered_units(units: list[Unit], preferred: Point) -> list[Unit]:
+def ordered_units(units: list[Unit], preferred: tuple[int, int]) -> list[Unit]:
     def order(unit: Unit) -> tuple[int, int]:
         return distance((unit.x, unit.y), preferred), unit.identifier
 

@@ -1,0 +1,21 @@
+Mini campaign: 2 civilizations, 3 units
+Founded Rome; units remaining=2
+Turn 1 begins
+Warrior reached 1,1
+Rival scout reached 3,3
+Rome pop/food/shields: 1/5/1
+Known/visible tiles: 5/5
+Turn 2 begins
+Warrior reached 2,1
+Rival scout reached 3,3
+Rome grew to 2
+Rome discovered Pottery
+Rome pop/food/shields: 2/0/2
+Known/visible tiles: 8/5
+Turn 3 begins
+Warrior reached 3,1
+Rival scout reached 3,3
+Rome pop/food/shields: 2/2/4
+Known/visible tiles: 11/5
+Technologies: Pottery
+Final units/cities: 2/1

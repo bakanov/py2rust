@@ -2,11 +2,13 @@
 
 from collections import Counter
 
-from model import City, NetworkSegment, Point, city_at
+from model import City, NetworkSegment, city_at
 
 
-def road_neighbors(point: Point, roads: list[tuple[Point, Point]]) -> list[Point]:
-    result: list[Point] = []
+def road_neighbors(
+    point: tuple[int, int], roads: list[tuple[tuple[int, int], tuple[int, int]]]
+) -> list[tuple[int, int]]:
+    result: list[tuple[int, int]] = []
     for road in roads:
         if road[0] == point:
             result.append(road[1])
@@ -15,20 +17,22 @@ def road_neighbors(point: Point, roads: list[tuple[Point, Point]]) -> list[Point
     return result
 
 
-def build_network(cities: list[City], roads: list[tuple[Point, Point]]) -> dict[int, NetworkSegment]:
-    airports: list[Point] = [city.point for city in cities if city.airport]
+def build_network(
+    cities: list[City], roads: list[tuple[tuple[int, int], tuple[int, int]]]
+) -> dict[int, NetworkSegment]:
+    airports: list[tuple[int, int]] = [city.point for city in cities if city.airport]
     assigned: dict[int, int] = {}
-    components: list[tuple[int, list[int], set[Point]]] = []
+    components: list[tuple[int, list[int], set[tuple[int, int]]]] = []
     for origin in cities:
         if origin.identifier in assigned:
             continue
         network_id: int = origin.identifier
         members: list[int] = []
-        tiles: set[Point] = set()
-        pending: list[Point] = [origin.point]
+        tiles: set[tuple[int, int]] = set()
+        pending: list[tuple[int, int]] = [origin.point]
         cursor: int = 0
         while cursor < len(pending):
-            point: Point = pending[cursor]
+            point: tuple[int, int] = pending[cursor]
             cursor += 1
             if point in tiles:
                 continue

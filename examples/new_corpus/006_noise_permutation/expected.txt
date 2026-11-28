@@ -1,0 +1,10 @@
+Permutation prefix: 122, 119, 225, 70, 243, 11, 178, 93
+Permutation checksum: 9043933583288678944
+Height row: 0, 22, -24, -11, 16
+Height row: 11, 0, -15, 14, 22
+Height row: -24, 0, 0, -15, 24
+Height row: -11, 0, 15, 14, 33
+Height row: 32, -11, 24, 33, 16
+Sample checksum: 1338626900939103537
+Replay matches: True
+Wrapping sequence: 4301930853896946210, -7780676995965812401

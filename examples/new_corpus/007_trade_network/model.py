@@ -3,8 +3,6 @@
 from collections import Counter
 from dataclasses import dataclass, field
 
-Point = tuple[int, int]
-
 
 @dataclass
 class City:
@@ -17,7 +15,7 @@ class City:
     capital: bool = False
 
     @property
-    def point(self) -> Point:
+    def point(self) -> tuple[int, int]:
         return self.x, self.y
 
 
@@ -25,12 +23,12 @@ class City:
 class NetworkSegment:
     network_id: int
     cities: list[int]
-    tiles: set[Point]
+    tiles: set[tuple[int, int]]
     resources: Counter[str]
     has_airport: bool
 
 
-def city_at(cities: list[City], point: Point) -> City | None:
+def city_at(cities: list[City], point: tuple[int, int]) -> City | None:
     for city in cities:
         if city.point == point:
             return city

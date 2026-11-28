@@ -2,8 +2,6 @@
 
 from dataclasses import dataclass, field
 
-Point = tuple[int, int]
-
 
 @dataclass
 class Unit:
@@ -15,7 +13,7 @@ class Unit:
     movement: int
 
     @property
-    def point(self) -> Point:
+    def point(self) -> tuple[int, int]:
         return self.x, self.y
 
 
@@ -33,7 +31,7 @@ class City:
 class Game:
     units: list[Unit] = field(default_factory=list)
     cities: list[City] = field(default_factory=list)
-    ownership: dict[Point, int] = field(default_factory=dict)
+    ownership: dict[tuple[int, int], int] = field(default_factory=dict)
     next_identifier: int = 10
 
 

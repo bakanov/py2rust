@@ -29,7 +29,8 @@ def main() -> None:
     counts: Counter[str] = resource_counts(["wheat", "iron", "wheat", "spices", "iron", "wheat"])
     for name in sorted(counts):
         print("Resource " + name + ": " + str(counts[name]))
-    print("Missing technology: " + str(rules.find_technology("Writing")))
+    missing: int | None = rules.find_technology("Writing")
+    print("Missing technology: " + (str(missing) if missing is not None else "None"))
     return
 
 

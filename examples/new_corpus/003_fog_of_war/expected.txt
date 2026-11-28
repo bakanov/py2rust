@@ -1,0 +1,8 @@
+First known/visible/frontier: 5/5/6
+Second known/visible/frontier: 8/5/8
+Explored remains known: True
+Old tile no longer visible: True
+Visible now: 1,2 2,1 2,2 2,3 3,2
+Known ruins: 2,1
+Ruin terrain: grassland
+Rival knowledge is separate: 8/3

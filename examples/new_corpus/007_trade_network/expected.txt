@@ -1,0 +1,12 @@
+Rome: network=10 cities=3 tiles=5
+Ostia: network=10 cities=3 tiles=5
+Neapolis: network=10 cities=3 tiles=5
+Antium: network=20 cities=1 tiles=1
+Rome connected to Ostia: True
+Rome connected by air to Neapolis: True
+Rome connected to Antium: False
+Capital stock fish: 1
+Capital stock iron: 1
+Capital stock wheat: 2
+Capital exports: wheat
+Capital: Rome; separate networks: 2

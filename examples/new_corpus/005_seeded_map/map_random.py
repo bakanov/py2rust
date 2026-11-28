@@ -1,5 +1,7 @@
 """Reduced deterministic subtractive RNG matching the OpenCiv3 map stream."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 
 MAXIMUM: int = 2147483647
@@ -36,9 +38,8 @@ class MapRandom:
                     self.values[position] += MAXIMUM
         self.index = 0
         self.other = 21
-        return
 
-    def sample(self) -> int:
+    def sample(self) -> tuple[MapRandom, int]:
         self.index = self.index + 1 if self.index < 55 else 1
         self.other = self.other + 1 if self.other < 55 else 1
         value: int = seed32(self.values[self.index] - self.values[self.other])
@@ -47,37 +48,51 @@ class MapRandom:
         if value < 0:
             value += MAXIMUM
         self.values[self.index] = value
-        return value
+        return self, value
 
-    def next_double(self) -> float:
-        return self.sample() * (1.0 / MAXIMUM)
+    def next_double(self) -> tuple[MapRandom, float]:
+        value: int
+        self, value = self.sample()
+        return self, value * (1.0 / MAXIMUM)
 
-    def next_range(self, minimum: int, maximum: int) -> int:
+    def next_range(self, minimum: int, maximum: int) -> tuple[MapRandom, int]:
         if not -2147483648 <= minimum <= maximum <= MAXIMUM:
             raise ValueError("invalid random range")
         span: int = maximum - minimum
         if span <= MAXIMUM:
-            return int(self.next_double() * span) + minimum
-        value: int = self.sample()
-        if self.sample() % 2 == 0:
+            sample_value: float
+            self, sample_value = self.next_double()
+            return self, int(sample_value * span) + minimum
+        value: int
+        self, value = self.sample()
+        parity: int
+        self, parity = self.sample()
+        if parity % 2 == 0:
             value = -value
         sample: float = (float(value) + (MAXIMUM - 1)) / (2 * MAXIMUM - 1)
-        return int(sample * span) + minimum
+        return self, int(sample * span) + minimum
 
-    def shuffle(self, values: list[str]) -> None:
+    def shuffle(self, values: list[str]) -> tuple[MapRandom, list[str]]:
         for position in range(len(values) - 1):
-            other: int = self.next_range(position, len(values))
+            other: int
+            updated: MapRandom
+            updated, other = self.next_range(position, len(values))
+            self = updated
             values[position], values[other] = values[other], values[position]
-        return
+        return self, values
 
 
-def unique_civilizations(rng: MapRandom, names: list[str], count: int) -> tuple[list[str], int]:
+def unique_civilizations(rng: MapRandom, names: list[str], count: int) -> tuple[MapRandom, list[str], int]:
     selected: list[str] = []
     draws: int = 0
     while len(selected) < count:
         assert draws < 100, "rejection sampling exceeded its budget"
-        candidate: str = names[rng.next_range(0, len(names))]
+        index: int
+        updated: MapRandom
+        updated, index = rng.next_range(0, len(names))
+        rng = updated
+        candidate: str = names[index]
         draws += 1
         if candidate not in selected:
             selected.append(candidate)
-    return selected, draws
+    return rng, selected, draws

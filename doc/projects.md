@@ -7,8 +7,9 @@ HTTP/HTTPS, JSON, typed dataclass records and the existing library API. It does 
 arbitrary Python, third-party Python packages or general Python classes.
 
 For the staged OpenCiv3 GDExtension migration, see the
-[graphical game plan](OPENCIV3_GODOT_MIGRATION.md) and its
-[file-by-file inventory](OPENCIV3_GODOT_FILE_PLAN.md).
+[graphical game plan](OPENCIV3_GODOT_MIGRATION.md), its
+[file-by-file inventory](OPENCIV3_GODOT_FILE_PLAN.md), and the
+[troubleshooting runbook](OPENCIV3_GODOT_TROUBLESHOOTING.md).
 
 ## One command
 

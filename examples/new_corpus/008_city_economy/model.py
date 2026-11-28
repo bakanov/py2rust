@@ -2,8 +2,7 @@
 
 from dataclasses import dataclass, field
 
-Point = tuple[int, int]
-TILE_YIELDS: dict[Point, tuple[int, int, int]] = {
+TILE_YIELDS: dict[tuple[int, int], tuple[int, int, int]] = {
     (0, 0): (2, 1, 1),
     (1, 0): (3, 1, 2),
     (2, 0): (1, 2, 0),
@@ -13,7 +12,7 @@ TILE_YIELDS: dict[Point, tuple[int, int, int]] = {
 
 @dataclass
 class Resident:
-    tile_worked: Point | None = None
+    tile_worked: tuple[int, int] | None = None
 
 
 @dataclass
@@ -23,7 +22,7 @@ class City:
     food_stored: int
     shields_stored: int
     residents: list[Resident]
-    producing: str | None = "Granary"
+    producing: str | None
 
 
 @dataclass

@@ -17,7 +17,7 @@ def main() -> None:
         print("Height row: " + ", ".join(row))
     print("Sample checksum: " + str(checksum(samples)))
     replay: TerrainNoise = TerrainNoise(123456789)
-    print("Replay matches: " + str(noise.permutation == replay.permutation))
+    print("Replay matches: " + ("True" if noise.permutation == replay.permutation else "False"))
     print("Wrapping sequence: " + ", ".join([str(advance(9223372036854775807)), str(advance(-9223372036854775808))]))
     return
 

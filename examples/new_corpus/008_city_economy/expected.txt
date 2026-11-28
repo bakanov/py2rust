@@ -1,0 +1,15 @@
+Turn 1: pop=3 food=1 shields=2 stored=2
+Worked tiles: 3
+Rome grew; food stored=0
+Turn 2: pop=3 food=0 shields=5 stored=7
+Worked tiles: 3
+Turn 3: pop=3 food=0 shields=5 stored=2
+Worked tiles: 3
+Completed Granary
+Discovered Pottery
+Turn 4: pop=3 food=0 shields=5 stored=7
+Worked tiles: 3
+Known technologies: Pottery
+Research target cleared: True
+Hydrology builds: 4
+Empty-city fast path: 0/0; hydrology=4

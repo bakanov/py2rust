@@ -37,7 +37,6 @@ class RuleCatalog:
             technology: Technology = self.technologies[index]
             self.technology_ids[technology.name] = index
             self.eras[index] = "Ancient"
-        return
 
     def find_technology(self, name: str) -> int | None:
         if name not in self.technology_ids:
@@ -62,9 +61,10 @@ def catalog() -> RuleCatalog:
 
 def integer(row: dict[str, Json], key: str, default: int = 0) -> int:
     value: Json = row.get(key, default)
-    if type(value) is not int:
+    if value is None:
+        return default
+    if not isinstance(value, int) or isinstance(value, bool):
         raise ValueError(key + " must be an integer")
-    assert isinstance(value, int)
     assert -100 <= value <= 100, key + " is outside the supported range"
     return value
 
@@ -79,7 +79,7 @@ def resource_counts(resources: list[str]) -> Counter[str]:
 def available_technologies(rules: RuleCatalog, known: set[str]) -> list[str]:
     result: list[str] = []
     for technology in rules.technologies:
-        if technology.name not in known and (not technology.prerequisite or technology.prerequisite in known):
+        if technology.name not in known and (not len(technology.prerequisite) == 0 or technology.prerequisite in known):
             result.append(technology.name)
     return result
 

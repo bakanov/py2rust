@@ -1,39 +1,42 @@
 """Allocate citizens and advance production with an empty-city fast path."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 
-from model import TILE_YIELDS, City, CityFood, CityReport, Player, Point, Resident
+from model import TILE_YIELDS, City, CityFood, CityReport, Player, Resident
 
 
 @dataclass
 class Economy:
     hydrology_calls: int = 0
 
-    def hydrology(self) -> dict[Point, tuple[int, int, int]]:
+    def hydrology(self) -> tuple[Economy, dict[tuple[int, int], tuple[int, int, int]]]:
         self.hydrology_calls += 1
-        return TILE_YIELDS
+        return self, TILE_YIELDS
 
-    def city_food(self, city: City) -> CityFood:
-        if not city.residents:
-            return CityFood(0, 0, 0)
-        yields: dict[Point, tuple[int, int, int]] = self.hydrology()
+    def city_food(self, city: City) -> tuple[Economy, CityFood]:
+        if len(city.residents) == 0:
+            return self, CityFood(0, 0, 0)
+        yields: dict[tuple[int, int], tuple[int, int, int]]
+        self, yields = self.hydrology()
         total: int = 0
         for resident in city.residents:
-            point: Point | None = resident.tile_worked
+            point: tuple[int, int] | None = resident.tile_worked
             if point is not None:
                 assert point in yields, "resident works an unknown tile"
                 total += yields[point][0]
         consumed: int = city.size * 2
-        return CityFood(total, consumed, total - consumed)
+        return self, CityFood(total, consumed, total - consumed)
 
-    def allocate_citizens(self, city: City) -> None:
-        used: set[Point] = set()
+    def allocate_citizens(self, city: City) -> City:
+        used: set[tuple[int, int]] = set()
         for resident in city.residents:
             if resident.tile_worked is not None:
                 used.add(resident.tile_worked)
         finished: list[Resident] = []
         for resident in city.residents:
-            selected: Point | None = resident.tile_worked
+            selected: tuple[int, int] | None = resident.tile_worked
             if selected is None:
                 best_score: int = -1000000
                 for point in sorted(TILE_YIELDS):
@@ -48,11 +51,12 @@ class Economy:
                     used.add(selected)
             finished.append(Resident(selected))
         city.residents = finished
-        return
+        return city
 
-    def advance_city(self, city: City) -> CityReport:
-        self.allocate_citizens(city)
-        food: CityFood = self.city_food(city)
+    def advance_city(self, city: City) -> tuple[Economy, City, CityReport]:
+        city = self.allocate_citizens(city)
+        food: CityFood
+        self, food = self.city_food(city)
         shields: int = 0
         trade: int = 0
         for resident in city.residents:
@@ -68,24 +72,24 @@ class Economy:
             city.size += 1
             city.residents.append(Resident())
             grew = True
-            self.allocate_citizens(city)
+            city = self.allocate_citizens(city)
         city.shields_stored += shields
         completed: str | None = None
         if city.producing is not None and city.shields_stored >= 10:
             completed = city.producing
             city.producing = None
             city.shields_stored -= 10
-        return CityReport(food.surplus, shields, trade, grew, completed)
+        return self, city, CityReport(food.surplus, shields, trade, grew, completed)
 
 
-def advance_research(player: Player) -> str | None:
+def advance_research(player: Player) -> tuple[Player, str | None]:
     player.beakers += player.science
     if player.researching is None or player.beakers < player.research_cost:
-        return None
+        return player, None
     discovered: str = player.researching
     player.beakers -= player.research_cost
     player.researching = None
     if discovered not in player.known_technologies:
         player.known_technologies.add(discovered)
-        return discovered
-    return None
+        return player, discovered
+    return player, None

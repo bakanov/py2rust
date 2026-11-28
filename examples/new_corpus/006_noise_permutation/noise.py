@@ -29,7 +29,6 @@ class TerrainNoise:
             selected: int = wrapping_add(seed, 31) % (index + 1)
             self.permutation[index] = source[selected]
             source[selected] = source[index]
-        return
 
     def gradient(self, x: int, y: int) -> tuple[int, int]:
         first: int = self.permutation[x & 255]

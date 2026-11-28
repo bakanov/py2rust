@@ -63,6 +63,7 @@ Python when launching Electron outside the activated environment.
 - `py2rust/` contains the compiler, native Rust runtime and Python reference APIs.
 - `tests/` contains regression and executable-parity checks.
 - `examples/projects/`, `examples/services/` and `examples/corpus/` are source fixtures.
+- `examples/new_corpus/` contains small OpenCiv3-inspired applications with exact Python/native output checks.
 - `examples/telegram/` is the complete desktop/web application.
 - `tools/` contains build, generation and verification entry points;
   `tools/corpus_checks/` contains independent application oracles.

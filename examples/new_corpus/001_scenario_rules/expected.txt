@@ -1,0 +1,10 @@
+Scenario: Tiny continents
+Civilizations: Rome, Egypt, Greece, Babylon
+Pottery cost: 5
+Optional modifier: 2
+Available: Pottery, Bronze Working
+Worked yields: 4 food, 5 shields
+Resource iron: 2
+Resource spices: 1
+Resource wheat: 3
+Missing technology: None

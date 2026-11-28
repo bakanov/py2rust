@@ -14,12 +14,17 @@ Verified baseline:
 - The current console dependency closure has 113 modules with no lowering
   blockers. The smaller campaign has 104.
 - `PythonGame.py` currently fails project discovery at its first `py4godot`
-  import. No graphical milestone has been reached.
+  import. No graphical gameplay milestone has been reached.
+- The new `py2rust.godot` generator now emits the ten consolidated native files,
+  a compilable GDExtension shell, native mappings, and initial bounded helpers.
+  Its Rust tests pass, but Godot scenes are not yet connected to these nodes.
 - Python and native gameplay are not yet identical. Autonomous expansion and
   some production/economic behavior still differ.
 
 The exact action for every additional file is in
-[OPENCIV3_GODOT_FILE_PLAN.md](OPENCIV3_GODOT_FILE_PLAN.md).
+[OPENCIV3_GODOT_FILE_PLAN.md](OPENCIV3_GODOT_FILE_PLAN.md). For failure
+classification and concrete recovery steps, use the
+[troubleshooting runbook](OPENCIV3_GODOT_TROUBLESHOOTING.md).
 
 ## Definition of done
 
@@ -95,6 +100,14 @@ fallible calls. Do not pass generated private type names through an unstable
 string-based interface.
 
 ## File replacement convention
+
+Generate and verify the consolidated crate with:
+
+```bash
+PYTHONPATH=. python -m py2rust.godot /path/to/OpenCiv3/C7
+PYTHONPATH=. python -m py2rust.godot --check /path/to/OpenCiv3/C7
+cargo test --locked --manifest-path /path/to/OpenCiv3/C7/native/Cargo.toml
+```
 
 Do not create one physical Rust file per Python file. Consolidate handwritten
 code into **10 Rust files under `C7/native/`, plus the crate's `lib.rs`**. The

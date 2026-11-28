@@ -1,0 +1,9 @@
+Founded Rome with ID 10
+Moved warrior 2 to 4,5
+Rome's new owner: 2
+Same record shape, distinct IDs: True
+Removed only ID 4
+Unit 2 Warrior @ 4,5
+Unit 3 Scout @ 7,7
+City 10 Rome owner=2
+Owned tiles: 1; units: 2

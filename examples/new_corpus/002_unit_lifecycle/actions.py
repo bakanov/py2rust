@@ -1,9 +1,9 @@
 """State transitions mutate real collections and never rely on record identity."""
 
-from model import City, Game, Point, Unit, unit_with_id
+from model import City, Game, Unit, unit_with_id
 
 
-def remove_unit(game: Game, identifier: int) -> Unit | None:
+def remove_unit(game: Game, identifier: int) -> tuple[Game, Unit | None]:
     removed: Unit | None = None
     retained: list[Unit] = []
     for unit in game.units:
@@ -12,10 +12,10 @@ def remove_unit(game: Game, identifier: int) -> Unit | None:
         else:
             retained.append(unit)
     game.units = retained
-    return removed
+    return game, removed
 
 
-def move_unit(game: Game, identifier: int, x: int, y: int) -> Unit:
+def move_unit(game: Game, identifier: int, x: int, y: int) -> tuple[Game, Unit]:
     for index in range(len(game.units)):
         unit: Unit = game.units[index]
         if unit.identifier == identifier:
@@ -24,40 +24,37 @@ def move_unit(game: Game, identifier: int, x: int, y: int) -> Unit:
             unit.y = y
             unit.movement -= 1
             game.units[index] = unit
-            return unit
+            return game, unit
     raise ValueError("missing unit " + str(identifier))
 
 
-def found_city(game: Game, settler_id: int, name: str) -> City:
+def found_city(game: Game, settler_id: int, name: str) -> tuple[Game, City]:
     settler: Unit | None = unit_with_id(game, settler_id)
     assert settler is not None and settler.name == "Settler", "a living settler is required"
-    point: Point = settler.point
+    point: tuple[int, int] = settler.point
     city: City = City(game.next_identifier, name, settler.owner, point[0], point[1])
     game.next_identifier += 1
-    removed: Unit | None = remove_unit(game, settler_id)
+    removed: Unit | None
+    game, removed = remove_unit(game, settler_id)
     assert removed is not None
     game.cities.append(city)
     game.ownership[point] = city.identifier
-    return city
+    return game, city
 
 
-def transfer_city(game: Game, city_id: int, new_owner: int) -> None:
+def transfer_city(game: Game, city_id: int, new_owner: int) -> Game:
     for index in range(len(game.cities)):
         city: City = game.cities[index]
         if city.identifier == city_id:
             city.owner = new_owner
             game.cities[index] = city
-    return
+    return game
 
 
 def describe(game: Game) -> list[str]:
     rows: list[str] = []
     for unit in game.units:
-        rows.append(
-            "Unit " + str(unit.identifier) + " " + unit.name + " @ " + str(unit.x) + "," + str(unit.y)
-        )
+        rows.append("Unit " + str(unit.identifier) + " " + unit.name + " @ " + str(unit.x) + "," + str(unit.y))
     for city in game.cities:
-        rows.append(
-            "City " + str(city.identifier) + " " + city.name + " owner=" + str(city.owner)
-        )
+        rows.append("City " + str(city.identifier) + " " + city.name + " owner=" + str(city.owner))
     return rows

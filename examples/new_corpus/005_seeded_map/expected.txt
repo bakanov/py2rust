@@ -1,0 +1,7 @@
+Selected: Greece, China, Babylon, Rome, Persia
+Draws including rejections: 6
+Next range: -10
+Receiver index/other: 7/28
+Terrain shuffle: tundra, grassland, plains, desert, forest, hills
+Independent replay matches: True
+Streams remain independent: True

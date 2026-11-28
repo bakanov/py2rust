@@ -2,8 +2,7 @@
 
 from dataclasses import dataclass
 
-Point = tuple[int, int]
-DIRECTIONS: tuple[Point, ...] = ((0, -1), (1, 0), (0, 1), (-1, 0))
+DIRECTIONS: tuple[tuple[int, int], ...] = ((0, -1), (1, 0), (0, 1), (-1, 0))
 
 
 @dataclass
@@ -14,7 +13,7 @@ class Tile:
     ruin: bool = False
 
     @property
-    def point(self) -> Point:
+    def point(self) -> tuple[int, int]:
         return self.x, self.y
 
 

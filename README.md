@@ -190,6 +190,7 @@ See [frontend migration](doc/FRONTEND_MIGRATION.md) for current coverage and lim
 - [Subset reference](doc/service-subset.md): supported syntax, APIs and limits.
 - [Whole projects](doc/projects.md): packages and direct Rust imports.
 - [Application catalog](examples/corpus/README.md): 120 complete examples.
+- [OpenCiv3-inspired corpus](examples/new_corpus/README.md): nine focused ownership, state, map, economy, and campaign examples.
 - [Paper Plane](examples/telegram/README.md): desktop/web chat and saved notebooks.
 
 This is a Python-like subset, not full CPython compatibility. The compiler and
